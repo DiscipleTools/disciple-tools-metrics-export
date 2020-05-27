@@ -90,18 +90,18 @@ class DT_Metrics_Export_Menu {
             <h2><?php esc_attr_e( 'Metrics Export', 'dt_metrics_export' ) ?></h2>
             <h2 class="nav-tab-wrapper">
                 <a href="<?php echo esc_attr( $link ) . 'general' ?>"
-                   class="nav-tab <?php echo esc_html( ( $tab == 'general' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'General', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'second' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'second' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Second', 'dt_metrics_export' ) ?></a>
+                   class="nav-tab <?php echo esc_html( ( $tab == 'general' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Location Export', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'second' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'second' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a>
             </h2>
 
             <?php
             switch ($tab) {
                 case "general":
-                    $object = new DT_Metrics_Export_Tab_General();
+                    $object = new DT_Metrics_Export_Tab_Location_Export();
                     $object->content();
                     break;
                 case "second":
-                    $object = new DT_Metrics_Export_Tab_Second();
+                    $object = new DT_Metrics_Export_Tab_Tutorial();
                     $object->content();
                     break;
                 default:
@@ -113,89 +113,240 @@ class DT_Metrics_Export_Menu {
 
         <?php
     }
+
 }
 
 /**
- * Class DT_Metrics_Export_Tab_General
+ * Class DT_Metrics_Export_Tab_Location_Export
  */
-class DT_Metrics_Export_Tab_General {
+class DT_Metrics_Export_Tab_Location_Export {
     public function content() {
+        $this->process_post();
         ?>
+        <style>
+            .column-wrapper {
+                width: 100%;
+            }
+            .quarter {
+                width: 25%;
+                float: left;
+            }
+            @media screen and (max-width : 1000px) {
+                .quarter {
+                    width: 100%;
+                    float: left;
+                }
+            }
+            .float-right {
+                float:right;
+            }
+        </style>
         <div class="wrap">
-            <div id="poststuff">
-                <div id="post-body" class="metabox-holder columns-2">
-                    <div id="post-body-content">
-                        <!-- Main Column -->
+            <form method="post">
+            <?php wp_nonce_field( 'metrics-location-export'.get_current_user_id(), 'metrics-location-export' ) ?>
+            <div class="column-wrapper">
+                <div class="quarter">
+                    <!-- Box -->
+                    <table class="widefat striped">
+                        <thead>
+                        <tr>
+                            <th colspan="2">Step 1:<br>Location / Levels <span class="float-right">&#9989;</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                United States
+                            </td>
+                            <td>
+                                <select>
+                                    <option>---disabled---</option>
+                                    <option value="">Admin0 (Country)</option>
+                                    <option value="">Admin1 (State)</option>
+                                    <option value="">Admin2 (County)</option>
+                                    <option value="">Admin3</option>
+                                    <option value="">Admin4</option>
+                                    <option value="">Admin5</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Germany
+                            </td>
+                            <td>
+                                <select>
+                                    <option>---disabled---</option>
+                                    <option value="">Admin0 (Country)</option>
+                                    <option value="">Admin1 (State)</option>
+                                    <option value="">Admin2 (County)</option>
+                                    <option value="">Admin3</option>
+                                    <option value="">Admin4</option>
+                                    <option value="">Admin5</option>
+                                </select>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <!-- End Box -->
 
-                        <?php $this->main_column() ?>
+                </div>
+                <div class="quarter">
+                    <!-- Box -->
+                    <table class="widefat striped">
+                        <thead>
+                        <tr>
+                            <th colspan="2">Step 2:<br>Data Types <span class="float-right">&#9989;</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                Contacts
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                -- Seekers
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                -- Baptized
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Groups
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                -- Pre-Group
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                -- Groups
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                -- Churches
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                -- Non-grouped by Location
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Users
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Trainings
+                            </td>
+                            <td class="float-right">
+                                <input type="checkbox" name="" value="true" />
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <!-- End Box -->
 
-                        <!-- End Main Column -->
-                    </div><!-- end post-body-content -->
-                    <div id="postbox-container-1" class="postbox-container">
-                        <!-- Right Column -->
+                </div>
+                <div class="quarter">
+                    <!-- Box -->
+                    <table class="widefat striped">
+                        <thead>
+                        <tr>
+                            <th>Step 3:<br>Format of Export <span class="float-right">&#10060;</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                Content
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <!-- End Box -->
 
-                        <?php $this->right_column() ?>
+                </div>
+                <div class="quarter">
+                    <!-- Box -->
+                    <table class="widefat striped">
+                        <thead>
+                        <tr>
+                            <th>Step 4:<br>Destination of Export <span class="float-right">&#9989;</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
 
-                        <!-- End Right Column -->
-                    </div><!-- postbox-container 1 -->
-                    <div id="postbox-container-2" class="postbox-container">
-                    </div><!-- postbox-container 2 -->
-                </div><!-- post-body meta box container -->
-            </div><!--poststuff end -->
-        </div><!-- wrap end -->
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button type="submit" class="button">Export</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <!-- End Box -->
+
+                </div>
+            </div>
+            </form>
+        </div><!-- End wrap -->
         <?php
     }
 
-    public function main_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-                <tr>
-                    <th>Header</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        Content
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
+    public function process_post() {
+        dt_write_log(__METHOD__);
     }
-
-    public function right_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-                <tr>
-                    <th>Information</th>
-                </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
-    }
-
 }
 
 /**
- * Class DT_Metrics_Export_Tab_Second
+ * Class DT_Metrics_Export_Tab_Tutorial
  */
-class DT_Metrics_Export_Tab_Second {
+class DT_Metrics_Export_Tab_Tutorial {
     public function content() {
         ?>
         <div class="wrap">

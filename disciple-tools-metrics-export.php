@@ -9,40 +9,12 @@
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
- * Tested up to: 4.9
+ * Tested up to: 5.4.1
  *
  * @package Disciple_Tools
  * @link    https://github.com/DiscipleTools
  * @license GPL-2.0 or later
  *          https://www.gnu.org/licenses/gpl-2.0.html
- */
-
-/*******************************************************************
- * Using the Metrics Export
- * The Disciple Tools starter plugin is intended to accelerate integrations and extensions to the Disciple Tools system.
- * This basic plugin starter has some of the basic elements to quickly launch and extension project in the pattern of
- * the Disciple Tools system.
- */
-
-/**
- * Refactoring (renaming) this plugin as your own:
- * 1. @todo Refactor all occurrences of the name DT_Metrics_Export, dt_metrics_export, dt-metrics-export and Metrics Export with you're own
- * name for the `disciple-tools-metrics-export.php and menu-and-tabs.php files.
- * 2. @todo Update the README.md and LICENSE
- * 3. @todo Update the default.pot file if you intend to make your plugin multilingual. Use a tool like POEdit
- * 4. @todo Change the translation domain to in the phpcs.xml your plugin's domain: @todo
- * 5 @todo Replace the 'sample' namespace in this and the rest-api.php files
- */
-
-/**
- * The starter plugin is equipped with:
- * 1. Wordpress style requirements
- * 2. Travis Continuous Integration
- * 3. Disciple Tools Theme presence check
- * 4. Remote upgrade system for ongoing updates outside the Wordpress Directory
- * 5. Multilingual ready
- * 6. PHP Code Sniffer support (composer) @use /vendor/bin/phpcs and /vendor/bin/phpcbf
- * 7. Starter Admin menu and options page with tabs.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -58,6 +30,7 @@ $dt_metrics_export_required_dt_theme_version = '0.28.0';
  * @return object|bool
  */
 function dt_metrics_export() {
+
     global $dt_metrics_export_required_dt_theme_version;
     $wp_theme = wp_get_theme();
     $version = $wp_theme->version;
@@ -83,12 +56,11 @@ function dt_metrics_export() {
      * Don't load the plugin on every rest request. Only those with the 'sample' namespace
      */
     $is_rest = dt_is_rest();
-    //@todo change 'sample' if you want the plugin to be set up when using rest api calls other than ones with the 'sample' namespace
-    if ( !$is_rest || strpos( dt_get_url_path(), 'metrics-export' ) !== false ){
+    if ( ! $is_rest || strpos( dt_get_url_path(), 'metrics-export' ) !== false ){
         return DT_Metrics_Export::get_instance();
     }
 }
-add_action( 'after_setup_theme', 'dt_metrics_export' );
+add_action( 'init', 'dt_metrics_export' );
 
 /**
  * Singleton class for setting up the plugin.
@@ -150,7 +122,9 @@ class DT_Metrics_Export {
      * @return void
      */
     private function includes() {
-        require_once( 'includes/admin/admin-menu-and-tabs.php' );
+        if( is_admin() ) {
+            require_once( 'includes/admin/admin-menu-and-tabs.php' );
+        }
     }
 
     /**
@@ -176,9 +150,6 @@ class DT_Metrics_Export {
         $this->token             = 'dt_metrics_export';
         $this->version             = '0.1';
 
-        // sample rest api class
-        require_once( 'includes/rest-api.php' );
-        DT_Metrics_Export_Endpoints::instance();
     }
 
     /**
@@ -202,13 +173,12 @@ class DT_Metrics_Export {
              * Also, see the instructions for version updating to understand the steps involved.
              * @see https://github.com/DiscipleTools/disciple-tools-version-control/wiki/How-to-Update-the-Starter-Plugin
              */
-//            @todo enable this section with your own hosted file
-//            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/disciple-tools-metrics-export-version-control.json";
-//            Puc_v4_Factory::buildUpdateChecker(
-//                $hosted_json,
-//                __FILE__,
-//                'disciple-tools-metrics-export'
-//            );
+            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/disciple-tools-metrics-export-version-control.json";
+            Puc_v4_Factory::buildUpdateChecker(
+                $hosted_json,
+                __FILE__,
+                'disciple-tools-metrics-export'
+            );
         }
 
         // Internationalize the text strings used.
