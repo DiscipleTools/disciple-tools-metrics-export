@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: Disciple Tools - Starter Plugin
- * Plugin URI: https://github.com/DiscipleTools/disciple-tools-starter-plugin
- * Description: Disciple Tools - Starter Plugin is intended to help developers and integrator jumpstart their extension
+ * Plugin Name: Disciple Tools - Metrics Export
+ * Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
+ * Description: Disciple Tools - Metrics Export help facilitate security controlled exports with locations data.
  * of the Disciple Tools system.
  * Version:  0.1.0
  * Author URI: https://github.com/DiscipleTools
- * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-starter-plugin
+ * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
  * Tested up to: 4.9
@@ -18,7 +18,7 @@
  */
 
 /*******************************************************************
- * Using the Starter Plugin
+ * Using the Metrics Export
  * The Disciple Tools starter plugin is intended to accelerate integrations and extensions to the Disciple Tools system.
  * This basic plugin starter has some of the basic elements to quickly launch and extension project in the pattern of
  * the Disciple Tools system.
@@ -26,8 +26,8 @@
 
 /**
  * Refactoring (renaming) this plugin as your own:
- * 1. @todo Refactor all occurrences of the name DT_Starter, dt_starter, dt-starter and Starter Plugin with you're own
- * name for the `disciple-tools-starter-plugin.php and menu-and-tabs.php files.
+ * 1. @todo Refactor all occurrences of the name DT_Metrics_Export, dt_metrics_export, dt-metrics-export and Metrics Export with you're own
+ * name for the `disciple-tools-metrics-export.php and menu-and-tabs.php files.
  * 2. @todo Update the README.md and LICENSE
  * 3. @todo Update the default.pot file if you intend to make your plugin multilingual. Use a tool like POEdit
  * 4. @todo Change the translation domain to in the phpcs.xml your plugin's domain: @todo
@@ -48,25 +48,25 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
-$dt_starter_required_dt_theme_version = '0.28.0';
+$dt_metrics_export_required_dt_theme_version = '0.28.0';
 
 /**
- * Gets the instance of the `DT_Starter_Plugin` class.
+ * Gets the instance of the `DT_Metrics_Export` class.
  *
  * @since  0.1
  * @access public
  * @return object|bool
  */
-function dt_starter_plugin() {
-    global $dt_starter_required_dt_theme_version;
+function dt_metrics_export() {
+    global $dt_metrics_export_required_dt_theme_version;
     $wp_theme = wp_get_theme();
     $version = $wp_theme->version;
     /*
      * Check if the Disciple.Tools theme is loaded and is the latest required version
      */
     $is_theme_dt = strpos( $wp_theme->get_template(), "disciple-tools-theme" ) !== false || $wp_theme->name === "Disciple Tools";
-    if ( $is_theme_dt && version_compare( $version, $dt_starter_required_dt_theme_version, "<" ) ) {
-        add_action( 'admin_notices', 'dt_starter_plugin_hook_admin_notice' );
+    if ( $is_theme_dt && version_compare( $version, $dt_metrics_export_required_dt_theme_version, "<" ) ) {
+        add_action( 'admin_notices', 'dt_metrics_export_hook_admin_notice' );
         add_action( 'wp_ajax_dismissed_notice_handler', 'dt_hook_ajax_notice_handler' );
         return false;
     }
@@ -84,11 +84,11 @@ function dt_starter_plugin() {
      */
     $is_rest = dt_is_rest();
     //@todo change 'sample' if you want the plugin to be set up when using rest api calls other than ones with the 'sample' namespace
-    if ( !$is_rest || strpos( dt_get_url_path(), 'sample' ) !== false ){
-        return DT_Starter_Plugin::get_instance();
+    if ( !$is_rest || strpos( dt_get_url_path(), 'metrics-export' ) !== false ){
+        return DT_Metrics_Export::get_instance();
     }
 }
-add_action( 'after_setup_theme', 'dt_starter_plugin' );
+add_action( 'after_setup_theme', 'dt_metrics_export' );
 
 /**
  * Singleton class for setting up the plugin.
@@ -96,7 +96,7 @@ add_action( 'after_setup_theme', 'dt_starter_plugin' );
  * @since  0.1
  * @access public
  */
-class DT_Starter_Plugin {
+class DT_Metrics_Export {
 
     /**
      * Declares public variables
@@ -124,7 +124,7 @@ class DT_Starter_Plugin {
         static $instance = null;
 
         if ( is_null( $instance ) ) {
-            $instance = new dt_starter_plugin();
+            $instance = new dt_metrics_export();
             $instance->setup();
             $instance->includes();
             $instance->setup_actions();
@@ -173,12 +173,12 @@ class DT_Starter_Plugin {
         $this->img_uri      = trailingslashit( $this->dir_uri . 'img' );
 
         // Admin and settings variables
-        $this->token             = 'dt_starter_plugin';
+        $this->token             = 'dt_metrics_export';
         $this->version             = '0.1';
 
         // sample rest api class
         require_once( 'includes/rest-api.php' );
-        DT_Starter_Plugin_Endpoints::instance();
+        DT_Metrics_Export_Endpoints::instance();
     }
 
     /**
@@ -203,11 +203,11 @@ class DT_Starter_Plugin {
              * @see https://github.com/DiscipleTools/disciple-tools-version-control/wiki/How-to-Update-the-Starter-Plugin
              */
 //            @todo enable this section with your own hosted file
-//            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/disciple-tools-starter-plugin-version-control.json";
+//            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/disciple-tools-metrics-export-version-control.json";
 //            Puc_v4_Factory::buildUpdateChecker(
 //                $hosted_json,
 //                __FILE__,
-//                'disciple-tools-starter-plugin'
+//                'disciple-tools-metrics-export'
 //            );
         }
 
@@ -241,7 +241,7 @@ class DT_Starter_Plugin {
      * @return void
      */
     public static function deactivation() {
-        delete_option( 'dismissed-dt-starter' );
+        delete_option( 'dismissed-dt-metrics-export' );
     }
 
     /**
@@ -252,7 +252,7 @@ class DT_Starter_Plugin {
      * @return void
      */
     public function i18n() {
-        load_plugin_textdomain( 'dt_starter_plugin', false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ). 'languages' );
+        load_plugin_textdomain( 'dt_metrics_export', false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ). 'languages' );
     }
 
     /**
@@ -263,7 +263,7 @@ class DT_Starter_Plugin {
      * @return string
      */
     public function __toString() {
-        return 'dt_starter_plugin';
+        return 'dt_metrics_export';
     }
 
     /**
@@ -298,7 +298,7 @@ class DT_Starter_Plugin {
      * @access public
      */
     public function __call( $method = '', $args = array() ) {
-        _doing_it_wrong( "dt_starter_plugin::" . esc_html( $method ), 'Method does not exist.', '0.1' );
+        _doing_it_wrong( "dt_metrics_export::" . esc_html( $method ), 'Method does not exist.', '0.1' );
         unset( $method, $args );
         return null;
     }
@@ -306,30 +306,30 @@ class DT_Starter_Plugin {
 // end main plugin class
 
 // Register activation hook.
-register_activation_hook( __FILE__, [ 'DT_Starter_Plugin', 'activation' ] );
-register_deactivation_hook( __FILE__, [ 'DT_Starter_Plugin', 'deactivation' ] );
+register_activation_hook( __FILE__, [ 'DT_Metrics_Export', 'activation' ] );
+register_deactivation_hook( __FILE__, [ 'DT_Metrics_Export', 'deactivation' ] );
 
-function dt_starter_plugin_hook_admin_notice() {
-    global $dt_starter_required_dt_theme_version;
+function dt_metrics_export_hook_admin_notice() {
+    global $dt_metrics_export_required_dt_theme_version;
     $wp_theme = wp_get_theme();
     $current_version = $wp_theme->version;
-    $message = __( "'Disciple Tools - Starter Plugin' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or make sure it is latest version.", "dt_starter_plugin" );
+    $message = __( "'Disciple Tools - Metrics Export' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or make sure it is latest version.", "dt_metrics_export" );
     if ( $wp_theme->get_template() === "disciple-tools-theme" ){
-        $message .= sprintf( esc_html__( 'Current Disciple Tools version: %1$s, required version: %2$s', 'dt_starter_plugin' ), esc_html( $current_version ), esc_html( $dt_starter_required_dt_theme_version ) );
+        $message .= sprintf( esc_html__( 'Current Disciple Tools version: %1$s, required version: %2$s', 'dt_metrics_export' ), esc_html( $current_version ), esc_html( $dt_metrics_export_required_dt_theme_version ) );
     }
     // Check if it's been dismissed...
-    if ( ! get_option( 'dismissed-dt-starter', false ) ) { ?>
-        <div class="notice notice-error notice-dt-starter is-dismissible" data-notice="dt-starter">
+    if ( ! get_option( 'dismissed-dt-metrics-export', false ) ) { ?>
+        <div class="notice notice-error notice-dt-metrics-export is-dismissible" data-notice="dt-metrics-export">
             <p><?php echo esc_html( $message );?></p>
         </div>
         <script>
             jQuery(function($) {
-                $( document ).on( 'click', '.notice-dt-starter .notice-dismiss', function () {
+                $( document ).on( 'click', '.notice-dt-metrics-export .notice-dismiss', function () {
                     $.ajax( ajaxurl, {
                         type: 'POST',
                         data: {
                             action: 'dismissed_notice_handler',
-                            type: 'dt-starter',
+                            type: 'dt-metrics-export',
                             security: '<?php echo esc_html( wp_create_nonce( 'wp_rest_dismiss' ) ) ?>'
                         }
                     })

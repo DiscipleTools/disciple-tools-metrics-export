@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"Project-Id-Version: Disciple Tools - Starter_Plugin\n"
+"Project-Id-Version: Disciple Tools - Metrics Export\n"
 "POT-Creation-Date: 2020-05-07 10:44+0100\n"
 "PO-Revision-Date: 2018-01-29 05:53-0700\n"
 "Last-Translator: \n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Generator: Poedit 2.3\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
-"X-Poedit-WPHeader: disciple-tools-starter-plugin.php\n"
+"X-Poedit-WPHeader: disciple-tools-metrics-export.php\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
 "esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;"
@@ -22,14 +22,14 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 "X-Poedit-SearchPathExcluded-1: */libraries/*\n"
 
-#: disciple-tools-starter-plugin.php:316
+#: disciple-tools-metrics-export.php:316
 msgid ""
-"'Disciple Tools - Starter Plugin' plugin requires 'Disciple Tools' theme to "
+"'Disciple Tools - Metrics Export' plugin requires 'Disciple Tools' theme to "
 "work. Please activate 'Disciple Tools' theme or make sure it is latest "
 "version."
 msgstr ""
 
-#: disciple-tools-starter-plugin.php:318
+#: disciple-tools-metrics-export.php:318
 #, php-format
 msgid "Current Disciple Tools version: %1$s, required version: %2$s"
 msgstr ""
@@ -40,7 +40,7 @@ msgstr ""
 
 #: includes/admin/admin-menu-and-tabs.php:62
 #: includes/admin/admin-menu-and-tabs.php:90
-msgid "Starter Plugin"
+msgid "Metrics Export"
 msgstr ""
 
 #: includes/admin/admin-menu-and-tabs.php:77

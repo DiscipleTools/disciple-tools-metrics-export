@@ -1,5 +1,5 @@
-.po and .mo files must be in this format:  
+.po and .mo files must be in this format:
 {translation-domain}-{localisation}.po
- 
-ex:  
-dt_starter_plugin.fr_FR.po
+
+ex:
+dt_metrics_export.fr_FR.po
