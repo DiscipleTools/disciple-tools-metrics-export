@@ -122,7 +122,7 @@ class DT_Metrics_Export {
      * @return void
      */
     private function includes() {
-        if( is_admin() ) {
+        if ( is_admin() ) {
             require_once( 'includes/admin/admin-menu-and-tabs.php' );
         }
     }
@@ -149,6 +149,11 @@ class DT_Metrics_Export {
         // Admin and settings variables
         $this->token             = 'dt_metrics_export';
         $this->version             = '0.1';
+
+        if ( is_admin() ) {
+            // storage post type for export configurations
+            add_action( 'init', [ $this, 'register_post_type' ] );
+        }
 
     }
 
@@ -183,6 +188,13 @@ class DT_Metrics_Export {
 
         // Internationalize the text strings used.
         add_action( 'init', array( $this, 'i18n' ), 2 );
+    }
+
+    public function register_post_type() {
+        $args = array(
+            'public'    => false
+        );
+        register_post_type( $this->token, $args );
     }
 
     /**
