@@ -123,7 +123,12 @@ class DT_Metrics_Export {
      */
     private function includes() {
         if ( is_admin() ) {
-            require_once( 'includes/admin/admin-menu-and-tabs.php' );
+            require_once( 'includes/admin-menu-and-tabs.php' );
+            require_once( 'includes/format-csv-cotw.php' );
+            require_once( 'includes/format-csv.php' );
+            require_once( 'includes/format-json.php' );
+            require_once( 'includes/format-kml.php' );
+            require_once( 'includes/format-geojson.php' );
         }
     }
 

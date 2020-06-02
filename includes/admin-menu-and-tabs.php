@@ -89,15 +89,16 @@ class DT_Metrics_Export_Menu {
         <div class="wrap">
             <h2><?php esc_attr_e( 'Metrics Export', 'dt_metrics_export' ) ?></h2>
             <h2 class="nav-tab-wrapper">
-                <a href="<?php echo esc_attr( $link ) . 'general' ?>"
-                   class="nav-tab <?php echo esc_html( ( $tab == 'general' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Location Export', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Location Export', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Webhooks', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'second' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'second' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cloud Storage', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a>
             </h2>
 
             <?php
             switch ($tab) {
-                case "general":
+                case "location_export":
                     $object = new DT_Metrics_Export_Tab_Location_Export();
                     $object->content();
                     break;
@@ -105,7 +106,15 @@ class DT_Metrics_Export_Menu {
                     $object = new DT_Metrics_Export_Tab_Webhooks();
                     $object->content();
                     break;
-                case "second":
+                case "cron":
+                    $object = new DT_Metrics_Export_Tab_Cron();
+                    $object->content();
+                    break;
+                case "cloud":
+                    $object = new DT_Metrics_Export_Tab_Cloud();
+                    $object->content();
+                    break;
+                case "tutorial":
                     $object = new DT_Metrics_Export_Tab_Tutorial();
                     $object->content();
                     break;
@@ -126,28 +135,28 @@ class DT_Metrics_Export_Menu {
  */
 class DT_Metrics_Export_Tab_Location_Export {
     public function content() {
-        $countries = Disciple_Tools_Mapping_Queries::get_countries( );
+        $countries = Disciple_Tools_Mapping_Queries::get_countries();
 
         $configuration_id = $this->process_post();
 
         $configuration = $this->get_configurations( $configuration_id );
 
-        $types = $this->get_types();
+        $types = get_dt_metrics_export_types();
 
-        $formats = $this->get_formats();
+        $formats = get_dt_metrics_export_formats();
 
         ?>
         <style>
             .column-wrapper {
                 width: 100%;
             }
-            .fifth{
+            .quarter{
                 width: 24%;
                 padding-right: 5px;
                 float: left;
             }
             @media screen and (max-width : 1000px) {
-                .fifth {
+                .quarter {
                     width: 100%;
                     float: left;
                 }
@@ -160,12 +169,12 @@ class DT_Metrics_Export_Tab_Location_Export {
             <form method="POST">
             <?php wp_nonce_field( 'metrics-location-export'.get_current_user_id(), 'metrics-location-export' ) ?>
             <div class="column-wrapper">
-                <div class="fifth">
+                <div class="quarter">
                     <!-- Box -->
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th><strong>Step 1:</strong><br>Select Configuration <span class="float-right">&#10060;</span></th>
+                            <th><strong>Step 1:</strong><br>Select Configuration </th>
                         </tr>
                         </thead>
                         <tbody>
@@ -174,15 +183,10 @@ class DT_Metrics_Export_Tab_Location_Export {
                                 Configuration<br>
                                 <select name="configuration" class="regular-text">
                                     <option value="new">New</option>
-                                    <?php foreach( $configuration as $config ) : ?>
-                                        <option value="<?php echo esc_attr( $config['id']) ?>"><?php echo esc_html( $config['label']) ?></option>
+                                    <?php foreach ( $configuration as $config ) : ?>
+                                        <option value="<?php echo esc_attr( $config['id'] ) ?>"><?php echo esc_html( $config['label'] ) ?></option>
                                     <?php endforeach; ?>
                                 </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Certain saved configurations can be enabled to run in response to a scheduled (cron) job or as a webhook.
                             </td>
                         </tr>
                         </tbody>
@@ -191,21 +195,20 @@ class DT_Metrics_Export_Tab_Location_Export {
                     <!-- End Box -->
 
                 </div>
-                <div class="fifth">
+                <div class="quarter">
                     <!-- Box -->
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th colspan="2"><strong>Step 2:</strong><br>Select Locations & Levels <span class="float-right">&#9989;</span></th>
+                            <th colspan="2"><strong>Step 2:</strong><br>Select Locations & Levels </th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
                             <td>
-                                All Locations
-                            </td>
-                            <td>
-                                <select name="all_locations">
+                                All Locations<br>
+
+                                <select name="all_locations" id="all-locations" class="regular-text">
                                     <option value="admin2">Admin2 (County)</option>
                                     <option disabled>---disabled---</option>
                                     <option value="admin0">Admin0 (Country)</option>
@@ -218,20 +221,19 @@ class DT_Metrics_Export_Tab_Location_Export {
                                 </select>
                             </td>
                         </tr>
-                        <tr>
-                            <td colspan="2">
-                                <hr>
-                            </td>
-                        </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="widefat striped">
                         <!-- List of countries -->
-                        <?php if ( ! empty( $countries ) ) : foreach( $countries as $country ) : ?>
-                            <tr>
+                        <?php if ( ! empty( $countries ) ) : foreach ( $countries as $country ) : ?>
+                            <tr class="country-list" style="display:none;">
                                 <td>
-                                    <?php echo $country['name'] ?>
+                                    <?php echo esc_html( $country['name'] ) ?>
                                 </td>
                                 <td>
-                                    <select name="selected_locations[][<?php echo $country['grid_id'] ?>]">
-                                        <option value="disabled">---disabled---</option>
+                                    <select name="selected_locations[][<?php echo esc_attr( $country['grid_id'] ) ?>]">
+                                        <option>---disabled---</option>
                                         <option value="admin0">Admin0 (Country)</option>
                                         <option value="admin1">Admin1 (State)</option>
                                         <option value="admin2">Admin2 (County)</option>
@@ -241,79 +243,46 @@ class DT_Metrics_Export_Tab_Location_Export {
                                     </select>
                                 </td>
                             </tr>
-                        <?php endforeach; endif; ?>
-                        </tbody>
+                        <?php endforeach;
+endif; ?>
                     </table>
                     <br>
-                    <!-- End Box -->
-
+                <!-- End Box -->
                 </div>
-                <div class="fifth">
+                <div class="quarter">
                     <!-- Box -->
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th colspan="2"><strong>Step 3:</strong><br>Select Data Types <span class="float-right">&#9989;</span></th>
+                            <th colspan="2"><strong>Step 3:</strong><br>Select Data Types </th>
                         </tr>
                         </thead>
-                        <?php
-                        if ( ! empty( $types ) ) :
-                            $list = [];
-                            foreach( $types as $value ) :
-                                if ( ! isset( $list[$value['type']] ) ) {
-                                    $list[$value['type']] = [];
-                                }
-                                $list[$value['type']][] = $value;
-                            endforeach;
-                            foreach ( $list as $key => $items ) :
-                                ?>
-                                <tr>
-                                    <td>
-                                        <strong><?php echo ucfirst( $key ) ?></strong>
-                                    </td>
-                                    <td class="float-right"></td>
-                                </tr>
-                                <?php
-                                foreach( $items as $item ) :
-                                    ?>
-                                    <tr>
-                                        <td>
-                                            -- <?php echo $item['label'] ?>
-                                        </td>
-                                        <td class="float-right">
-                                            <input type="checkbox" name="type[<?php echo $item['key'] ?>]" value="true" />
-                                        </td>
-                                    </tr>
-                                    <?php
-                                endforeach;
-                            endforeach;
-                        endif; ?>
-                        </tbody>
-                    </table>
-                    <br>
-                    <!-- End Box -->
-
-                </div>
-                <div class="fifth">
-                    <!-- Box -->
-                    <table class="widefat striped">
-                        <thead>
                         <tr>
-                            <th><strong>Step 4:</strong><br>Export <span class="float-right">&#10060;</span></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-
-                        <tr>
-                            <td>
+                            <td colspan="2">
                                 Format<br>
-                                <select name="format" class="regular-text">
-                                    <?php foreach( $formats as $key => $item ) : ?>
-                                        <option value="<?php echo esc_attr( $key ) ?>"><?php echo esc_html( $item ) ?></option>
+                                <select name="format" class="regular-text" id="format_input">
+                                    <?php foreach ( $formats as $item ) : ?>
+                                        <option value="<?php echo esc_attr( $item['key'] ) ?>"><?php echo esc_html( $item['label'] ) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
                         </tr>
+                    </table>
+                    <!-- Box -->
+                    <table class="widefat striped" id="selectable_types"></table>
+                    <br>
+                    <!-- End Box -->
+
+                </div>
+                <div class="quarter">
+                    <!-- Box -->
+                    <table class="widefat striped">
+                        <thead>
+                        <tr>
+                            <th><strong>Step 4:</strong><br>Export </th>
+                        </tr>
+                        </thead>
+                        <tbody>
                         <tr>
                             <td>
                                 Destination<br>
@@ -327,7 +296,13 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td>
                                 Configuration Name<br>
-                                <input type="text" name="label" class="regular-text" placeholder="Name for Configuration" /><br>
+                                <input type="text" name="label" class="regular-text" placeholder="Title" /><br>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Configuration Notes<br>
+                                <input type="text" name="label_notes" class="regular-text" placeholder="Notes" /><br>
                             </td>
                         </tr>
                         <tr>
@@ -365,6 +340,71 @@ class DT_Metrics_Export_Tab_Location_Export {
             </form>
         </div><!-- End wrap -->
         <?php
+        $this->content_scripts();
+    }
+
+    public function content_scripts() {
+        ?>
+        <script>
+            window.export_formats = [<?php echo json_encode( get_dt_metrics_export_formats() ) ?>][0]
+            jQuery(document).ready(function(){
+
+                // show and hide country list
+                let locations = jQuery('#all-locations')
+                if ( 'country_by_country' === locations.val()  ) {
+                    jQuery('.country-list').show()
+                }
+                locations.on('change', function() {
+                    if ( 'country_by_country' === jQuery(this).val()  ) {
+                        jQuery('.country-list').show()
+                    } else {
+                        jQuery('.country-list').hide()
+                    }
+                })
+
+                // add selectable types
+                let format_input = jQuery('#format_input')
+                load_selectable_types( format_input.val() )
+                format_input.on('change', function() {
+                    load_selectable_types( format_input.val() )
+                })
+            })
+
+            function load_selectable_types( id ) {
+
+                let types = window.export_formats[id].selectable_types
+                let html = ''
+                let container = jQuery('#selectable_types')
+
+                let list = []
+                jQuery.each( types, function(i,v){
+                    list.push(v.type)
+                })
+                let unique_list = getUnique(list)
+                jQuery.each( unique_list, function(i,v){
+                    html += '<tr><td style="text-transform:capitalize;" ><strong>'+v+'</strong></td><td></td></tr>'
+                    jQuery.each( types, function(ii,vv){
+                        if ( v === vv.type ) {
+                            html += '<tr><td>-- '+vv.label+'</td><td class="float-right"><input type="checkbox" name="type['+v.key+']" value="true" /></td></tr>'
+                        }
+                    })
+                })
+
+                container.html(html)
+
+            }
+
+            function getUnique(array){
+                var uniqueArray = [];
+                for(i=0; i < array.length; i++){
+                    if(uniqueArray.indexOf(array[i]) === -1) {
+                        uniqueArray.push(array[i]);
+                    }
+                }
+                return uniqueArray;
+            }
+        </script>
+        <?php
     }
 
     public function process_post() : int {
@@ -372,25 +412,25 @@ class DT_Metrics_Export_Tab_Location_Export {
 
         if ( isset( $_POST['metrics-location-export'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['metrics-location-export'] ) ), 'metrics-location-export'.get_current_user_id() ) ) {
             // create
-            if ( isset( $_POST['action']  ) && 'save' === sanitize_text_field( wp_unslash( $_POST['action']  ) ) ) {
+            if ( isset( $_POST['action'] ) && 'save' === sanitize_text_field( wp_unslash( $_POST['action'] ) ) ) {
                 $response = $this->filter_post( $_POST );
                 return $this->save_new( $response );
             }
 
             // update
-            if ( isset( $_POST['action']  ) && 'update' === sanitize_text_field( wp_unslash( $_POST['action']  ) ) ) {
+            if ( isset( $_POST['action'] ) && 'update' === sanitize_text_field( wp_unslash( $_POST['action'] ) ) ) {
                 $response = $this->filter_post( $_POST );
                 return $this->update( $response );
             }
 
             // delete
-            if ( isset( $_POST['action']  ) && 'delete' === sanitize_text_field( wp_unslash( $_POST['action']  ) ) ) {
+            if ( isset( $_POST['action'] ) && 'delete' === sanitize_text_field( wp_unslash( $_POST['action'] ) ) ) {
                 $response = $this->filter_post( $_POST );
                 return $this->delete( $response );
             }
 
             // export
-            if ( isset( $_POST['action']  ) && 'export' === sanitize_text_field( wp_unslash( $_POST['action']  ) ) ) {
+            if ( isset( $_POST['action'] ) && 'export' === sanitize_text_field( wp_unslash( $_POST['action'] ) ) ) {
                 $response = $this->filter_post( $_POST );
                 return $this->export( $response );
             }
@@ -416,106 +456,17 @@ class DT_Metrics_Export_Tab_Location_Export {
         return [];
     }
 
-    public function get_types() {
-        $types = [
-            [
-                'type' => 'contacts',
-                'key' => 'contacts_all',
-                'label' => 'All'
-            ],
-            [
-                'type' => 'contacts',
-                'key' => 'contacts_active',
-                'label' => 'Active'
-            ],
-            [
-                'type' => 'contacts',
-                'key' => 'contacts_paused',
-                'label' => 'Paused'
-            ],
-            [
-                'type' => 'contacts',
-                'key' => 'contacts_seekers',
-                'label' => 'Seekers'
-            ],
-            [
-                'type' => 'contacts',
-                'key' => 'contacts_believers',
-                'label' => 'Believers'
-            ],
-            [
-                'type' => 'groups',
-                'key' => 'groups_all',
-                'label' => 'All'
-            ],
-            [
-                'type' => 'groups',
-                'key' => 'groups_active',
-                'label' => 'Active'
-            ],
-            [
-                'type' => 'groups',
-                'key' => 'groups_inactive',
-                'label' => 'Inactive'
-            ],
-            [
-                'type' => 'groups',
-                'key' => 'groups_groups',
-                'label' => 'Groups & Pre-Groups'
-            ],
-            [
-                'type' => 'groups',
-                'key' => 'groups_churches',
-                'label' => 'Churches'
-            ],
-            [
-                'type' => 'groups',
-                'key' => 'groups_unformed',
-                'label' => 'Unformed Believers by Area'
-            ],
-            [
-                'type' => 'users',
-                'key' => 'users_all',
-                'label' => 'Users'
-            ],
-            [
-                'type' => 'users',
-                'key' => 'users_active',
-                'label' => 'Active'
-            ],
-            [
-                'type' => 'users',
-                'key' => 'users_inactive',
-                'label' => 'Inactive'
-            ],
-            [
-                'type' => 'users',
-                'key' => 'users_by_roles',
-                'label' => 'Users by Roles'
-            ]
-        ];
 
-        return apply_filters( 'dt_metrics_export_types', $types );
-    }
 
-    public function get_formats() {
-        $formats = [
-            'csv' => 'CSV',
-            'json' => 'JSON',
-            'geojson' => 'GEOJSON',
-            'kml' => 'KML',
-        ];
 
-        return apply_filters( 'dt_metrics_export_types', $formats );
-    }
 
     public function filter_post( $response ) : array {
-
+        // @todo add sanitization of post elements.
         return $response;
     }
 
     public function save_new( $response ) : int {
-        dt_write_log('action: save');
+        dt_write_log( 'action: save' );
         global $wpdb;
         $new_config_id = 0;
 
@@ -546,22 +497,270 @@ class DT_Metrics_Export_Tab_Location_Export {
     }
 
     public function update( $response ) : int {
-        dt_write_log('action: update');
+        dt_write_log( 'action: update' );
         return 0; // return updated id
     }
 
     public function delete( $response ) : int {
-        dt_write_log('action: delete');
+        dt_write_log( 'action: delete' );
         return 0;
     }
 
     public function export( $response ) : int {
-        dt_write_log('action: export');
+        dt_write_log( 'action: export' );
         return 0;
     }
 }
 
+function get_dt_metrics_export_types() : array {
+    $types = [];
+
+    // Contacts
+    $types['contacts_all'] = [
+        'type' => 'contacts',
+        'key' => 'contacts_all',
+        'label' => 'All'
+    ];
+    $types['contacts_active'] = [
+        'type' => 'contacts',
+        'key' => 'contacts_active',
+        'label' => 'Active'
+    ];
+    $types['contacts_paused'] = [
+        'type' => 'contacts',
+        'key' => 'contacts_paused',
+        'label' => 'Paused'
+    ];
+    $types['contacts_seekers'] = [
+        'type' => 'contacts',
+        'key' => 'contacts_seekers',
+        'label' => 'Seekers'
+    ];
+    $types['contacts_believers'] = [
+        'type' => 'contacts',
+        'key' => 'contacts_believers',
+        'label' => 'Believers'
+    ];
+
+    // Groups
+    $types['groups_all'] = [
+        'type' => 'groups',
+        'key' => 'groups_all',
+        'label' => 'All'
+    ];
+    $types['groups_active'] = [
+        'type' => 'groups',
+        'key' => 'groups_active',
+        'label' => 'Active'
+    ];
+    $types['groups_inactive'] = [
+        'type' => 'groups',
+        'key' => 'groups_inactive',
+        'label' => 'Inactive'
+    ];
+    $types['groups_pre_groups'] = [
+        'type' => 'groups',
+        'key' => 'groups_pre_groups',
+        'label' => 'Pre-Groups'
+    ];
+    $types['groups_groups'] = [
+        'type' => 'groups',
+        'key' => 'groups_groups',
+        'label' => 'Groups'
+    ];
+    $types['groups_churches'] = [
+        'type' => 'groups',
+        'key' => 'groups_churches',
+        'label' => 'Churches'
+    ];
+    $types['groups_unformed'] = [
+        'type' => 'groups',
+        'key' => 'groups_unformed',
+        'label' => 'Unformed Believers by Area'
+    ];
+
+    // Users
+    $types['users_all'] = [
+        'type' => 'users',
+        'key' => 'users_all',
+        'label' => 'Users'
+    ];
+    $types['users_active'] = [
+        'type' => 'users',
+        'key' => 'users_active',
+        'label' => 'Active'
+    ];
+    $types['users_inactive'] = [
+        'type' => 'users',
+        'key' => 'users_inactive',
+        'label' => 'Inactive'
+    ];
+    $types['users_by_roles'] = [
+        'type' => 'users',
+        'key' => 'users_by_roles',
+        'label' => 'Users by Roles'
+    ];
+
+    return apply_filters( 'dt_metrics_export_types', $types );
+}
+
+function get_dt_metrics_export_formats() : array {
+    return apply_filters( 'dt_metrics_export_formats', [] );
+}
+
 class DT_Metrics_Export_Tab_Webhooks {
+    public function content() {
+        ?>
+        <div class="wrap">
+            <div id="poststuff">
+                <div id="post-body" class="metabox-holder columns-2">
+                    <div id="post-body-content">
+                        <!-- Main Column -->
+
+                        <?php $this->main_column() ?>
+
+                        <!-- End Main Column -->
+                    </div><!-- end post-body-content -->
+                    <div id="postbox-container-1" class="postbox-container">
+                        <!-- Right Column -->
+
+                        <?php $this->right_column() ?>
+
+                        <!-- End Right Column -->
+                    </div><!-- postbox-container 1 -->
+                    <div id="postbox-container-2" class="postbox-container">
+                    </div><!-- postbox-container 2 -->
+                </div><!-- post-body meta box container -->
+            </div><!--poststuff end -->
+        </div><!-- wrap end -->
+        <?php
+    }
+
+    public function main_column() {
+        ?>
+        <!-- Box -->
+        <table class="widefat striped">
+            <thead>
+            <tr>
+                <th>Header</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    Content
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+        <!-- End Box -->
+        <?php
+    }
+
+    public function right_column() {
+        ?>
+        <!-- Box -->
+        <table class="widefat striped">
+            <thead>
+            <tr>
+                <th>Information</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    Content
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+        <!-- End Box -->
+        <?php
+    }
+}
+
+/**
+ * Class DT_Metrics_Export_Tab_Tutorial
+ */
+class DT_Metrics_Export_Tab_Cron {
+    public function content() {
+        ?>
+        <div class="wrap">
+            <div id="poststuff">
+                <div id="post-body" class="metabox-holder columns-2">
+                    <div id="post-body-content">
+                        <!-- Main Column -->
+
+                        <?php $this->main_column() ?>
+
+                        <!-- End Main Column -->
+                    </div><!-- end post-body-content -->
+                    <div id="postbox-container-1" class="postbox-container">
+                        <!-- Right Column -->
+
+                        <?php $this->right_column() ?>
+
+                        <!-- End Right Column -->
+                    </div><!-- postbox-container 1 -->
+                    <div id="postbox-container-2" class="postbox-container">
+                    </div><!-- postbox-container 2 -->
+                </div><!-- post-body meta box container -->
+            </div><!--poststuff end -->
+        </div><!-- wrap end -->
+        <?php
+    }
+
+    public function main_column() {
+        ?>
+        <!-- Box -->
+        <table class="widefat striped">
+            <thead>
+            <tr>
+                <th>Header</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    Content
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+        <!-- End Box -->
+        <?php
+    }
+
+    public function right_column() {
+        ?>
+        <!-- Box -->
+        <table class="widefat striped">
+            <thead>
+            <tr>
+                <th>Information</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    Content
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+        <!-- End Box -->
+        <?php
+    }
+}
+
+/**
+ * Class DT_Metrics_Export_Tab_Tutorial
+ */
+class DT_Metrics_Export_Tab_Cloud{
     public function content() {
         ?>
         <div class="wrap">

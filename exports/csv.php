@@ -23,13 +23,17 @@ if ( ! function_exists( 'dt_write_log' ) ) {
 // @codingStandardsIgnoreLine
 require( $_SERVER[ 'DOCUMENT_ROOT' ] . '/wp-load.php' ); // loads the wp framework when called
 
-$type = $_GET['type'];
-switch( $type ) {
+if ( ! isset( $_GET['type'] ) ) {
+    return;
+}
+
+$types_of_export = sanitize_text_field( wp_unslash( $_GET['type'] ) );
+switch ( $types_of_export ) {
     case 'cities':
         $places = [];
         $results = $wpdb->get_results("
             SELECT * FROM dt_geonames WHERE feature_code LIKE 'PP%' AND feature_class = 'P' AND population > 100000",
-            ARRAY_A);
+        ARRAY_A);
         foreach ($results as $index => $result ) {
             $places[] = [
                 'geonamid' => $result['geonameid'],
@@ -46,11 +50,11 @@ switch( $type ) {
     case 'list':
         $places = [];
         $results = $wpdb->get_results("
-            SELECT meta_value 
-            FROM $wpdb->postmeta 
+            SELECT meta_value
+            FROM $wpdb->postmeta
             WHERE meta_key = 'zume_raw_record'
               AND post_id IN (SELECT ID FROM $wpdb->posts WHERE post_type = 'groups')",
-            ARRAY_A);
+        ARRAY_A);
         foreach ($results as $index => $result ) {
             $value = maybe_unserialize( $result['meta_value'] );
             $places[$index] = [
@@ -76,7 +80,7 @@ header( 'Content-Disposition: attachment; filename=data.csv' );
 $output = fopen( 'php://output', 'w' );
 
 // output the column headings
-fputcsv( $output, $columns);
+fputcsv( $output, $columns );
 
 // fetch the data
 
