@@ -162,6 +162,13 @@ class DT_Metrics_Export {
 
     }
 
+    public function register_post_type() {
+        $args = array(
+            'public'    => false
+        );
+        register_post_type( 'dt_metrics_export', $args );
+    }
+
     /**
      * Sets up main plugin actions and filters.
      *
@@ -195,12 +202,7 @@ class DT_Metrics_Export {
         add_action( 'init', array( $this, 'i18n' ), 2 );
     }
 
-    public function register_post_type() {
-        $args = array(
-            'public'    => false
-        );
-        register_post_type( $this->token, $args );
-    }
+
 
     /**
      * Method that runs only when the plugin is activated.

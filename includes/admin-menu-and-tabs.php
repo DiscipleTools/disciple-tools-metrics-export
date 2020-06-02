@@ -137,11 +137,10 @@ class DT_Metrics_Export_Tab_Location_Export {
     public function content() {
         $countries = Disciple_Tools_Mapping_Queries::get_countries();
 
-        $configuration_id = $this->process_post();
+        $this->process_post();
 
-        $configuration = $this->get_configurations( $configuration_id );
-
-        $types = get_dt_metrics_export_types();
+        $configuration = $this->get_configurations();
+        dt_write_log($configuration);
 
         $formats = get_dt_metrics_export_formats();
 
@@ -414,7 +413,7 @@ endif; ?>
             // create
             if ( isset( $_POST['action'] ) && 'save' === sanitize_text_field( wp_unslash( $_POST['action'] ) ) ) {
                 $response = $this->filter_post( $_POST );
-                return $this->save_new( $response );
+                return $this->create( $response );
             }
 
             // update
@@ -438,62 +437,46 @@ endif; ?>
         return 0;
     }
 
-    public function get_configurations( $default_id = 0 ) : array {
-        $defaults = [
-            'id' => 0, // post id
-            'label' => '',
-            'all_locations' => '',
-            'selected_locations' => [],
-            'format' => '',
-            'destination' => '',
-            'last_export' => time(),
-        ];
+    public function get_configurations() : array {
         $configurations = [];
-
-        if ( 0 === $default_id ) {
-            return $configurations;
+        $config_posts = get_posts(['post_type' => 'dt_metrics_export'] );
+        foreach ( $config_posts as $key => $post ) {
+            $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
+            $configurations[$post->ID]['id'] = $post->ID;
         }
-        return [];
+        return $configurations;
     }
-
-
-
-
 
     public function filter_post( $response ) : array {
         // @todo add sanitization of post elements.
+        unset($response['metrics-location-export']);
+        unset($response['_wp_http_referer']);
+
         return $response;
     }
 
-    public function save_new( $response ) : int {
+    public function create( $response ) {
         dt_write_log( 'action: save' );
-        global $wpdb;
-        $new_config_id = 0;
+
+        unset($response['action']);
+        unset($response['configuration']);
 
         $args = [
             'post_type' => 'dt_metrics_export',
             'post_title' => $response['label'], // label
+            'post_content' => $response['label'], // label
             'post_status' => 'publish',
             'ping_status' => 'closed',
             'comment_status' => 'closed',
-            'meta_input' => [
-                'label' => $response['label'],
-                'id' => $response['label'],
-                'format' => $response['label'],
-                'destination' => $response['label'],
-                'all_locations' => $response['label'],
-                'selected_locations' => $response['label'],
-                'types' => $response['label'],
-                'last_export' => $response['label'],
-            ]
-
+            'meta_input' => $response
         ];
 
-        wp_insert_post( $args );
-
-
-
-        return $wpdb->insert_id; // @todo new created id
+        $id = wp_insert_post( $args, true );
+        if ( is_wp_error( $id ) ) {
+            dt_write_log('error');
+            dt_write_log($id);
+        }
+        return $id;
     }
 
     public function update( $response ) : int {
@@ -509,6 +492,12 @@ endif; ?>
     public function export( $response ) : int {
         dt_write_log( 'action: export' );
         return 0;
+    }
+}
+if ( ! function_exists( 'dt_get_simple_postmeta' ) ) {
+    function dt_get_simple_postmeta( $post_id ) {
+        return array_map( function ( $a ) { return maybe_unserialize( $a[0] );
+        }, get_post_meta( $post_id ) );
     }
 }
 
