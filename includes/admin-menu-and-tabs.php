@@ -140,7 +140,6 @@ class DT_Metrics_Export_Tab_Location_Export {
         $this->process_post();
 
         $configuration = $this->get_configurations();
-        dt_write_log($configuration);
 
         $formats = get_dt_metrics_export_formats();
 
@@ -180,7 +179,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td>
                                 Configuration<br>
-                                <select name="configuration" class="regular-text">
+                                <select name="configuration" id="configuration" class="regular-text">
                                     <option value="new">New</option>
                                     <?php foreach ( $configuration as $config ) : ?>
                                         <option value="<?php echo esc_attr( $config['id'] ) ?>"><?php echo esc_html( $config['label'] ) ?></option>
@@ -367,7 +366,19 @@ endif; ?>
                 format_input.on('change', function() {
                     load_selectable_types( format_input.val() )
                 })
+
+                let config = jQuery('#configuration')
+                config.on('change', function() {
+                    load_configuration( config.val() )
+                })
+                load_configuration( config.val() )
+
             })
+
+            function load_configuration( id ) {
+                console.log( id )
+
+            }
 
             function load_selectable_types( id ) {
 
@@ -406,7 +417,7 @@ endif; ?>
         <?php
     }
 
-    public function process_post() : int {
+    public function process_post() {
         dt_write_log( __METHOD__ );
 
         if ( isset( $_POST['metrics-location-export'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['metrics-location-export'] ) ), 'metrics-location-export'.get_current_user_id() ) ) {
@@ -439,7 +450,7 @@ endif; ?>
 
     public function get_configurations() : array {
         $configurations = [];
-        $config_posts = get_posts(['post_type' => 'dt_metrics_export'] );
+        $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export' ] );
         foreach ( $config_posts as $key => $post ) {
             $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
             $configurations[$post->ID]['id'] = $post->ID;
@@ -449,8 +460,8 @@ endif; ?>
 
     public function filter_post( $response ) : array {
         // @todo add sanitization of post elements.
-        unset($response['metrics-location-export']);
-        unset($response['_wp_http_referer']);
+        unset( $response['metrics-location-export'] );
+        unset( $response['_wp_http_referer'] );
 
         return $response;
     }
@@ -458,8 +469,8 @@ endif; ?>
     public function create( $response ) {
         dt_write_log( 'action: save' );
 
-        unset($response['action']);
-        unset($response['configuration']);
+        unset( $response['action'] );
+        unset( $response['configuration'] );
 
         $args = [
             'post_type' => 'dt_metrics_export',
@@ -473,23 +484,27 @@ endif; ?>
 
         $id = wp_insert_post( $args, true );
         if ( is_wp_error( $id ) ) {
-            dt_write_log('error');
-            dt_write_log($id);
+            dt_write_log( 'error' );
+            dt_write_log( $id );
         }
         return $id;
     }
 
-    public function update( $response ) : int {
+    public function update( $response ) {
         dt_write_log( 'action: update' );
         return 0; // return updated id
     }
 
-    public function delete( $response ) : int {
+    public function delete( $response ) {
         dt_write_log( 'action: delete' );
+
+        if ( isset( $response['configuration'] ) && ! empty( $response['configuration'] ) ) {
+            return wp_delete_post( $response['configuration'] );
+        }
         return 0;
     }
 
-    public function export( $response ) : int {
+    public function export( $response ) {
         dt_write_log( 'action: export' );
         return 0;
     }
