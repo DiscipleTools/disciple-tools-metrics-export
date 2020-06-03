@@ -80,7 +80,7 @@ class DT_Metrics_Export_Menu {
         if ( isset( $_GET["tab"] ) ) {
             $tab = sanitize_key( wp_unslash( $_GET["tab"] ) );
         } else {
-            $tab = 'general';
+            $tab = 'location_export';
         }
 
         $link = 'admin.php?page='.$this->token.'&tab=';
@@ -90,10 +90,10 @@ class DT_Metrics_Export_Menu {
             <h2><?php esc_attr_e( 'Metrics Export', 'dt_metrics_export' ) ?></h2>
             <h2 class="nav-tab-wrapper">
                 <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Location Export', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Webhooks', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cloud Storage', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks'  ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Webhooks', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud'  ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cloud Storage', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial'  ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a>
             </h2>
 
             <?php
@@ -277,20 +277,10 @@ endif; ?>
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th><strong>Step 4:</strong><br>Export </th>
+                            <th><strong>Step 4:</strong><br>Save or Export </th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td>
-                                Destination<br>
-                                <select name="destination" class="regular-text">
-                                    <option value="download">Download</option>
-                                    <option value="webhook">Webhook</option>
-                                    <option value="uploads">Uploads Folder (unrestricted public access)</option>
-                                </select>
-                            </td>
-                        </tr>
                         <tr>
                             <td>
                                 Configuration Name<br>
@@ -299,8 +289,22 @@ endif; ?>
                         </tr>
                         <tr>
                             <td>
-                                Configuration Notes<br>
-                                <input type="text" name="label_notes" class="regular-text" placeholder="Notes" /><br>
+                                <button type="submit" name="action" value="save" class="button regular-text">Save</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button type="submit" name="action" value="update" class="button regular-text">Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button type="submit" name="action" value="delete" class="button regular-text">Delete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button type="button" name="action" value="delete" class="button csv regular-text">Delete</button>
                             </td>
                         </tr>
                         <tr>
@@ -310,22 +314,16 @@ endif; ?>
                         </tr>
                         <tr>
                             <td>
-                                <button type="submit" name="action" value="save" class="button regular-text">Save Configuration and Export</button>
+                                Destination<br>
+                                <select name="destination" class="regular-text">
+                                    <option value="download">Download</option>
+                                    <option value="uploads">Uploads Folder (unrestricted public access)</option>
+                                </select>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                <button type="submit" name="action" value="update" class="button regular-text">Update Configuration and Export</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" name="action" value="export"  class="button regular-text">Export without Saving</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" name="action" value="delete" class="button regular-text">Delete Configuration</button>
+                                <button type="submit" name="action" value="export"  class="button regular-text">Export</button>
                             </td>
                         </tr>
                         </tbody>
@@ -413,6 +411,7 @@ endif; ?>
                 }
                 return uniqueArray;
             }
+
         </script>
         <?php
     }
@@ -459,7 +458,9 @@ endif; ?>
     }
 
     public function filter_post( $response ) : array {
+
         // @todo add sanitization of post elements.
+
         unset( $response['metrics-location-export'] );
         unset( $response['_wp_http_referer'] );
 
@@ -506,6 +507,11 @@ endif; ?>
 
     public function export( $response ) {
         dt_write_log( 'action: export' );
+        $formats = apply_filters( 'dt_metrics_export_register_format_class', [] );
+        dt_write_log($formats);
+        if ( isset( $response['format'] ) && ! empty( $response['format'] ) && isset( $formats[$response['format']] ) && class_exists( $formats[$response['format']] ) ) {
+            $formats[$response['format']]::instance()->export();
+        }
         return 0;
     }
 }
@@ -609,7 +615,7 @@ function get_dt_metrics_export_types() : array {
 }
 
 function get_dt_metrics_export_formats() : array {
-    return apply_filters( 'dt_metrics_export_formats', [] );
+    return apply_filters( 'dt_metrics_export_format', [] );
 }
 
 class DT_Metrics_Export_Tab_Webhooks {

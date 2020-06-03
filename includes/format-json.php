@@ -3,7 +3,7 @@
  * Export Format: JSON Export
  */
 
-add_filter( 'dt_metrics_export_formats', 'dt_metrics_export_format_json', 10, 1 );
+add_filter( 'dt_metrics_export_format', 'dt_metrics_export_format_json', 10, 1 );
 function dt_metrics_export_format_json( $formats ) {
 
     $types = get_dt_metrics_export_types();

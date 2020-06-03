@@ -3,7 +3,7 @@
  * Export Format: GEOJSON export
  */
 
-add_filter( 'dt_metrics_export_formats', 'dt_metrics_export_format_geojson', 10, 1 );
+add_filter( 'dt_metrics_export_format', 'dt_metrics_export_format_geojson', 10, 1 );
 function dt_metrics_export_format_geojson( $formats ) {
 
     $types = get_dt_metrics_export_types();

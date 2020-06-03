@@ -20,7 +20,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
-$dt_metrics_export_required_dt_theme_version = '0.28.0';
+$dt_metrics_export_required_dt_theme_version = '0.30.0'; // @todo 0.31.0 required for dt_site_id option
 
 /**
  * Gets the instance of the `DT_Metrics_Export` class.
@@ -124,6 +124,7 @@ class DT_Metrics_Export {
     private function includes() {
         if ( is_admin() ) {
             require_once( 'includes/admin-menu-and-tabs.php' );
+            require_once( 'includes/format-base.php' );
             require_once( 'includes/format-csv-cotw.php' );
             require_once( 'includes/format-csv.php' );
             require_once( 'includes/format-json.php' );
@@ -140,6 +141,13 @@ class DT_Metrics_Export {
      * @return void
      */
     private function setup() {
+
+        $this->dt_site_id = get_option('dt_site_id');
+        if ( empty( $this->dt_site_id ) ) {
+            $site_id = hash('SHA256', site_url() . time() );
+            add_option('dt_site_id', $site_id );
+            $this->dt_site_id = $site_id;
+        }
 
         // Main plugin directory path and URI.
         $this->dir_path     = trailingslashit( plugin_dir_path( __FILE__ ) );
@@ -339,5 +347,17 @@ if ( !function_exists( "dt_hook_ajax_notice_handler" )){
             $type = sanitize_text_field( wp_unslash( $_POST["type"] ) );
             update_option( 'dismissed-' . $type, true );
         }
+    }
+}
+
+if ( ! function_exists( 'dt_get_site_id' ) ) {
+    function dt_get_site_id() {
+        $dt_site_id = get_option('dt_site_id');
+        if ( empty( $dt_site_id ) ) {
+            $site_id = hash('SHA256', site_url() . time() );
+            add_option('dt_site_id', $site_id );
+            $dt_site_id = $site_id;
+        }
+        return $dt_site_id;
     }
 }
