@@ -142,10 +142,10 @@ class DT_Metrics_Export {
      */
     private function setup() {
 
-        $this->dt_site_id = get_option('dt_site_id');
+        $this->dt_site_id = get_option( 'dt_site_id' );
         if ( empty( $this->dt_site_id ) ) {
-            $site_id = hash('SHA256', site_url() . time() );
-            add_option('dt_site_id', $site_id );
+            $site_id = hash( 'SHA256', site_url() . time() );
+            add_option( 'dt_site_id', $site_id );
             $this->dt_site_id = $site_id;
         }
 
@@ -352,10 +352,10 @@ if ( !function_exists( "dt_hook_ajax_notice_handler" )){
 
 if ( ! function_exists( 'dt_get_site_id' ) ) {
     function dt_get_site_id() {
-        $dt_site_id = get_option('dt_site_id');
+        $dt_site_id = get_option( 'dt_site_id' );
         if ( empty( $dt_site_id ) ) {
-            $site_id = hash('SHA256', site_url() . time() );
-            add_option('dt_site_id', $site_id );
+            $site_id = hash( 'SHA256', site_url() . time() );
+            add_option( 'dt_site_id', $site_id );
             $dt_site_id = $site_id;
         }
         return $dt_site_id;
