@@ -304,11 +304,6 @@ endif; ?>
                         </tr>
                         <tr>
                             <td>
-                                <button type="button" name="action" value="delete" class="button csv regular-text">Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
                                 <hr>
                             </td>
                         </tr>

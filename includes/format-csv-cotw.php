@@ -51,12 +51,33 @@ if ( defined( 'ABSPATH' ) ) {
             $preferences['source_code'] = 'Disciple.Tools';
             $preferences['source_name'] = 'Disciple.Tools';
             $preferences['creator_organization'] = null;
-            $preferences['creator_organizationCode'] = null;
+            $preferences['creator_organizationCode'] = dt_get_site_id();
             $preferences['creator_subOrganization'] = null;
             $preferences['creator_subOrganizationCode'] = null;
-            $preferences['rights_dataOwner'] = get_current_user_id();
+            $preferences['rights_dataOwner'] = get_current_user();
 
-            $preferences['spatial_intentLevel'] = 'admin2'; // @todo add configuration variable
+            $intent_level = 'admin2'; // @todo get form preference
+            switch ($intent_level) {
+                case 'admin0':
+                    $preferences['spatial_intentLevel'] = 'adminLevel0';
+                    break;
+                case 'admin1':
+                    $preferences['spatial_intentLevel'] = 'adminLevel1';
+                    break;
+                case 'admin3':
+                    $preferences['spatial_intentLevel'] = 'adminLevel3';
+                    break;
+                case 'admin4':
+                    $preferences['spatial_intentLevel'] = 'adminLevel4';
+                    break;
+                case 'admin5':
+                    $preferences['spatial_intentLevel'] = 'adminLevel5';
+                    break;
+                case 'admin2':
+                default:
+                    $preferences['spatial_intentLevel'] = 'adminLevel2';
+                    break;
+            }
             $preferences['accessRights'] = 'private';
 
             // QUERY
@@ -64,10 +85,12 @@ if ( defined( 'ABSPATH' ) ) {
                 SELECT
                     SHA2( p.post_title, 256) as title,
                     pm2.meta_value as extent_size, /* member count */
-                    FROM_UNIXTIME( pm3.meta_value ) as extent_start_date,
-                    FROM_UNIXTIME( pm4.meta_value ) as extent_end_date,
+                    DATE_FORMAT( FROM_UNIXTIME( pm3.meta_value ), '%%Y-%%m-%%dT%%TTZD') as extent_start_date,
+                    DATE_FORMAT( FROM_UNIXTIME( pm4.meta_value ), '%%Y-%%m-%%dT%%TTZD') as extent_end_date,
                     %s as subject_data_type, /* entity or event */
                     pm5.meta_value as subject_data_subtype, /* church or group */
+                    NULL as subject_peopleGroupCode,
+                    NULL as subject_peopleGroupReference,
                     SHA2(CONCAT(p.ID, %s), 256) as identifier, /* placeholder for SHA key in post-processing */
                     %s as source_code,
                     %s as source_name,
@@ -76,11 +99,15 @@ if ( defined( 'ABSPATH' ) ) {
                     %s as creator_subOrganization,
                     %s as creator_subOrganizationCode,
                     %s as rights_dataOwner,
-                    pm1.meta_value as isVersionOf,
-                    FROM_UNIXTIME( pm6.meta_value) as dateSubmitted,
+                       CASE
+                        WHEN pm1.meta_value = 'inactive' THEN 'delete'
+                        WHEN pm1.meta_value = 'active' THEN 'updated'
+                    END as isVersionOf,
+                    DATE_FORMAT( FROM_UNIXTIME( pm6.meta_value ), '%%Y-%%m-%%dT%%TTZD') as dateSubmitted,
                     lg.latitude as coverage_latitude,
                     lg.longitude as coverage_longitude,
-                    NULL as coverage_spatialReference,
+                    'EPSG4326' as coverage_spatialReference,
+                    lg.admin0_code as coverage_countryCode,
                     CASE
                         WHEN lg.level_name = 'admin0' THEN 'adminLevel0'
                         WHEN lg.level_name = 'admin1' THEN 'adminLevel1'
@@ -121,8 +148,6 @@ if ( defined( 'ABSPATH' ) ) {
 
             // POST-QUERY PROCESSING
 
-            // @todo coverage_spatialReference
-
             // @todo isVersionOf
 
             $columns = [
@@ -132,6 +157,8 @@ if ( defined( 'ABSPATH' ) ) {
                 'extent:endDate',
                 'subject:dataType',
                 'subject:dataSubType',
+                'subject:peopleGroupCode',
+                'subject:peopleGroupReference',
                 'identifier',
                 'source:code',
                 'source:name',
@@ -145,6 +172,7 @@ if ( defined( 'ABSPATH' ) ) {
                 'coverage:latitude',
                 'coverage:longitude',
                 'coverage:spatialReference',
+                'coverage:countryCode',
                 'spatial:accuracyLevel',
                 'spatial:intentLevel',
                 'accessRights'
