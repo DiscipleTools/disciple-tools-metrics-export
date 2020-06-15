@@ -25,6 +25,7 @@
 
   <exclude-pattern>vendor/*</exclude-pattern>
   <exclude-pattern>includes/admin/libraries/plugin-update-checker/*</exclude-pattern>
+  <exclude-pattern>includes/libraries/*</exclude-pattern>
 
   <arg name="extensions" value="php,inc,lib"/>
   <arg value="n"/>

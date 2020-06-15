@@ -46,7 +46,7 @@ if ( defined( 'ABSPATH' ) ) {
 
             // PRE-QUERY PARAMETER PREP
             $preferences = [];
-            $preferences['subject_data_type'] = 'entity';
+            $preferences['subject_dataType'] = 'entity';
             $preferences['site_id'] = dt_get_site_id();
             $preferences['source_code'] = 'Disciple.Tools';
             $preferences['source_name'] = 'Disciple.Tools';
@@ -85,10 +85,10 @@ if ( defined( 'ABSPATH' ) ) {
                 SELECT
                     SHA2( p.post_title, 256) as title,
                     pm2.meta_value as extent_size, /* member count */
-                    DATE_FORMAT( FROM_UNIXTIME( pm3.meta_value ), '%%Y-%%m-%%dT%%TTZD') as extent_start_date,
-                    DATE_FORMAT( FROM_UNIXTIME( pm4.meta_value ), '%%Y-%%m-%%dT%%TTZD') as extent_end_date,
-                    %s as subject_data_type, /* entity or event */
-                    pm5.meta_value as subject_data_subtype, /* church or group */
+                    DATE_FORMAT( FROM_UNIXTIME( pm3.meta_value ), '%%Y-%%m-%%dT%%TZ') as extent_start_date,
+                    DATE_FORMAT( FROM_UNIXTIME( pm4.meta_value ), '%%Y-%%m-%%dT%%TZ') as extent_end_date,
+                    %s as subject_dataType, /* entity or event */
+                    pm5.meta_value as subject_dataSubtype, /* church or group */
                     NULL as subject_peopleGroupCode,
                     NULL as subject_peopleGroupReference,
                     SHA2(CONCAT(p.ID, %s), 256) as identifier, /* placeholder for SHA key in post-processing */
@@ -100,10 +100,10 @@ if ( defined( 'ABSPATH' ) ) {
                     %s as creator_subOrganizationCode,
                     %s as rights_dataOwner,
                        CASE
-                        WHEN pm1.meta_value = 'inactive' THEN 'delete'
+                        WHEN pm1.meta_value = 'inactive' THEN 'deleted'
                         WHEN pm1.meta_value = 'active' THEN 'updated'
                     END as isVersionOf,
-                    DATE_FORMAT( FROM_UNIXTIME( pm6.meta_value ), '%%Y-%%m-%%dT%%TTZD') as dateSubmitted,
+                    DATE_FORMAT( FROM_UNIXTIME( pm6.meta_value ), '%%Y-%%m-%%dT%%TZ') as dateSubmitted,
                     lg.latitude as coverage_latitude,
                     lg.longitude as coverage_longitude,
                     'EPSG4326' as coverage_spatialReference,
@@ -129,7 +129,7 @@ if ( defined( 'ABSPATH' ) ) {
                 LEFT JOIN $wpdb->dt_location_grid as lg ON pm7.meta_value=lg.grid_id
                 WHERE p.post_type = 'groups';
             ",
-                $preferences['subject_data_type'],
+                $preferences['subject_dataType'],
                 $preferences['site_id'],
                 $preferences['source_code'],
                 $preferences['source_name'],
@@ -156,7 +156,7 @@ if ( defined( 'ABSPATH' ) ) {
                 'extent:startDate',
                 'extent:endDate',
                 'subject:dataType',
-                'subject:dataSubType',
+                'subject:dataSubtype',
                 'subject:peopleGroupCode',
                 'subject:peopleGroupReference',
                 'identifier',
@@ -188,7 +188,7 @@ if ( defined( 'ABSPATH' ) ) {
             set_transient( $one_time_key, $args, 60 . 60 . 48 );
 
             echo '<div class="notice notice-warning is-dismissible">
-             <p>One time download link (expires in 48 hours):<br> <a href="'.plugin_dir_url( __FILE__ ).'format-csv-cotw.php?csv='.$one_time_key.'" target="_blank">'.plugin_dir_url( __FILE__ ).'format-csv-cotw.php?csv='.$one_time_key.'</a></p>
+             <p>One time download link (expires in 48 hours):<br> <a href="'. esc_url( plugin_dir_url( __FILE__ ) ).'format-csv-cotw.php?csv='.esc_attr( $one_time_key ).'" target="_blank">'.esc_url( plugin_dir_url( __FILE__ ) ).'format-csv-cotw.php?csv='.esc_attr( $one_time_key ).'</a></p>
          </div>';
         }
     }
