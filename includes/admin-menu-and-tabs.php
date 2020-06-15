@@ -137,7 +137,7 @@ class DT_Metrics_Export_Tab_Location_Export {
     public function content() {
         $countries = Disciple_Tools_Mapping_Queries::get_countries();
 
-        $this->process_post();
+        $last_config = $this->process_post();
 
         $configuration = $this->get_configurations();
 
@@ -230,8 +230,8 @@ class DT_Metrics_Export_Tab_Location_Export {
                                     <?php echo esc_html( $country['name'] ) ?>
                                 </td>
                                 <td>
-                                    <select name="selected_locations[][<?php echo esc_attr( $country['grid_id'] ) ?>]">
-                                        <option>---disabled---</option>
+                                    <select class="selected-locations" name="selected_locations[<?php echo esc_attr( $country['grid_id'] ) ?>]" id="<?php echo esc_attr( $country['grid_id'] ) ?>">
+                                        <option value="disabled">---disabled---</option>
                                         <option value="admin0">Admin0 (Country)</option>
                                         <option value="admin1">Admin1 (State)</option>
                                         <option value="admin2">Admin2 (County)</option>
@@ -258,7 +258,7 @@ endif; ?>
                         <tr>
                             <td colspan="2">
                                 Format<br>
-                                <select name="format" class="regular-text" id="format_input">
+                                <select name="format" class="regular-text" id="format-input">
                                     <?php foreach ( $formats as $item ) : ?>
                                         <option value="<?php echo esc_attr( $item['key'] ) ?>"><?php echo esc_html( $item['label'] ) ?></option>
                                     <?php endforeach; ?>
@@ -284,12 +284,12 @@ endif; ?>
                         <tr>
                             <td>
                                 Configuration Name<br>
-                                <input type="text" name="label" class="regular-text" placeholder="Title" /><br>
+                                <input type="text" name="label" id="configuration-name" class="regular-text" placeholder="Title" /><br>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                <button type="submit" name="action" value="save" class="button regular-text">Save</button>
+                                <button type="submit" name="action" value="save" class="button regular-text">Save New</button>
                             </td>
                         </tr>
                         <tr>
@@ -331,13 +331,17 @@ endif; ?>
             </form>
         </div><!-- End wrap -->
         <?php
-        $this->content_scripts();
+        $this->content_scripts( $last_config );
     }
 
-    public function content_scripts() {
+    public function content_scripts( $last_config_id = 0 ) {
         ?>
         <script>
             window.export_formats = [<?php echo json_encode( get_dt_metrics_export_formats() ) ?>][0]
+            console.log(window.export_formats)
+            window.export_configurations = [<?php echo json_encode( $this->get_configurations() ) ?>][0]
+            console.log(window.export_configurations)
+
             jQuery(document).ready(function(){
 
                 // show and hide country list
@@ -360,20 +364,66 @@ endif; ?>
                     load_selectable_types( format_input.val() )
                 })
 
+                /* change configuration selector */
                 let config = jQuery('#configuration')
                 config.on('change', function() {
                     load_configuration( config.val() )
                 })
                 load_configuration( config.val() )
 
+                if ( <?php echo esc_attr( $last_config_id ) ?> > 0 ) {
+                    load_configuration(<?php echo esc_attr( $last_config_id ) ?>)
+                }
+
             })
+
+            function reset_locations() {
+                let selected_locations = jQuery('.selected-locations')
+                selected_locations.each(function(){
+                    jQuery(this).val('disabled')
+                })
+            }
 
             function load_configuration( id ) {
                 console.log( id )
 
+                let configuration_input = jQuery('#configuration')
+                let all_locations = jQuery('#all-locations')
+                let format = jQuery('#format-input')
+                let configuration_title = jQuery('#configuration-name')
+                let selected_locations = jQuery('.selected-locations')
+                let country_list = jQuery('.country-list')
+
+                reset_locations()
+
+                if ( id === 'undefined' || id === 'new' ) {
+                    configuration_input.val('new')
+                    all_locations.val('admin2')
+                    configuration_title.val('')
+                    country_list.hide()
+                    return
+                }
+
+                configuration_input.val(window.export_configurations[id].id)
+                all_locations.val(window.export_configurations[id].all_locations)
+                configuration_title.val(window.export_configurations[id].label)
+                format.val(window.export_configurations[id].format)
+                jQuery.each( window.export_configurations[id].selected_locations, function(i,v){
+                    jQuery('#'+i).val(v)
+                })
+                if ( 'country_by_country' === window.export_configurations[id].all_locations  ) {
+                    country_list.show()
+                } else {
+                    country_list.hide()
+                }
+
             }
 
             function load_selectable_types( id ) {
+
+                if ( id === 'undefined' || typeof window.export_formats[id] === 'undefined') {
+                    return;
+                }
 
                 let types = window.export_formats[id].selectable_types
                 let html = ''
@@ -406,6 +456,8 @@ endif; ?>
                 }
                 return uniqueArray;
             }
+
+
 
         </script>
         <?php
@@ -464,7 +516,7 @@ endif; ?>
 
     public function create( $response ) {
         dt_write_log( 'action: save' );
-
+        
         unset( $response['action'] );
         unset( $response['configuration'] );
 
@@ -488,7 +540,31 @@ endif; ?>
 
     public function update( $response ) {
         dt_write_log( 'action: update' );
-        return 0; // return updated id
+
+        if ( 'new' === $response['configuration'] ?? null ) {
+            return $this->create( $response );
+        }
+
+        unset( $response['action'] );
+
+        $args = [
+            'ID' => $response['configuration'],
+            'post_type' => 'dt_metrics_export',
+            'post_title' => $response['label'], // label
+            'post_content' => $response['label'], // label
+            'post_status' => 'publish',
+            'ping_status' => 'closed',
+            'comment_status' => 'closed',
+            'meta_input' => $response
+        ];
+
+        $id = wp_update_post( $args, true );
+        if ( is_wp_error( $id ) ) {
+            dt_write_log( 'error' );
+            dt_write_log( $id );
+        }
+        return $id;
+
     }
 
     public function delete( $response ) {
@@ -503,7 +579,7 @@ endif; ?>
     public function export( $response ) {
         dt_write_log( 'action: export' );
         $formats = apply_filters( 'dt_metrics_export_register_format_class', [] );
-        dt_write_log( $formats );
+
         if ( isset( $response['format'] ) && ! empty( $response['format'] ) && isset( $formats[$response['format']] ) && class_exists( $formats[$response['format']] ) ) {
             $formats[$response['format']]::instance()->export();
         }
