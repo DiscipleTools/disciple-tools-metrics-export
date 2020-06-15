@@ -41,7 +41,7 @@ if ( defined( 'ABSPATH' ) ) {
             return $classes;
         }
 
-        public function export() {
+        public function export( $response ) {
             global $wpdb;
 
             // PRE-QUERY PARAMETER PREP
@@ -56,28 +56,45 @@ if ( defined( 'ABSPATH' ) ) {
             $preferences['creator_subOrganizationCode'] = null;
             $preferences['rights_dataOwner'] = get_current_user();
 
-            $intent_level = 'admin2'; // @todo get form preference
+            if ( ! isset( $response['all_locations'] ) ) {
+                return false;
+            }
+
+            if ( 'country_by_country' === $response['all_locations'] ) {
+                // @todo country by country strategy
+                $intent_level = 'admin2'; // @todo remove temporary placeholder
+            } else {
+                $intent_level = $response['all_locations'];
+            }
+
             switch ($intent_level) {
                 case 'admin0':
                     $preferences['spatial_intentLevel'] = 'adminLevel0';
+                    $intent_level_int = 0;
                     break;
                 case 'admin1':
                     $preferences['spatial_intentLevel'] = 'adminLevel1';
+                    $intent_level_int = 1;
                     break;
                 case 'admin3':
                     $preferences['spatial_intentLevel'] = 'adminLevel3';
+                    $intent_level_int = 3;
                     break;
                 case 'admin4':
                     $preferences['spatial_intentLevel'] = 'adminLevel4';
+                    $intent_level_int = 4;
                     break;
                 case 'admin5':
                     $preferences['spatial_intentLevel'] = 'adminLevel5';
+                    $intent_level_int = 5;
                     break;
                 case 'admin2':
                 default:
                     $preferences['spatial_intentLevel'] = 'adminLevel2';
+                    $intent_level_int = 2;
                     break;
             }
+
             $preferences['accessRights'] = 'private';
 
             // QUERY
@@ -104,18 +121,105 @@ if ( defined( 'ABSPATH' ) ) {
                         WHEN pm1.meta_value = 'active' THEN 'updated'
                     END as isVersionOf,
                     DATE_FORMAT( FROM_UNIXTIME( pm6.meta_value ), '%%Y-%%m-%%dT%%TZ') as dateSubmitted,
-                    lg.latitude as coverage_latitude,
-                    lg.longitude as coverage_longitude,
+                    IF (
+                		lg.level <= '{$intent_level_int}',
+                		lg.latitude,
+                    CASE
+                        WHEN '{$intent_level}' = 'admin0' THEN ( SELECT lg1.latitude FROM $wpdb->dt_location_grid as lg1 WHERE lg1.grid_id = lg.admin0_grid_id )
+                        WHEN '{$intent_level}' = 'admin1' THEN ( SELECT lg1.latitude FROM $wpdb->dt_location_grid as lg1 WHERE lg1.grid_id = lg.admin1_grid_id )
+                        WHEN '{$intent_level}' = 'admin2' THEN ( SELECT lg1.latitude FROM $wpdb->dt_location_grid as lg1 WHERE lg1.grid_id = lg.admin2_grid_id )
+                        WHEN '{$intent_level}' = 'admin3' THEN ( SELECT lg1.latitude FROM $wpdb->dt_location_grid as lg1 WHERE lg1.grid_id = lg.admin3_grid_id )
+                        WHEN '{$intent_level}' = 'admin4' THEN ( SELECT lg1.latitude FROM $wpdb->dt_location_grid as lg1 WHERE lg1.grid_id = lg.admin4_grid_id )
+                        WHEN '{$intent_level}' = 'admin5' THEN ( SELECT lg1.latitude FROM $wpdb->dt_location_grid as lg1 WHERE lg1.grid_id = lg.admin5_grid_id )
+                    END
+                    ) as coverage_latitude,
+                    IF (
+                		lg.level <= '{$intent_level_int}',
+                		lg.longitude,
+                    CASE
+                        WHEN '{$intent_level}' = 'admin0' THEN ( SELECT lg2.longitude FROM $wpdb->dt_location_grid as lg2 WHERE lg2.grid_id = lg.admin0_grid_id )
+                        WHEN '{$intent_level}' = 'admin1' THEN ( SELECT lg2.longitude FROM $wpdb->dt_location_grid as lg2 WHERE lg2.grid_id = lg.admin1_grid_id )
+                        WHEN '{$intent_level}' = 'admin2' THEN ( SELECT lg2.longitude FROM $wpdb->dt_location_grid as lg2 WHERE lg2.grid_id = lg.admin2_grid_id )
+                        WHEN '{$intent_level}' = 'admin3' THEN ( SELECT lg2.longitude FROM $wpdb->dt_location_grid as lg2 WHERE lg2.grid_id = lg.admin3_grid_id )
+                        WHEN '{$intent_level}' = 'admin4' THEN ( SELECT lg2.longitude FROM $wpdb->dt_location_grid as lg2 WHERE lg2.grid_id = lg.admin4_grid_id )
+                        WHEN '{$intent_level}' = 'admin5' THEN ( SELECT lg2.longitude FROM $wpdb->dt_location_grid as lg2 WHERE lg2.grid_id = lg.admin5_grid_id )
+                    END
+                    ) as coverage_longitude,
                     'EPSG4326' as coverage_spatialReference,
                     lg.admin0_code as coverage_countryCode,
-                    CASE
+                    IF (
+                		lg.level <= '{$intent_level_int}', /* condition */
+                		CASE
                         WHEN lg.level_name = 'admin0' THEN 'adminLevel0'
                         WHEN lg.level_name = 'admin1' THEN 'adminLevel1'
                         WHEN lg.level_name = 'admin2' THEN 'adminLevel2'
                         WHEN lg.level_name = 'admin3' THEN 'adminLevel3'
                         WHEN lg.level_name = 'admin4' THEN 'adminLevel4'
                         WHEN lg.level_name = 'admin5' THEN 'adminLevel5'
-                    END as spatial_accuracyLevel,
+                    END /* true */,
+                    CASE
+                        WHEN '{$intent_level}' = 'admin0' THEN
+                            ( SELECT
+                                CASE
+                                    WHEN lg3.level_name = 'admin0' THEN 'adminLevel0'
+                                    WHEN lg3.level_name = 'admin1' THEN 'adminLevel1'
+                                    WHEN lg3.level_name = 'admin2' THEN 'adminLevel2'
+                                    WHEN lg3.level_name = 'admin3' THEN 'adminLevel3'
+                                    WHEN lg3.level_name = 'admin4' THEN 'adminLevel4'
+                                    WHEN lg3.level_name = 'admin5' THEN 'adminLevel5'
+                                END
+                                FROM $wpdb->dt_location_grid as lg3
+                            WHERE lg3.grid_id = lg.admin0_grid_id )
+                        WHEN '{$intent_level}' = 'admin1' THEN
+                            ( SELECT
+                                 CASE
+                                    WHEN lg3.level_name = 'admin0' THEN 'adminLevel0'
+                                    WHEN lg3.level_name = 'admin1' THEN 'adminLevel1'
+                                    WHEN lg3.level_name = 'admin2' THEN 'adminLevel2'
+                                    WHEN lg3.level_name = 'admin3' THEN 'adminLevel3'
+                                    WHEN lg3.level_name = 'admin4' THEN 'adminLevel4'
+                                    WHEN lg3.level_name = 'admin5' THEN 'adminLevel5'
+                                END
+                            FROM $wpdb->dt_location_grid as lg3
+                            WHERE lg3.grid_id = lg.admin1_grid_id )
+                        WHEN '{$intent_level}' = 'admin2' THEN
+                            ( SELECT CASE
+                        WHEN lg3.level_name = 'admin0' THEN 'adminLevel0'
+                        WHEN lg3.level_name = 'admin1' THEN 'adminLevel1'
+                        WHEN lg3.level_name = 'admin2' THEN 'adminLevel2'
+                        WHEN lg3.level_name = 'admin3' THEN 'adminLevel3'
+                        WHEN lg3.level_name = 'admin4' THEN 'adminLevel4'
+                        WHEN lg3.level_name = 'admin5' THEN 'adminLevel5'
+                    END FROM $wpdb->dt_location_grid as lg3 WHERE lg3.grid_id = lg.admin2_grid_id )
+                        WHEN '{$intent_level}' = 'admin3' THEN
+                            ( SELECT CASE
+                        WHEN lg3.level_name = 'admin0' THEN 'adminLevel0'
+                        WHEN lg3.level_name = 'admin1' THEN 'adminLevel1'
+                        WHEN lg3.level_name = 'admin2' THEN 'adminLevel2'
+                        WHEN lg3.level_name = 'admin3' THEN 'adminLevel3'
+                        WHEN lg3.level_name = 'admin4' THEN 'adminLevel4'
+                        WHEN lg3.level_name = 'admin5' THEN 'adminLevel5'
+                    END FROM $wpdb->dt_location_grid as lg3 WHERE lg3.grid_id = lg.admin3_grid_id )
+                        WHEN '{$intent_level}' = 'admin4' THEN
+                            ( SELECT CASE
+                        WHEN lg3.level_name = 'admin0' THEN 'adminLevel0'
+                        WHEN lg3.level_name = 'admin1' THEN 'adminLevel1'
+                        WHEN lg3.level_name = 'admin2' THEN 'adminLevel2'
+                        WHEN lg3.level_name = 'admin3' THEN 'adminLevel3'
+                        WHEN lg3.level_name = 'admin4' THEN 'adminLevel4'
+                        WHEN lg3.level_name = 'admin5' THEN 'adminLevel5'
+                    END FROM $wpdb->dt_location_grid as lg3 WHERE lg3.grid_id = lg.admin4_grid_id )
+                        WHEN '{$intent_level}' = 'admin5' THEN
+                            ( SELECT CASE
+                        WHEN lg3.level_name = 'admin0' THEN 'adminLevel0'
+                        WHEN lg3.level_name = 'admin1' THEN 'adminLevel1'
+                        WHEN lg3.level_name = 'admin2' THEN 'adminLevel2'
+                        WHEN lg3.level_name = 'admin3' THEN 'adminLevel3'
+                        WHEN lg3.level_name = 'admin4' THEN 'adminLevel4'
+                        WHEN lg3.level_name = 'admin5' THEN 'adminLevel5'
+                    END FROM $wpdb->dt_location_grid as lg3 WHERE lg3.grid_id = lg.admin5_grid_id )
+                    END
+                    ) as spatial_accuracyLevel,
                     %s as spatial_intentLevel,
                     %s as accessRights
                 FROM $wpdb->posts as p

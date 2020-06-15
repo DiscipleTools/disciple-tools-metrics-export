@@ -516,7 +516,7 @@ endif; ?>
 
     public function create( $response ) {
         dt_write_log( 'action: save' );
-        
+
         unset( $response['action'] );
         unset( $response['configuration'] );
 
@@ -581,7 +581,7 @@ endif; ?>
         $formats = apply_filters( 'dt_metrics_export_register_format_class', [] );
 
         if ( isset( $response['format'] ) && ! empty( $response['format'] ) && isset( $formats[$response['format']] ) && class_exists( $formats[$response['format']] ) ) {
-            $formats[$response['format']]::instance()->export();
+            $formats[$response['format']]::instance()->export( $response );
         }
         return 0;
     }
