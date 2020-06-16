@@ -125,11 +125,16 @@ class DT_Metrics_Export {
         if ( is_admin() ) {
             require_once( 'includes/admin-menu-and-tabs.php' );
             require_once( 'includes/format-base.php' );
-            require_once( 'includes/format-csv-cotw.php' );
-            require_once( 'includes/format-csv.php' );
-            require_once( 'includes/format-json.php' );
-            require_once( 'includes/format-kml.php' );
-            require_once( 'includes/format-geojson.php' );
+
+            $format_files = scandir( plugin_dir_path(__FILE__) .'/formats/' );
+            if ( ! empty( $format_files ) ) {
+                foreach ( $format_files as $file ) {
+                    if ( substr( $file, -4, '4' ) === '.php' ) {
+                        require_once( plugin_dir_path(__FILE__) . '/formats/' .$file);
+                    }
+                }
+            }
+
         }
     }
 

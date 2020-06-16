@@ -89,11 +89,12 @@ class DT_Metrics_Export_Menu {
         <div class="wrap">
             <h2><?php esc_attr_e( 'Metrics Export', 'dt_metrics_export' ) ?></h2>
             <h2 class="nav-tab-wrapper">
-                <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Location Export', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Location Exports', 'dt_metrics_export' ) ?></a>
+                <!-- <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Webhooks', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cloud Storage', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a>
+                -->
             </h2>
 
             <?php
@@ -193,12 +194,39 @@ class DT_Metrics_Export_Tab_Location_Export {
                     <!-- End Box -->
 
                 </div>
+
                 <div class="quarter">
                     <!-- Box -->
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th colspan="2"><strong>Step 2:</strong><br>Select Locations & Levels </th>
+                            <th colspan="2"><strong>Step 2:</strong><br>Select Data Types </th>
+                        </tr>
+                        </thead>
+                        <tr>
+                            <td colspan="2">
+                                Format<br>
+                                <select name="format" class="regular-text" id="format-input">
+                                    <?php foreach ( $formats as $item ) : ?>
+                                        <option value="<?php echo esc_attr( $item['key'] ) ?>"><?php echo esc_html( $item['label'] ) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <!-- Box -->
+                    <table class="widefat striped" id="selectable_types"></table>
+                    <br>
+                    <!-- End Box -->
+
+                </div>
+
+                <div class="quarter">
+                    <!-- Box -->
+                    <table class="widefat striped">
+                        <thead>
+                        <tr>
+                            <th colspan="2"><strong>Step 3:</strong><br>Select Locations & Levels </th>
                         </tr>
                         </thead>
                         <tbody>
@@ -215,6 +243,8 @@ class DT_Metrics_Export_Tab_Location_Export {
                                     <option value="admin3">Admin3</option>
                                     <option value="admin4">Admin4</option>
                                     <option value="admin5">Admin5</option>
+                                    <option value="raw">Raw (not recommended)</option>
+                                    <option disabled>------</option>
                                     <option value="country_by_country">Country by Country</option>
                                 </select>
                             </td>
@@ -238,39 +268,15 @@ class DT_Metrics_Export_Tab_Location_Export {
                                         <option value="admin3">Admin3</option>
                                         <option value="admin4">Admin4</option>
                                         <option value="admin5">Admin5</option>
+                                        <option value="raw">Raw (not recommended)</option>
                                     </select>
                                 </td>
                             </tr>
                         <?php endforeach;
-endif; ?>
+                        endif; ?>
                     </table>
-                    <br>
-                <!-- End Box -->
-                </div>
-                <div class="quarter">
-                    <!-- Box -->
-                    <table class="widefat striped">
-                        <thead>
-                        <tr>
-                            <th colspan="2"><strong>Step 3:</strong><br>Select Data Types </th>
-                        </tr>
-                        </thead>
-                        <tr>
-                            <td colspan="2">
-                                Format<br>
-                                <select name="format" class="regular-text" id="format-input">
-                                    <?php foreach ( $formats as $item ) : ?>
-                                        <option value="<?php echo esc_attr( $item['key'] ) ?>"><?php echo esc_html( $item['label'] ) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                        </tr>
-                    </table>
-                    <!-- Box -->
-                    <table class="widefat striped" id="selectable_types"></table>
                     <br>
                     <!-- End Box -->
-
                 </div>
                 <div class="quarter">
                     <!-- Box -->
@@ -338,9 +344,7 @@ endif; ?>
         ?>
         <script>
             window.export_formats = [<?php echo json_encode( get_dt_metrics_export_formats() ) ?>][0]
-            console.log(window.export_formats)
             window.export_configurations = [<?php echo json_encode( $this->get_configurations() ) ?>][0]
-            console.log(window.export_configurations)
 
             jQuery(document).ready(function(){
 
@@ -358,7 +362,7 @@ endif; ?>
                 })
 
                 // add selectable types
-                let format_input = jQuery('#format_input')
+                let format_input = jQuery('#format-input')
                 load_selectable_types( format_input.val() )
                 format_input.on('change', function() {
                     load_selectable_types( format_input.val() )
@@ -417,17 +421,20 @@ endif; ?>
                     country_list.hide()
                 }
 
+                load_selectable_types( window.export_configurations[id].format )
             }
 
             function load_selectable_types( id ) {
+                let container = jQuery('#selectable_types')
 
                 if ( id === 'undefined' || typeof window.export_formats[id] === 'undefined') {
+                    container.hide()
                     return;
                 }
 
                 let types = window.export_formats[id].selectable_types
+                console.log(window.export_formats[id].selectable_types)
                 let html = ''
-                let container = jQuery('#selectable_types')
 
                 let list = []
                 jQuery.each( types, function(i,v){
@@ -438,13 +445,27 @@ endif; ?>
                     html += '<tr><td style="text-transform:capitalize;" ><strong>'+v+'</strong></td><td></td></tr>'
                     jQuery.each( types, function(ii,vv){
                         if ( v === vv.type ) {
-                            html += '<tr><td>-- '+vv.label+'</td><td class="float-right"><input type="checkbox" name="type['+v.key+']" value="true" /></td></tr>'
+                            console.log(vv.key)
+                            html += '<tr><td>-- '+vv.label+'</td><td class="float-right"><input type="checkbox" id="'+vv.key+'" name="type['+vv.key+']" value="true" /></td></tr>'
                         }
                     })
                 })
 
                 container.html(html)
 
+                let inputs = jQuery('#selectable_types input:checkbox')
+
+                let configuration = jQuery('#configuration').val()
+                if ( 'new' === configuration ) {
+                    inputs.prop('checked', true)
+                } else if ( typeof window.export_configurations[configuration].type !== 'undefined' ) {
+                    inputs.prop('checked', false)
+                    jQuery.each( window.export_configurations[configuration].type, function(iii, vvv ) {
+                        jQuery('#'+iii).prop('checked', true)
+                    })
+                }
+
+                container.show()
             }
 
             function getUnique(array){
@@ -571,17 +592,29 @@ endif; ?>
         dt_write_log( 'action: delete' );
 
         if ( isset( $response['configuration'] ) && ! empty( $response['configuration'] ) ) {
-            return wp_delete_post( $response['configuration'] );
+            $result = wp_delete_post( $response['configuration'] );
+            if ( empty( $result) ) {
+                dt_write_log($result);
+                return 0;
+            }
+            return $result->ID;
+
         }
         return 0;
     }
 
     public function export( $response ) {
         dt_write_log( 'action: export' );
+
         $formats = apply_filters( 'dt_metrics_export_register_format_class', [] );
 
         if ( isset( $response['format'] ) && ! empty( $response['format'] ) && isset( $formats[$response['format']] ) && class_exists( $formats[$response['format']] ) ) {
-            $formats[$response['format']]::instance()->export( $response );
+            $result = $formats[$response['format']]::instance()->export( $response );
+            if ( is_wp_error( $result ) ) {
+                dt_write_log($result);
+                return 0;
+            }
+            return $result;
         }
         return 0;
     }
