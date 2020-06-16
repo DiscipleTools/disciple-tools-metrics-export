@@ -16,7 +16,7 @@
 /**
  * LOAD DATA TYPE FORMAT
  */
-if (defined('ABSPATH')) {
+if (defined( 'ABSPATH' )) {
     /**
      * Class DT_Metrics_Export_CSV
      */
@@ -28,9 +28,8 @@ if (defined('ABSPATH')) {
 
         private static $_instance = null;
 
-        public static function instance()
-        {
-            if (is_null(self::$_instance)) {
+        public static function instance() {
+            if (is_null( self::$_instance )) {
                 self::$_instance = new self();
             }
             return self::$_instance;
@@ -39,15 +38,13 @@ if (defined('ABSPATH')) {
         /**
          * DT_Metrics_Export_CSV constructor.
          */
-        public function __construct()
-        {
+        public function __construct() {
             parent::__construct();
-            add_filter('dt_metrics_export_format', [$this, 'format'], 10, 1);
-            add_filter('dt_metrics_export_register_format_class', [$this, 'format_class'], 10, 1);
+            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
+            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
         } // End __construct()
 
-        public function format($formats)
-        {
+        public function format( $formats) {
             $types = get_dt_metrics_export_types();
             $types = [];
             $types['contacts_active'] = [
@@ -74,18 +71,16 @@ if (defined('ABSPATH')) {
             return $formats;
         }
 
-        public function format_class($classes)
-        {
+        public function format_class( $classes) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
 
-        public function export($response)
-        {
+        public function export( $response) {
             global $wpdb;
 
-            if (!isset($response['all_locations']) || empty($response['all_locations'])) {
-                return new WP_Error(__METHOD__, 'All locations parameter not set.');
+            if ( !isset( $response['all_locations'] ) || empty( $response['all_locations'] )) {
+                return new WP_Error( __METHOD__, 'All locations parameter not set.' );
             }
 
             /**
@@ -99,8 +94,8 @@ if (defined('ABSPATH')) {
                 /**
                  *  INDIVIDUAL ADMIN LEVELS SET FOR EACH COUNTRY
                  */
-                if (!isset($response['selected_locations']) || empty($response['selected_locations'])) {
-                    return new WP_Error(__METHOD__, 'Selected locations parameter not set.');
+                if ( !isset( $response['selected_locations'] ) || empty( $response['selected_locations'] )) {
+                    return new WP_Error( __METHOD__, 'Selected locations parameter not set.' );
                 }
                 foreach ($response['selected_locations'] as $grid_id => $level) {
                     if ('disabled' === $level) {
@@ -216,14 +211,13 @@ if (defined('ABSPATH')) {
                     // phpcs:enable
 
 
-                    if (empty($loop_results)) {
+                    if (empty( $loop_results )) {
                         continue;
                     }
 
-                    $results = array_merge($results, $loop_results);
+                    $results = array_merge( $results, $loop_results );
 
                 }
-
             } else {
                 /**
                  *  ONE ADMIN LEVEL SET FOR ALL LOCATIONS
@@ -339,7 +333,7 @@ if (defined('ABSPATH')) {
 
 
             // kill if no results
-            if (empty($results)) {
+            if (empty( $results )) {
                 echo '<div class="notice notice-warning is-dismissible">
                      <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
                  </div>';
@@ -362,18 +356,18 @@ if (defined('ABSPATH')) {
 
             // Package transient variables
             $args = [
-                'timestamp' => current_time('Y-m-d_H-i-s'),
+                'timestamp' => current_time( 'Y-m-d_H-i-s' ),
                 'columns' => $columns,
                 'rows' => $results
             ];
 
             // build transient
-            $one_time_key = hash('sha256', get_current_user_id() . time() . dt_get_site_id() . rand(0, 999));
-            set_transient($one_time_key, $args, 60 . 60 . 48);
+            $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
+            set_transient( $one_time_key, $args, 60 . 60 . 48 );
 
             // admin notification with link
             echo '<div class="notice notice-warning is-dismissible">
-                     <p>One time download link (expires in 48 hours):<br> <a href="' . esc_url(plugin_dir_url(__FILE__)) . basename( __FILE__) . '?csv=' . esc_attr($one_time_key) . '" target="_blank">' . esc_url(plugin_dir_url(__FILE__)) . basename( __FILE__) . '?csv=' . esc_attr($one_time_key) . '</a></p>
+                     <p>One time download link (expires in 48 hours):<br> <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '" target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '</a></p>
                  </div>';
 
             // return configuration selection from before export
@@ -389,34 +383,34 @@ if (defined('ABSPATH')) {
 /**
  * CREATE CSV FILE
  */
-if (!defined('ABSPATH')) {
+if ( !defined( 'ABSPATH' )) {
 
     // @codingStandardsIgnoreLine
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
 
-    if (!isset($_GET['csv'])) {
-        wp_die('No parameter found');
+    if ( !isset( $_GET['csv'] )) {
+        wp_die( 'No parameter found' );
     }
 
-    $token = sanitize_text_field(wp_unslash($_GET['csv']));
-    $results = get_transient($token);
-    if (empty($results)) {
+    $token = sanitize_text_field( wp_unslash( $_GET['csv'] ) );
+    $results = get_transient( $token );
+    if (empty( $results )) {
         echo 'Link no longer available';
         return;
     }
 
-    delete_transient($token);
+    delete_transient( $token );
 
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=dt-groups-' . $results['timestamp'] . '.csv');
+    header( 'Content-Type: text/csv; charset=utf-8' );
+    header( 'Content-Disposition: attachment; filename=dt-groups-' . $results['timestamp'] . '.csv' );
 
-    $output = fopen('php://output', 'w');
+    $output = fopen( 'php://output', 'w' );
 
-    fputcsv($output, $results['columns']);
+    fputcsv( $output, $results['columns'] );
 
     foreach ($results['rows'] as $row) {
-        fputcsv($output, $row);
+        fputcsv( $output, $row );
     }
 
-    fpassthru($output);
+    fpassthru( $output );
 }

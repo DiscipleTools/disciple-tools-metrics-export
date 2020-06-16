@@ -57,7 +57,7 @@ if ( defined( 'ABSPATH' ) ) {
             global $wpdb;
 
             if ( ! isset( $response['all_locations'] ) || empty( $response['all_locations'] ) ) {
-                return new WP_Error(__METHOD__, 'All locations parameter not set.');
+                return new WP_Error( __METHOD__, 'All locations parameter not set.' );
             }
 
             // PRE-QUERY PARAMETER PREP
@@ -85,9 +85,9 @@ if ( defined( 'ABSPATH' ) ) {
                  *  INDIVIDUAL ADMIN LEVELS SET FOR EACH COUNTRY
                  */
                 if ( ! isset( $response['selected_locations'] ) || empty( $response['selected_locations'] ) ) {
-                    return new WP_Error(__METHOD__, 'Selected locations parameter not set.');
+                    return new WP_Error( __METHOD__, 'Selected locations parameter not set.' );
                 }
-                foreach( $response['selected_locations'] as $grid_id => $level ) {
+                foreach ( $response['selected_locations'] as $grid_id => $level ) {
                     if ( 'disabled' === $level ) {
                         continue;
                     }
@@ -295,7 +295,6 @@ if ( defined( 'ABSPATH' ) ) {
                     $results = array_merge( $results, $loop_results );
 
                 }
-
             } else {
                 /**
                  *  ONE ADMIN LEVEL SET FOR ALL LOCATIONS

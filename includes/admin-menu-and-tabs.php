@@ -593,8 +593,8 @@ class DT_Metrics_Export_Tab_Location_Export {
 
         if ( isset( $response['configuration'] ) && ! empty( $response['configuration'] ) ) {
             $result = wp_delete_post( $response['configuration'] );
-            if ( empty( $result) ) {
-                dt_write_log($result);
+            if ( empty( $result ) ) {
+                dt_write_log( $result );
                 return 0;
             }
             return $result->ID;
@@ -611,7 +611,7 @@ class DT_Metrics_Export_Tab_Location_Export {
         if ( isset( $response['format'] ) && ! empty( $response['format'] ) && isset( $formats[$response['format']] ) && class_exists( $formats[$response['format']] ) ) {
             $result = $formats[$response['format']]::instance()->export( $response );
             if ( is_wp_error( $result ) ) {
-                dt_write_log($result);
+                dt_write_log( $result );
                 return 0;
             }
             return $result;
