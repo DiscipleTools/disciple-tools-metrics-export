@@ -173,21 +173,50 @@ class DT_Metrics_Export_Tab_Location_Export {
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th><strong>Step 1:</strong><br>Select Configuration </th>
+                            <th><strong>Step 1:</strong><br>Select or Manage Configuration </th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
                             <td>
-                                Configuration<br>
+                                Select Configuration<br>
                                 <select name="configuration" id="configuration" class="regular-text">
                                     <option value="new">New</option>
+                                    <option disabled>-----</option>
                                     <?php foreach ( $configuration as $config ) : ?>
                                         <option value="<?php echo esc_attr( $config['id'] ) ?>"><?php echo esc_html( $config['label'] ) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
                         </tr>
+                        <tr>
+                            <td>
+                                <hr>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Configuration Name<br>
+                                <input type="text" name="label" id="configuration-name" class="regular-text" placeholder="Title" /><br>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <button type="submit" name="action" value="save" class="button regular-text">Save New</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button type="submit" name="action" value="update" class="button regular-text">Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button type="submit" name="action" value="delete" class="button regular-text">Delete</button>
+                            </td>
+                        </tr>
+
                         </tbody>
                     </table>
                     <br>
@@ -283,39 +312,13 @@ class DT_Metrics_Export_Tab_Location_Export {
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th><strong>Step 4:</strong><br>Save or Export </th>
+                            <th><strong>Step 4:</strong><br>Export </th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
                             <td>
-                                Configuration Name<br>
-                                <input type="text" name="label" id="configuration-name" class="regular-text" placeholder="Title" /><br>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" name="action" value="save" class="button regular-text">Save New</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" name="action" value="update" class="button regular-text">Update</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" name="action" value="delete" class="button regular-text">Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <hr>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Destination<br>
+                                Export Destination<br>
                                 <select name="destination" class="regular-text">
                                     <option value="download">Download</option>
 <!--                                    <option value="uploads">Uploads Folder (unrestricted public access)</option>-->
