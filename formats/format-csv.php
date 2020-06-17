@@ -367,7 +367,12 @@ if (defined( 'ABSPATH' )) {
 
             // admin notification with link
             echo '<div class="notice notice-warning is-dismissible">
-                     <p>One time download link (expires in 48 hours):<br> <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '" target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '</a></p>
+                     <p>
+                         One time download link (expires in 48 hours):<br>
+                         <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '"
+                         target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '
+                         </a>
+                     </p>
                  </div>';
 
             // return configuration selection from before export

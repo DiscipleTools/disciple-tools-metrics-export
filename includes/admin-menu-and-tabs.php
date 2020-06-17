@@ -318,7 +318,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                                 Destination<br>
                                 <select name="destination" class="regular-text">
                                     <option value="download">Download</option>
-                                    <option value="uploads">Uploads Folder (unrestricted public access)</option>
+<!--                                    <option value="uploads">Uploads Folder (unrestricted public access)</option>-->
                                 </select>
                             </td>
                         </tr>
