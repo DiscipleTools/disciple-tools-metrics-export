@@ -90,11 +90,10 @@ class DT_Metrics_Export_Menu {
             <h2><?php esc_attr_e( 'Metrics Export', 'dt_metrics_export' ) ?></h2>
             <h2 class="nav-tab-wrapper">
                 <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Location Exports', 'dt_metrics_export' ) ?></a>
-                <!-- <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Webhooks', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cloud Storage', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a>
-                -->
             </h2>
 
             <?php
@@ -140,9 +139,11 @@ class DT_Metrics_Export_Tab_Location_Export {
 
         $last_config = $this->process_post();
 
-        $configuration = $this->get_configurations();
+        $configuration = get_dt_metrics_export_configuration();
 
         $formats = get_dt_metrics_export_formats();
+
+        $destinations = get_dt_metrics_export_destinations();
 
         ?>
         <style>
@@ -163,6 +164,9 @@ class DT_Metrics_Export_Tab_Location_Export {
             .float-right {
                 float:right;
             }
+            .default-hide {
+                display:none;
+            }
         </style>
         <div class="wrap">
             <form method="POST">
@@ -173,7 +177,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th><strong>Step 1:</strong><br>Select or Manage Configuration </th>
+                            <th><strong>Step 1:</strong><br>Create or Manage Configuration </th>
                         </tr>
                         </thead>
                         <tbody>
@@ -191,32 +195,26 @@ class DT_Metrics_Export_Tab_Location_Export {
                         </tr>
                         <tr>
                             <td>
-                                <hr>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Configuration Name<br>
-                                <input type="text" name="label" id="configuration-name" class="regular-text" placeholder="Title" /><br>
+                                Configuration Title<br>
+                                <input type="text" name="label" id="input-configuration-name" class="regular-text" placeholder="Title" /><br>
                             </td>
                         </tr>
 
-                        <tr>
+                        <tr id="button-duplicate" class="old default-hide">
                             <td>
-                                <button type="submit" name="action" value="save" class="button regular-text">Save New</button>
+                                <button type="submit" name="action" value="save" class="button regular-text" >Duplicate Configuration</button>
                             </td>
                         </tr>
-                        <tr>
+                        <tr id="button-update" class="old default-hide">
                             <td>
-                                <button type="submit" name="action" value="update" class="button regular-text">Update</button>
+                                <button type="submit" name="action" value="update" class="button regular-text">Update Configuration</button>
                             </td>
                         </tr>
-                        <tr>
+                        <tr id="button-delete" class="old default-hide">
                             <td>
-                                <button type="submit" name="action" value="delete" class="button regular-text">Delete</button>
+                                <button type="submit" name="action" value="delete" class="button regular-text">Delete Configuration</button>
                             </td>
                         </tr>
-
                         </tbody>
                     </table>
                     <br>
@@ -235,7 +233,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td colspan="2">
                                 Format<br>
-                                <select name="format" class="regular-text" id="format-input">
+                                <select name="format" class="regular-text" id="input-format">
                                     <?php foreach ( $formats as $item ) : ?>
                                         <option value="<?php echo esc_attr( $item['key'] ) ?>"><?php echo esc_html( $item['label'] ) ?></option>
                                     <?php endforeach; ?>
@@ -262,8 +260,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td>
                                 All Locations<br>
-
-                                <select name="all_locations" id="all-locations" class="regular-text">
+                                <select name="all_locations" id="input-all-locations" class="regular-text">
                                     <option value="admin2">Admin2 (County)</option>
                                     <option disabled>---disabled---</option>
                                     <option value="admin0">Admin0 (Country)</option>
@@ -319,15 +316,21 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td>
                                 Export Destination<br>
-                                <select name="destination" class="regular-text">
-                                    <option value="download">Download</option>
-<!--                                    <option value="uploads">Uploads Folder (unrestricted public access)</option>-->
+                                <select name="destination" class="regular-text" id="input-destination">
+                                    <?php foreach( $destinations as $destination ) : ?>
+                                        <option value="<?php echo esc_attr( $destination['value'] ) ?>"><?php echo esc_html( $destination['label'] ) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </td>
                         </tr>
-                        <tr>
+                        <tr id="button-export" class="old default-hide">
                             <td>
                                 <button type="submit" name="action" value="export"  class="button regular-text">Export</button>
+                            </td>
+                        </tr>
+                        <tr id="button-save-new" class="new default-hide">
+                            <td>
+                                <button type="submit" name="action" value="save" class="button regular-text" >Save New Configuration</button>
                             </td>
                         </tr>
                         </tbody>
@@ -346,16 +349,21 @@ class DT_Metrics_Export_Tab_Location_Export {
     public function content_scripts( $last_config_id = 0 ) {
         ?>
         <script>
+            window.export_configurations = [<?php echo json_encode( get_dt_metrics_export_configuration() ) ?>][0]
             window.export_formats = [<?php echo json_encode( get_dt_metrics_export_formats() ) ?>][0]
-            window.export_configurations = [<?php echo json_encode( $this->get_configurations() ) ?>][0]
+            window.export_destinations = [<?php echo json_encode( get_dt_metrics_export_destinations() ) ?>][0]
 
-            jQuery(document).ready(function(){
+            jQuery(document).ready(function() {
 
-                // show and hide country list
-                let locations = jQuery('#all-locations')
-                if ( 'country_by_country' === locations.val()  ) {
-                    jQuery('.country-list').show()
-                }
+                /* TYPES */
+                let format_input = jQuery('#input-format')
+                format_input.on('change', function() {
+                    load_selectable_types( format_input.val() )
+                })
+                load_selectable_types( format_input.val() )
+
+                /* LOCATIONS*/
+                let locations = jQuery('#input-all-locations')
                 locations.on('change', function() {
                     if ( 'country_by_country' === jQuery(this).val()  ) {
                         jQuery('.country-list').show()
@@ -363,58 +371,61 @@ class DT_Metrics_Export_Tab_Location_Export {
                         jQuery('.country-list').hide()
                     }
                 })
+                if ( 'country_by_country' === locations.val()  ) {
+                    jQuery('.country-list').show()
+                }
 
-                // add selectable types
-                let format_input = jQuery('#format-input')
-                load_selectable_types( format_input.val() )
-                format_input.on('change', function() {
-                    load_selectable_types( format_input.val() )
+
+                /* DESTINATION*/
+                let destination = jQuery('#destination')
+                destination.on('change', function() {
+                    load_destination( destination.val() )
                 })
 
-                /* change configuration selector */
+                /* CONFIGURATION */
                 let config = jQuery('#configuration')
                 config.on('change', function() {
                     load_configuration( config.val() )
                 })
-                load_configuration( config.val() )
-
                 if ( <?php echo esc_attr( $last_config_id ) ?> > 0 ) {
-                    load_configuration(<?php echo esc_attr( $last_config_id ) ?>)
+                    load_configuration( <?php echo esc_attr( $last_config_id ) ?> )
+                } else {
+                    load_configuration( config.val() )
                 }
 
-            })
 
-            function reset_locations() {
-                let selected_locations = jQuery('.selected-locations')
-                selected_locations.each(function(){
-                    jQuery(this).val('disabled')
-                })
-            }
+            })
 
             function load_configuration( id ) {
                 console.log( id )
 
-                let configuration_input = jQuery('#configuration')
-                let all_locations = jQuery('#all-locations')
-                let format = jQuery('#format-input')
-                let configuration_title = jQuery('#configuration-name')
-                let selected_locations = jQuery('.selected-locations')
-                let country_list = jQuery('.country-list')
-
                 reset_locations()
 
-                if ( id === 'undefined' || id === 'new' ) {
-                    configuration_input.val('new')
-                    all_locations.val('admin2')
-                    configuration_title.val('')
+                let input_configuration = jQuery('#configuration')
+                let input_all_locations = jQuery('#input-all-locations')
+                let input_format = jQuery('#input-format')
+                let input_destination = jQuery('#input-destination')
+                let input_configuration_label = jQuery('#input-configuration-name')
+                let country_list = jQuery('.country-list')
+                let is_old = jQuery('.old')
+                let is_new = jQuery('.new')
+
+                /* if new */
+                if ( id === 'undefined' || id === 'new' || id === 0 ) {
+                    input_configuration.val('new')
+                    input_all_locations.val('admin2')
                     country_list.hide()
+                    input_configuration_label.val('<?php echo esc_html( 'Configuration ' . time() ) ?>')
+                    is_old.hide()
+                    is_new.show()
                     return
                 }
 
-                configuration_input.val(window.export_configurations[id].id)
-                all_locations.val(window.export_configurations[id].all_locations)
-                configuration_title.val(window.export_configurations[id].label)
-                format.val(window.export_configurations[id].format)
+                /* if selected configuration */
+                input_configuration_label.val(window.export_configurations[id].label)
+                input_configuration.val(window.export_configurations[id].id)
+                input_format.val(window.export_configurations[id].format)
+                input_all_locations.val(window.export_configurations[id].all_locations)
                 jQuery.each( window.export_configurations[id].selected_locations, function(i,v){
                     jQuery('#'+i).val(v)
                 })
@@ -423,8 +434,13 @@ class DT_Metrics_Export_Tab_Location_Export {
                 } else {
                     country_list.hide()
                 }
+                input_destination.val(window.export_configurations[id].destination)
+                is_old.show()
+                is_new.hide()
 
                 load_selectable_types( window.export_configurations[id].format )
+                load_destination( window.export_configurations[id].format )
+
             }
 
             function load_selectable_types( id ) {
@@ -436,7 +452,6 @@ class DT_Metrics_Export_Tab_Location_Export {
                 }
 
                 let types = window.export_formats[id].selectable_types
-                console.log(window.export_formats[id].selectable_types)
                 let html = ''
 
                 let list = []
@@ -471,6 +486,12 @@ class DT_Metrics_Export_Tab_Location_Export {
                 container.show()
             }
 
+            function load_destination( id ) {
+                let input_destination = jQuery('#input-destination')
+
+
+            }
+
             function getUnique(array){
                 var uniqueArray = [];
                 for(i=0; i < array.length; i++){
@@ -481,7 +502,12 @@ class DT_Metrics_Export_Tab_Location_Export {
                 return uniqueArray;
             }
 
-
+            function reset_locations() {
+                let selected_locations = jQuery('.selected-locations')
+                selected_locations.each(function(){
+                    jQuery(this).val('disabled')
+                })
+            }
 
         </script>
         <?php
@@ -595,13 +621,7 @@ class DT_Metrics_Export_Tab_Location_Export {
         dt_write_log( 'action: delete' );
 
         if ( isset( $response['configuration'] ) && ! empty( $response['configuration'] ) ) {
-            $result = wp_delete_post( $response['configuration'] );
-            if ( empty( $result ) ) {
-                dt_write_log( $result );
-                return 0;
-            }
-            return $result->ID;
-
+            wp_delete_post( $response['configuration'] );
         }
         return 0;
     }
@@ -724,6 +744,33 @@ function get_dt_metrics_export_types() : array {
 function get_dt_metrics_export_formats() : array {
     return apply_filters( 'dt_metrics_export_format', [] );
 }
+
+function get_dt_metrics_export_configuration() : array {
+    $configurations = [];
+    $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export' ] );
+    foreach ( $config_posts as $key => $post ) {
+        $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
+        $configurations[$post->ID]['id'] = $post->ID;
+    }
+    return $configurations;
+}
+
+function get_dt_metrics_export_destinations() : array {
+    $data = [];
+    $data['download'] = [
+        'value' => 'download',
+        'label' => 'Download Link'
+    ];
+    $data['uploads'] = [
+        'value' => 'uploads',
+        'label' => 'Uploads Folder (unrestricted public access)'
+    ];
+
+    return apply_filters( 'dt_metrics_export_destinations', $data );
+}
+
+
+
 
 class DT_Metrics_Export_Tab_Webhooks {
     public function content() {
