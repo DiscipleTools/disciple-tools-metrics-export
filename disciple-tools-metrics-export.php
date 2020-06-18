@@ -125,6 +125,7 @@ class DT_Metrics_Export {
         if ( is_admin() ) {
             require_once( 'includes/admin-menu-and-tabs.php' );
             require_once( 'includes/format-base.php' );
+            require_once( 'includes/format-utilities.php' );
 
             $format_files = scandir( plugin_dir_path( __FILE__ ) .'/formats/' );
             if ( ! empty( $format_files ) ) {

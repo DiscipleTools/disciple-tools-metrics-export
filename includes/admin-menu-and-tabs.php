@@ -135,16 +135,7 @@ class DT_Metrics_Export_Menu {
  */
 class DT_Metrics_Export_Tab_Location_Export {
     public function content() {
-        $countries = Disciple_Tools_Mapping_Queries::get_countries();
-
         $last_config = $this->process_post();
-
-//        $configuration = get_dt_metrics_export_configuration();
-
-//        $formats = get_dt_metrics_export_formats();
-
-//        $destinations = get_dt_metrics_export_destinations();
-
         ?>
         <style>
             .column-wrapper {
@@ -257,13 +248,14 @@ class DT_Metrics_Export_Tab_Location_Export {
                             <td>
                                 All Locations<br>
                                 <select name="all_locations" id="input-all-locations" class="regular-text" required>
+                                    <!-- All locations -->
                                 </select>
                             </td>
                         </tr>
                         </tbody>
                     </table>
 
-                    <table class="widefat striped" >
+                    <table class="widefat striped" id="countries-wrapper">
                         <tbody id="country-list-table"><!-- List of countries --></tbody>
                     </table>
                     <br>
@@ -323,16 +315,15 @@ class DT_Metrics_Export_Tab_Location_Export {
             console.log( window.last_config )
 
             jQuery(document).ready(function() {
-
-                if ( window.last_config > 0 ) {
-                    load_selected_configuration( <?php echo esc_attr( $last_config_id ) ?> )
-                }
                 load_all_configurations()
                 let config = jQuery('#input-configuration')
                 config.on('change', function() {
                     load_selected_configuration( config.val() )
                     set_buttons()
                 })
+                if ( window.last_config > 0 ) {
+                    load_selected_configuration( <?php echo esc_attr( $last_config_id ) ?> )
+                }
 
                 set_buttons()
 
@@ -341,40 +332,14 @@ class DT_Metrics_Export_Tab_Location_Export {
                     load_format( input_format.val() )
                 })
 
-
-
-                /* TYPES */
-                // let format_input = jQuery('#input-format')
-                // format_input.on('change', function() {
-                //     load_selectable_types( format_input.val() )
-                // })
-                // load_selectable_types( format_input.val() )
-
-                /* LOCATIONS*/
-                // let locations = jQuery('#input-all-locations')
-                // locations.on('change', function() {
-                //     if ( 'country_by_country' === jQuery(this).val()  ) {
-                //         jQuery('.country-list').show()
-                //     } else {
-                //         jQuery('.country-list').hide()
-                //     }
-                // })
-                // if ( 'country_by_country' === locations.val()  ) {
-                //     jQuery('.country-list').show()
-                // }
-
-                /* DESTINATION*/
-                // let destination = jQuery('#destination')
-                // destination.on('change', function() {
-                //     load_destination( destination.val() )
-                // })
-
-                /* CONFIGURATION */
-
-                //  else {
-                //
-                // }
-
+                let input_all_locations = jQuery('#input-all-locations' )
+                input_all_locations.on('change', function() {
+                    if ( 'country_by_country' === jQuery(this).val() ) {
+                        jQuery('#countries-wrapper').show()
+                    } else {
+                        jQuery('#countries-wrapper').hide()
+                    }
+                })
             })
 
             function set_buttons() {
@@ -389,9 +354,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                     is_old.show()
                     is_new.hide()
                 }
-
             }
-
             function load_all_configurations() {
                 let input_configuration = jQuery('#input-configuration')
                 let input_configuration_label = jQuery('#input-configuration-name')
@@ -411,7 +374,6 @@ class DT_Metrics_Export_Tab_Location_Export {
                 // load formats
                 load_all_formats()
             }
-
             function load_all_formats() {
                 let input_format = jQuery('#input-format')
 
@@ -457,12 +419,21 @@ class DT_Metrics_Export_Tab_Location_Export {
                     list.append(`<option value="${i}">${v}</option>`)
                 })
 
+                list.append(`<option disabled>-----</option>`)
+                list.append(`<option value="country_by_country">Country by Country</option>`)
+
                 list.val('admin2')
 
             }
-            function load_countries() {
+            function load_countries( format_key ) {
+                jQuery('#countries-wrapper').hide()
                 let countries_list = jQuery('#country-list-table')
                 countries_list.empty()
+
+                let options_list = ''
+                jQuery.each(window.export_formats[format_key].locations.country_by_country, function(i,v){
+                    options_list += '<option value="'+i+'">'+v+'</option>'
+                })
 
                 jQuery.each( window.countries, function(i,v) {
                     countries_list.append(`
@@ -472,14 +443,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                         </td>
                         <td>
                             <select class="selected-locations" name="selected_locations[${v.grid_id}]" id="${v.grid_id}">
-                                <option value="disabled">---disabled---</option>
-                                <option value="admin0">Admin0 (Country)</option>
-                                <option value="admin1">Admin1 (State)</option>
-                                <option value="admin2">Admin2 (County)</option>
-                                <option value="admin3">Admin3</option>
-                                <option value="admin4">Admin4</option>
-                                <option value="admin5">Admin5</option>
-                                <option value="raw">Raw (not recommended)</option>
+                                ${options_list}
                             </select>
                         </td>
                     </tr>
@@ -500,113 +464,66 @@ class DT_Metrics_Export_Tab_Location_Export {
                 let input_format = jQuery('#input-format')
                 input_format.val(format_key)
                 load_types( format_key )
-                load_countries( format_key )
                 load_all_locations(format_key)
+                load_countries( format_key )
                 load_destinations( format_key )
             }
             function load_selected_configuration( configuration_id ) {
                 let input_configuration = jQuery('#input-configuration')
                 let input_configuration_label = jQuery('#input-configuration-name')
+
                 if ( typeof configuration_id === 'undefined' || 'new' === input_configuration.val() ) {
                     load_all_configurations()
                     return
                 }
-                console.log( configuration_id )
 
+                // set format elements
                 let format_key = window.export_configurations[configuration_id].format
-                let input_format = jQuery('#input-format')
-                input_format.val(format_key)
-                input_configuration_label.val(window.export_configurations[configuration_id].label)
-                load_types( format_key )
-                load_countries( format_key )
-                load_all_locations(format_key)
-                load_destinations( format_key )
-return
-                // let input_configuration = jQuery('#input-configuration')
-                // let input_configuration_label = jQuery('#input-configuration-name')
-                let types_list = jQuery('#types-list')
-                let input_all_locations = jQuery('#input-all-locations')
-                let country_list = jQuery('.country-list')
-                let input_destination = jQuery('#input-destination')
-                let is_old = jQuery('.old')
-                let is_new = jQuery('.new')
+                load_format( format_key )
 
-
-                /* if selected configuration */
+                // set name of configuration
                 input_configuration_label.val(window.export_configurations[configuration_id].label)
-                input_configuration.val(window.export_configurations[configuration_id].id)
-                input_format.val(window.export_configurations[configuration_id].format)
-                input_all_locations.val(window.export_configurations[configuration_id].all_locations)
-                jQuery.each( window.export_configurations[configuration_id].selected_locations, function(i,v){
-                    jQuery('#'+i).val(v)
-                })
-                if ( 'country_by_country' === window.export_configurations[configuration_id].all_locations  ) {
-                    country_list.show()
-                } else {
-                    country_list.hide()
-                }
-                input_destination.val(window.export_configurations[configuration_id].destination)
-                // is_old.show()
-                // is_new.hide()
+
+                // configure elements to the configuration
+                configure_types( configuration_id )
+                configure_all_locations( configuration_id )
+                configure_destinations( configuration_id )
+
+                set_buttons()
             }
-            // function getUnique(array){
-            //     var uniqueArray = [];
-            //     for(i=0; i < array.length; i++){
-            //         if(uniqueArray.indexOf(array[i]) === -1) {
-            //             uniqueArray.push(array[i]);
-            //         }
-            //     }
-            //     return uniqueArray;
-            // }
-
-            // function reset_locations() {
-            //     let selected_locations = jQuery('.selected-locations')
-            //     selected_locations.each(function(){
-            //         jQuery(this).val('disabled')
-            //     })
-            // }
-
-            function load_selected_types( id ) {
-                let container = jQuery('#types-list')
-
-                if ( id === 'undefined' || typeof window.export_formats[id] === 'undefined') {
-                    container.hide()
-                    return;
-                }
-
-                let types = window.export_formats[id].selectable_types
-                let html = ''
-
-                let list = []
-                jQuery.each( types, function(i,v){
-                    list.push(v.type)
-                })
-                let unique_list = getUnique(list)
-                jQuery.each( unique_list, function(i,v){
-                    html += '<tr><td style="text-transform:capitalize;" ><strong>'+v+'</strong></td><td></td></tr>'
-                    jQuery.each( types, function(ii,vv){
-                        if ( v === vv.type ) {
-                            console.log(vv.key)
-                            html += '<tr><td>-- '+vv.label+'</td><td class="float-right"><input type="checkbox" id="'+vv.key+'" name="type['+vv.key+']" value="true" /></td></tr>'
-                        }
-                    })
-                })
-
-                container.html(html)
-
+            function configure_types( configuration_id ) {
                 let inputs = jQuery('#types-list input:checkbox')
 
-                let configuration = jQuery('#configuration').val()
-                if ( 'new' === configuration ) {
-                    inputs.prop('checked', true)
-                } else if ( typeof window.export_configurations[configuration].type !== 'undefined' ) {
-                    inputs.prop('checked', false)
-                    jQuery.each( window.export_configurations[configuration].type, function(iii, vvv ) {
-                        jQuery('#'+iii).prop('checked', true)
-                    })
-                }
+                inputs.prop('checked', false)
+                jQuery.each( window.export_configurations[configuration_id].type, function(iii, vvv ) {
+                    jQuery('#'+iii).prop('checked', true)
+                })
+            }
+            function configure_all_locations( configuration_id ) {
+                let input_all_locations = jQuery('#input-all-locations')
+                input_all_locations.val(window.export_configurations[configuration_id].all_locations)
 
-                container.show()
+                configure_countries( configuration_id )
+
+                if ( 'country_by_country' === window.export_configurations[configuration_id].all_locations ) {
+                    jQuery('#countries-wrapper').show()
+                } else {
+                    jQuery('#countries-wrapper').hide()
+                }
+            }
+            function configure_countries( configuration_id ) {
+                let selected_locations = window.export_configurations[configuration_id].selected_locations
+
+                jQuery.each( selected_locations, function(i,v){
+                    jQuery('#'+i).val(v)
+                })
+
+
+
+            }
+            function configure_destinations( configuration_id ) {
+                let input_destination = jQuery('#input-destination')
+                input_destination.val(window.export_configurations[configuration_id].destination)
             }
 
         </script>
@@ -732,237 +649,10 @@ return
         return 0;
     }
 }
-if ( ! function_exists( 'dt_get_simple_postmeta' ) ) {
-    function dt_get_simple_postmeta( $post_id ) {
-        return array_map( function ( $a ) { return maybe_unserialize( $a[0] );
-        }, get_post_meta( $post_id ) );
-    }
-}
 
-//function get_dt_metrics_export_types() : array {
-//    $types = [];
-//
-//    // Contacts
-//    $types['contacts_all'] = [
-//        'type' => 'contacts',
-//        'key' => 'contacts_all',
-//        'label' => 'All'
-//    ];
-//    $types['contacts_active'] = [
-//        'type' => 'contacts',
-//        'key' => 'contacts_active',
-//        'label' => 'Active'
-//    ];
-//    $types['contacts_paused'] = [
-//        'type' => 'contacts',
-//        'key' => 'contacts_paused',
-//        'label' => 'Paused'
-//    ];
-//    $types['contacts_seekers'] = [
-//        'type' => 'contacts',
-//        'key' => 'contacts_seekers',
-//        'label' => 'Seekers'
-//    ];
-//    $types['contacts_believers'] = [
-//        'type' => 'contacts',
-//        'key' => 'contacts_believers',
-//        'label' => 'Believers'
-//    ];
-//
-//    // Groups
-//    $types['groups_all'] = [
-//        'type' => 'groups',
-//        'key' => 'groups_all',
-//        'label' => 'All'
-//    ];
-//    $types['groups_active'] = [
-//        'type' => 'groups',
-//        'key' => 'groups_active',
-//        'label' => 'Active'
-//    ];
-//    $types['groups_inactive'] = [
-//        'type' => 'groups',
-//        'key' => 'groups_inactive',
-//        'label' => 'Inactive'
-//    ];
-//    $types['groups_pre_groups'] = [
-//        'type' => 'groups',
-//        'key' => 'groups_pre_groups',
-//        'label' => 'Pre-Groups'
-//    ];
-//    $types['groups_groups'] = [
-//        'type' => 'groups',
-//        'key' => 'groups_groups',
-//        'label' => 'Groups'
-//    ];
-//    $types['groups_churches'] = [
-//        'type' => 'groups',
-//        'key' => 'groups_churches',
-//        'label' => 'Churches'
-//    ];
-//    $types['groups_unformed'] = [
-//        'type' => 'groups',
-//        'key' => 'groups_unformed',
-//        'label' => 'Unformed Believers by Area'
-//    ];
-//
-//    // Users
-//    $types['users_all'] = [
-//        'type' => 'users',
-//        'key' => 'users_all',
-//        'label' => 'Users'
-//    ];
-//    $types['users_active'] = [
-//        'type' => 'users',
-//        'key' => 'users_active',
-//        'label' => 'Active'
-//    ];
-//    $types['users_inactive'] = [
-//        'type' => 'users',
-//        'key' => 'users_inactive',
-//        'label' => 'Inactive'
-//    ];
-//    $types['users_by_roles'] = [
-//        'type' => 'users',
-//        'key' => 'users_by_roles',
-//        'label' => 'Users by Roles'
-//    ];
-//
-//    return $types;
-//}
-
-function get_dt_metrics_export_formats() : array {
-    return apply_filters( 'dt_metrics_export_format', [] );
-}
-
-function get_dt_metrics_export_base_format() : array {
-    return [
-        'key' => '',
-        'label' => '',
-        'types' => [
-            'contacts' => [
-                'contacts_all' => [
-                    'key' => 'contacts_all',
-                    'label' => 'All'
-                ],
-                'contacts_active' => [
-                    'key' => 'contacts_active',
-                    'label' => 'Active'
-                ],
-                'contacts_paused' => [
-                    'key' => 'contacts_paused',
-                    'label' => 'Paused'
-                ],
-                'contacts_closed' => [
-                    'key' => 'contacts_closed',
-                    'label' => 'Closed'
-                ],
-            ],
-            'groups' => [
-                'groups_all' => [
-                    'key' => 'groups_all',
-                    'label' => 'All'
-                ],
-                'groups_active' => [
-                    'key' => 'groups_active',
-                    'label' => 'Active'
-                ],
-                'groups_inactive' => [
-                    'key' => 'groups_inactive',
-                    'label' => 'Inactive'
-                ],
-                'groups_pre_groups' => [
-                    'key' => 'groups_pre_groups',
-                    'label' => 'Pre-Groups'
-                ],
-                'groups_groups' => [
-                    'key' => 'groups_groups',
-                    'label' => 'Groups'
-                ],
-                'groups_churches' => [
-                    'key' => 'groups_churches',
-                    'label' => 'Churches'
-                ],
-            ],
-            'users' => [
-                'users_all' => [
-                    'key' => 'users_all',
-                    'label' => 'All'
-                ],
-                'users_active' => [
-                    'key' => 'users_active',
-                    'label' => 'Active'
-                ],
-                'users_inactive' => [
-                    'key' => 'users_inactive',
-                    'label' => 'Inactive'
-                ],
-                'users_by_roles' => [
-                    'key' => 'users_by_roles',
-                    'label' => 'Users by Roles'
-                ],
-            ]
-        ],
-        'locations' => [
-            'all' => [
-                'admin0' => 'Admin0 (Country)',
-                'admin1' => 'Admin1 (State)',
-                'admin2' => 'Admin2 (County)',
-                'admin3' => 'Admin3 (Blocks)',
-                'admin4' => 'Admin4 (Village)',
-                'admin5' => 'Admin5',
-                'raw' => 'Raw (not recommended)',
-            ],
-            'country_by_country' => [
-                'admin0' => 'Admin0 (Country)',
-                'admin1' => 'Admin1 (State)',
-                'admin2' => 'Admin2 (County)',
-                'admin3' => 'Admin3 (Blocks)',
-                'admin4' => 'Admin4 (Village)',
-                'admin5' => 'Admin5',
-                'raw' => 'Raw (not recommended)',
-            ]
-        ],
-        'destinations' => [
-            'download' => [
-                'value' => 'download',
-                'label' => 'Download Link'
-            ],
-            'uploads' => [
-                'value' => 'uploads',
-                'label' => 'Uploads Folder (unrestricted public access)'
-            ]
-        ],
-    ];
-}
-
-function get_dt_metrics_export_configurations() : array {
-    $configurations = [];
-    $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export' ] );
-    foreach ( $config_posts as $key => $post ) {
-        $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
-        $configurations[$post->ID]['id'] = $post->ID;
-    }
-    return $configurations;
-}
-
-//function get_dt_metrics_export_destinations() : array {
-//    $data = [];
-//    $data['download'] = [
-//        'value' => 'download',
-//        'label' => 'Download Link'
-//    ];
-//    $data['uploads'] = [
-//        'value' => 'uploads',
-//        'label' => 'Uploads Folder (unrestricted public access)'
-//    ];
-//
-//    return apply_filters( 'dt_metrics_export_destinations', $data );
-//}
-
-
-
-
+/**
+ * Class DT_Metrics_Export_Tab_Webhooks
+ */
 class DT_Metrics_Export_Tab_Webhooks {
     public function content() {
         ?>

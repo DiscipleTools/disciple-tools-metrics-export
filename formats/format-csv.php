@@ -52,6 +52,31 @@ if (defined( 'ABSPATH' )) {
             $format[$this->token]['key'] = $this->token;
             $format[$this->token]['label'] = $this->label;
 
+            // remove raw
+            $format[$this->token]['locations'] = [
+                'all' => [
+                    'admin0' => 'Admin0 (Country)',
+                    'admin1' => 'Admin1 (State)',
+                    'admin2' => 'Admin2 (County)',
+                    'admin3' => 'Admin3 (Blocks)',
+                    'admin4' => 'Admin4 (Village)',
+                ],
+                'country_by_country' => [
+                    'disabled' => '---disabled---',
+                    'admin0' => 'Admin0 (Country)',
+                    'admin1' => 'Admin1 (State)',
+                    'admin2' => 'Admin2 (County)',
+                    'admin3' => 'Admin3 (Blocks)',
+                    'admin4' => 'Admin4 (Village)',
+                ]
+            ];
+
+            // add destination
+            $format[$this->token]['destinations']['google'] = [
+                'value' => 'google',
+                'label' => 'Google Update'
+            ];
+
             return $format;
         }
 
