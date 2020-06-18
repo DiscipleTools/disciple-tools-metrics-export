@@ -44,37 +44,43 @@ if (defined( 'ABSPATH' )) {
             add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
         } // End __construct()
 
-        public function format( $formats) {
-            $types = get_dt_metrics_export_types();
-            $types = [];
-            $types['contacts_active'] = [
-                'type' => 'contacts',
-                'key' => 'contacts_active',
-                'label' => 'Active'
-            ];
-            $types['groups_active'] = [
-                'type' => 'groups',
-                'key' => 'groups_active',
-                'label' => 'Active'
-            ];
-            $types['users_active'] = [
-                'type' => 'users',
-                'key' => 'users_active',
-                'label' => 'Active'
+        public function format( $format ) {
+            /* Build base template of a format*/
+            $format[$this->token] = get_dt_metrics_export_base_format();
+
+            /* Add key and label for format */
+            $format[$this->token]['key'] = $this->token;
+            $format[$this->token]['label'] = $this->label;
+
+            // remove raw
+            $format[$this->token]['locations'] = [
+                'all' => [
+                    'admin0' => 'Admin0 (Country)',
+                    'admin1' => 'Admin1 (State)',
+                    'admin2' => 'Admin2 (County)',
+                    'admin3' => 'Admin3 (Blocks)',
+                    'admin4' => 'Admin4 (Village)',
+                ],
+                'country_by_country' => [
+                    'disabled' => '---disabled---',
+                    'admin0' => 'Admin0 (Country)',
+                    'admin1' => 'Admin1 (State)',
+                    'admin2' => 'Admin2 (County)',
+                    'admin3' => 'Admin3 (Blocks)',
+                    'admin4' => 'Admin4 (Village)',
+                ]
             ];
 
-            $formats[$this->token] = [
-                'key' => $this->token,
-                'label' => $this->label,
-                'selectable_types' => $types,
-            ];
-            return $formats;
+            unset( $format[$this->token]['destinations']['uploads'] );
+
+            return $format;
         }
 
         public function format_class( $classes) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
+
 
         public function export( $response) {
             global $wpdb;
@@ -367,7 +373,12 @@ if (defined( 'ABSPATH' )) {
 
             // admin notification with link
             echo '<div class="notice notice-warning is-dismissible">
-                     <p>One time download link (expires in 48 hours):<br> <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '" target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '</a></p>
+                     <p>
+                         One time download link (expires in 48 hours):<br>
+                         <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '"
+                         target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '
+                         </a>
+                     </p>
                  </div>';
 
             // return configuration selection from before export

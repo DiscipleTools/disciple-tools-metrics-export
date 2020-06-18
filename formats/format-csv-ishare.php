@@ -39,13 +39,22 @@ if ( defined( 'ABSPATH' ) ) {
             add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
         } // End __construct()
 
-        public function format( $formats ) {
-            $formats[$this->token] = [
-                'key' => $this->token,
-                'label' => $this->label,
-                'selectable_types' => [],
-            ];
-            return $formats;
+        public function format( $format ) {
+            /**
+             * @link
+             */
+
+            /* Build base template of a format*/
+            $format[$this->token] = get_dt_metrics_export_base_format();
+
+            /* Add key and label for format */
+            $format[$this->token]['key'] = $this->token;
+            $format[$this->token]['label'] = $this->label;
+            $format[$this->token]['types'] = [];
+
+            unset( $format[$this->token]['destinations']['uploads'] );
+
+            return $format;
         }
 
         public function format_class( $classes ) {

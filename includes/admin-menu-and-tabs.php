@@ -93,8 +93,7 @@ class DT_Metrics_Export_Menu {
                 <!-- <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Webhooks', 'dt_metrics_export' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cloud Storage', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a>
-                -->
+                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a> -->
             </h2>
 
             <?php
@@ -136,14 +135,7 @@ class DT_Metrics_Export_Menu {
  */
 class DT_Metrics_Export_Tab_Location_Export {
     public function content() {
-        $countries = Disciple_Tools_Mapping_Queries::get_countries();
-
         $last_config = $this->process_post();
-
-        $configuration = $this->get_configurations();
-
-        $formats = get_dt_metrics_export_formats();
-
         ?>
         <style>
             .column-wrapper {
@@ -163,6 +155,9 @@ class DT_Metrics_Export_Tab_Location_Export {
             .float-right {
                 float:right;
             }
+            .default-hide {
+                display:none;
+            }
         </style>
         <div class="wrap">
             <form method="POST">
@@ -173,19 +168,38 @@ class DT_Metrics_Export_Tab_Location_Export {
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th><strong>Step 1:</strong><br>Select Configuration </th>
+                            <th><strong>Step 1:</strong><br>Create or Manage Configuration </th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
                             <td>
-                                Configuration<br>
-                                <select name="configuration" id="configuration" class="regular-text">
-                                    <option value="new">New</option>
-                                    <?php foreach ( $configuration as $config ) : ?>
-                                        <option value="<?php echo esc_attr( $config['id'] ) ?>"><?php echo esc_html( $config['label'] ) ?></option>
-                                    <?php endforeach; ?>
+                                Select Configuration<br>
+                                <select name="configuration" id="input-configuration" class="regular-text" required>
+                                    <!-- load configurations -->
                                 </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Configuration Title<br>
+                                <input type="text" name="label" id="input-configuration-name" class="regular-text" placeholder="Title" /><br>
+                            </td>
+                        </tr>
+
+                        <tr id="button-duplicate" class="old default-hide">
+                            <td>
+                                <button type="submit" name="action" value="save" class="button regular-text" >Duplicate Configuration</button>
+                            </td>
+                        </tr>
+                        <tr id="button-update" class="old default-hide">
+                            <td>
+                                <button type="submit" name="action" value="update" class="button regular-text">Update Configuration</button>
+                            </td>
+                        </tr>
+                        <tr id="button-delete" class="old default-hide">
+                            <td>
+                                <button type="submit" name="action" value="delete" class="button regular-text">Delete Configuration</button>
                             </td>
                         </tr>
                         </tbody>
@@ -206,16 +220,16 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td colspan="2">
                                 Format<br>
-                                <select name="format" class="regular-text" id="format-input">
-                                    <?php foreach ( $formats as $item ) : ?>
-                                        <option value="<?php echo esc_attr( $item['key'] ) ?>"><?php echo esc_html( $item['label'] ) ?></option>
-                                    <?php endforeach; ?>
+                                <select name="format" class="regular-text" id="input-format" required>
+                                    <!-- load formats-->
                                 </select>
                             </td>
                         </tr>
                     </table>
                     <!-- Box -->
-                    <table class="widefat striped" id="selectable_types"></table>
+                    <table class="widefat striped" >
+                        <tbody id="types-list"><!-- List of types --></tbody>
+                    </table>
                     <br>
                     <!-- End Box -->
 
@@ -233,47 +247,15 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td>
                                 All Locations<br>
-
-                                <select name="all_locations" id="all-locations" class="regular-text">
-                                    <option value="admin2">Admin2 (County)</option>
-                                    <option disabled>---disabled---</option>
-                                    <option value="admin0">Admin0 (Country)</option>
-                                    <option value="admin1">Admin1 (State)</option>
-                                    <option value="admin2">Admin2 (County)</option>
-                                    <option value="admin3">Admin3</option>
-                                    <option value="admin4">Admin4</option>
-                                    <option value="admin5">Admin5</option>
-                                    <option value="raw">Raw (not recommended)</option>
-                                    <option disabled>------</option>
-                                    <option value="country_by_country">Country by Country</option>
+                                <select name="all_locations" id="input-all-locations" class="regular-text" required>
+                                    <!-- All locations -->
                                 </select>
                             </td>
                         </tr>
                         </tbody>
                     </table>
-
-                    <table class="widefat striped">
-                        <!-- List of countries -->
-                        <?php if ( ! empty( $countries ) ) : foreach ( $countries as $country ) : ?>
-                            <tr class="country-list" style="display:none;">
-                                <td>
-                                    <?php echo esc_html( $country['name'] ) ?>
-                                </td>
-                                <td>
-                                    <select class="selected-locations" name="selected_locations[<?php echo esc_attr( $country['grid_id'] ) ?>]" id="<?php echo esc_attr( $country['grid_id'] ) ?>">
-                                        <option value="disabled">---disabled---</option>
-                                        <option value="admin0">Admin0 (Country)</option>
-                                        <option value="admin1">Admin1 (State)</option>
-                                        <option value="admin2">Admin2 (County)</option>
-                                        <option value="admin3">Admin3</option>
-                                        <option value="admin4">Admin4</option>
-                                        <option value="admin5">Admin5</option>
-                                        <option value="raw">Raw (not recommended)</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        <?php endforeach;
-                        endif; ?>
+                    <table class="widefat striped" id="countries-wrapper">
+                        <tbody id="country-list-table"><!-- List of countries --></tbody>
                     </table>
                     <br>
                     <!-- End Box -->
@@ -283,55 +265,32 @@ class DT_Metrics_Export_Tab_Location_Export {
                     <table class="widefat striped">
                         <thead>
                         <tr>
-                            <th><strong>Step 4:</strong><br>Save or Export </th>
+                            <th><strong>Step 4:</strong><br>Export </th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
                             <td>
-                                Configuration Name<br>
-                                <input type="text" name="label" id="configuration-name" class="regular-text" placeholder="Title" /><br>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" name="action" value="save" class="button regular-text">Save New</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" name="action" value="update" class="button regular-text">Update</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" name="action" value="delete" class="button regular-text">Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <hr>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Destination<br>
-                                <select name="destination" class="regular-text">
-                                    <option value="download">Download</option>
-<!--                                    <option value="uploads">Uploads Folder (unrestricted public access)</option>-->
+                                Export Destination<br>
+                                <select name="destination" class="regular-text" id="input-destination" required>
+                                    <!-- load destination -->
                                 </select>
                             </td>
                         </tr>
-                        <tr>
+                        <tr id="button-export" class="old default-hide">
                             <td>
                                 <button type="submit" name="action" value="export"  class="button regular-text">Export</button>
+                            </td>
+                        </tr>
+                        <tr id="button-save-new" class="new default-hide">
+                            <td>
+                                <button type="submit" name="action" value="save" class="button regular-text" >Save New Configuration</button>
                             </td>
                         </tr>
                         </tbody>
                     </table>
                     <br>
                     <!-- End Box -->
-
                 </div>
             </div>
             </form>
@@ -343,142 +302,224 @@ class DT_Metrics_Export_Tab_Location_Export {
     public function content_scripts( $last_config_id = 0 ) {
         ?>
         <script>
+            window.export_configurations = [<?php echo json_encode( get_dt_metrics_export_configurations() ) ?>][0]
             window.export_formats = [<?php echo json_encode( get_dt_metrics_export_formats() ) ?>][0]
-            window.export_configurations = [<?php echo json_encode( $this->get_configurations() ) ?>][0]
+            window.countries = [<?php echo json_encode( Disciple_Tools_Mapping_Queries::get_countries() ) ?>][0]
+            window.last_config = <?php echo esc_attr( $last_config_id ?? 0 ) ?>
 
-            jQuery(document).ready(function(){
+            console.log( window.export_configurations )
+            console.log( window.export_formats )
+            console.log( window.countries )
+            console.log( window.last_config )
 
-                // show and hide country list
-                let locations = jQuery('#all-locations')
-                if ( 'country_by_country' === locations.val()  ) {
-                    jQuery('.country-list').show()
+            jQuery(document).ready(function() {
+                load_all_configurations()
+                let config = jQuery('#input-configuration')
+                config.on('change', function() {
+                    load_selected_configuration( config.val() )
+                    set_buttons()
+                })
+                if ( window.last_config > 0 ) {
+                    load_selected_configuration( window.last_config )
                 }
-                locations.on('change', function() {
-                    if ( 'country_by_country' === jQuery(this).val()  ) {
-                        jQuery('.country-list').show()
+                set_buttons()
+
+                let input_format = jQuery('#input-format')
+                input_format.on('change', function() {
+                    load_format( input_format.val() )
+                })
+
+                let input_all_locations = jQuery('#input-all-locations' )
+                input_all_locations.on('change', function() {
+                    if ( 'country_by_country' === jQuery(this).val() ) {
+                        jQuery('#countries-wrapper').show()
                     } else {
-                        jQuery('.country-list').hide()
+                        jQuery('#countries-wrapper').hide()
                     }
                 })
-
-                // add selectable types
-                let format_input = jQuery('#format-input')
-                load_selectable_types( format_input.val() )
-                format_input.on('change', function() {
-                    load_selectable_types( format_input.val() )
-                })
-
-                /* change configuration selector */
-                let config = jQuery('#configuration')
-                config.on('change', function() {
-                    load_configuration( config.val() )
-                })
-                load_configuration( config.val() )
-
-                if ( <?php echo esc_attr( $last_config_id ) ?> > 0 ) {
-                    load_configuration(<?php echo esc_attr( $last_config_id ) ?>)
-                }
-
             })
 
-            function reset_locations() {
-                let selected_locations = jQuery('.selected-locations')
-                selected_locations.each(function(){
-                    jQuery(this).val('disabled')
+            function set_buttons() {
+                let is_old = jQuery('.old')
+                let is_new = jQuery('.new')
+
+                if ( jQuery('#input-configuration').val() === 'new' ) {
+                    is_old.hide()
+                    is_new.show()
+                }
+                else {
+                    is_old.show()
+                    is_new.hide()
+                }
+            }
+            function load_all_configurations() {
+                let input_configuration = jQuery('#input-configuration')
+                let input_configuration_label = jQuery('#input-configuration-name')
+                let rand_time = <?php echo esc_attr( time() ) ?>
+
+                // load list
+                input_configuration.empty().append(`<option value="new">New</option><option disabled>----</option>`)
+                jQuery.each(  window.export_configurations, function(i,v) {
+                    input_configuration.append(`
+                    <option value="${v.id}">${v.label}</option>
+                    `)
+                })
+
+                // load title field
+                input_configuration_label.val(`Configuration ${rand_time}`)
+
+                // load formats
+                load_all_formats()
+            }
+            function load_all_formats() {
+                let input_format = jQuery('#input-format')
+
+                // load formats
+                input_format.empty().append(`<option></option>`)
+                jQuery.each(  window.export_formats, function(i,v) {
+                    input_format.append(`
+                    <option value="${v.key}">${v.label}</option>
+                    `)
+                })
+
+                // clear other settings
+                jQuery('#types-list').empty()
+                jQuery('#input-all-locations').empty()
+                jQuery('#country-list-table').empty()
+                jQuery('#input-destination').empty()
+
+                // set buttons
+                set_buttons()
+            }
+            function load_types( format_key ) {
+                let list = jQuery('#types-list')
+
+                list.empty()
+                jQuery.each( window.export_formats[format_key].types, function(i,v) {
+                    list.append(`<tr><td style="text-transform:capitalize;" ><strong>${i}</strong></td><td></td></tr>`)
+                    jQuery.each(v, function (ii, vv) {
+                        list.append(`<tr><td>-- ${vv.label}</td><td class="float-right"><input type="checkbox" id="${vv.key}" name="type[${vv.key}]" value="true" /></td></tr>`)
+                    })
+                })
+
+                let inputs = jQuery('#types-list input:checkbox')
+                inputs.prop('checked', true)
+            }
+            function load_all_locations( format_key ) {
+                if ( typeof format_key === 'undefined') {
+                    return
+                }
+                let list = jQuery('#input-all-locations')
+
+                list.empty()
+                jQuery.each(window.export_formats[format_key].locations.all, function(i,v){
+                    list.append(`<option value="${i}">${v}</option>`)
+                })
+
+                list.append(`<option disabled>-----</option>`)
+                list.append(`<option value="country_by_country">Country by Country</option>`)
+
+                list.val('admin2')
+
+            }
+            function load_countries( format_key ) {
+                jQuery('#countries-wrapper').hide()
+                let countries_list = jQuery('#country-list-table')
+                countries_list.empty()
+
+                let options_list = ''
+                jQuery.each(window.export_formats[format_key].locations.country_by_country, function(i,v){
+                    options_list += '<option value="'+i+'">'+v+'</option>'
+                })
+
+                jQuery.each( window.countries, function(i,v) {
+                    countries_list.append(`
+                    <tr>
+                        <td>
+                            ${v.name}
+                        </td>
+                        <td>
+                            <select class="selected-locations" name="selected_locations[${v.grid_id}]" id="${v.grid_id}">
+                                ${options_list}
+                            </select>
+                        </td>
+                    </tr>
+                    `)
                 })
             }
+            function load_destinations( format_key ) {
+                let input_destination = jQuery('#input-destination')
+                input_destination.empty()
 
-            function load_configuration( id ) {
-                console.log( id )
+                jQuery.each(  window.export_formats[format_key].destinations, function(i,v) {
+                    input_destination.append(`
+                    <option value="${v.value}">${v.label}</option>
+                    `)
+                })
+            }
+            function load_format( format_key ) {
+                let input_format = jQuery('#input-format')
+                input_format.val(format_key)
+                load_types( format_key )
+                load_all_locations(format_key)
+                load_countries( format_key )
+                load_destinations( format_key )
+            }
+            function load_selected_configuration( configuration_id ) {
+                let input_configuration = jQuery('#input-configuration')
+                let input_configuration_label = jQuery('#input-configuration-name')
 
-                let configuration_input = jQuery('#configuration')
-                let all_locations = jQuery('#all-locations')
-                let format = jQuery('#format-input')
-                let configuration_title = jQuery('#configuration-name')
-                let selected_locations = jQuery('.selected-locations')
-                let country_list = jQuery('.country-list')
-
-                reset_locations()
-
-                if ( id === 'undefined' || id === 'new' ) {
-                    configuration_input.val('new')
-                    all_locations.val('admin2')
-                    configuration_title.val('')
-                    country_list.hide()
+                if ( typeof configuration_id === 'undefined' || 'new' === configuration_id ) {
+                    load_all_configurations()
                     return
                 }
 
-                configuration_input.val(window.export_configurations[id].id)
-                all_locations.val(window.export_configurations[id].all_locations)
-                configuration_title.val(window.export_configurations[id].label)
-                format.val(window.export_configurations[id].format)
-                jQuery.each( window.export_configurations[id].selected_locations, function(i,v){
+                // set format elements
+                let format_key = window.export_configurations[configuration_id].format
+                load_format( format_key )
+
+                // configure elements to the configuration
+                configure_types( configuration_id )
+                configure_all_locations( configuration_id )
+                configure_destinations( configuration_id )
+
+                // set name of configuration
+                input_configuration.val( configuration_id )
+                input_configuration_label.val(window.export_configurations[configuration_id].label)
+
+                set_buttons()
+            }
+            function configure_types( configuration_id ) {
+                let inputs = jQuery('#types-list input:checkbox')
+
+                inputs.prop('checked', false)
+                jQuery.each( window.export_configurations[configuration_id].type, function(iii, vvv ) {
+                    jQuery('#'+iii).prop('checked', true)
+                })
+            }
+            function configure_all_locations( configuration_id ) {
+                let input_all_locations = jQuery('#input-all-locations')
+                input_all_locations.val(window.export_configurations[configuration_id].all_locations)
+
+                configure_countries( configuration_id )
+
+                if ( 'country_by_country' === window.export_configurations[configuration_id].all_locations ) {
+                    jQuery('#countries-wrapper').show()
+                } else {
+                    jQuery('#countries-wrapper').hide()
+                }
+            }
+            function configure_countries( configuration_id ) {
+                let selected_locations = window.export_configurations[configuration_id].selected_locations
+
+                jQuery.each( selected_locations, function(i,v){
                     jQuery('#'+i).val(v)
                 })
-                if ( 'country_by_country' === window.export_configurations[id].all_locations  ) {
-                    country_list.show()
-                } else {
-                    country_list.hide()
-                }
-
-                load_selectable_types( window.export_configurations[id].format )
             }
-
-            function load_selectable_types( id ) {
-                let container = jQuery('#selectable_types')
-
-                if ( id === 'undefined' || typeof window.export_formats[id] === 'undefined') {
-                    container.hide()
-                    return;
-                }
-
-                let types = window.export_formats[id].selectable_types
-                console.log(window.export_formats[id].selectable_types)
-                let html = ''
-
-                let list = []
-                jQuery.each( types, function(i,v){
-                    list.push(v.type)
-                })
-                let unique_list = getUnique(list)
-                jQuery.each( unique_list, function(i,v){
-                    html += '<tr><td style="text-transform:capitalize;" ><strong>'+v+'</strong></td><td></td></tr>'
-                    jQuery.each( types, function(ii,vv){
-                        if ( v === vv.type ) {
-                            console.log(vv.key)
-                            html += '<tr><td>-- '+vv.label+'</td><td class="float-right"><input type="checkbox" id="'+vv.key+'" name="type['+vv.key+']" value="true" /></td></tr>'
-                        }
-                    })
-                })
-
-                container.html(html)
-
-                let inputs = jQuery('#selectable_types input:checkbox')
-
-                let configuration = jQuery('#configuration').val()
-                if ( 'new' === configuration ) {
-                    inputs.prop('checked', true)
-                } else if ( typeof window.export_configurations[configuration].type !== 'undefined' ) {
-                    inputs.prop('checked', false)
-                    jQuery.each( window.export_configurations[configuration].type, function(iii, vvv ) {
-                        jQuery('#'+iii).prop('checked', true)
-                    })
-                }
-
-                container.show()
+            function configure_destinations( configuration_id ) {
+                let input_destination = jQuery('#input-destination')
+                input_destination.val(window.export_configurations[configuration_id].destination)
             }
-
-            function getUnique(array){
-                var uniqueArray = [];
-                for(i=0; i < array.length; i++){
-                    if(uniqueArray.indexOf(array[i]) === -1) {
-                        uniqueArray.push(array[i]);
-                    }
-                }
-                return uniqueArray;
-            }
-
-
 
         </script>
         <?php
@@ -513,16 +554,6 @@ class DT_Metrics_Export_Tab_Location_Export {
             }
         }
         return 0;
-    }
-
-    public function get_configurations() : array {
-        $configurations = [];
-        $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export' ] );
-        foreach ( $config_posts as $key => $post ) {
-            $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
-            $configurations[$post->ID]['id'] = $post->ID;
-        }
-        return $configurations;
     }
 
     public function filter_post( $response ) : array {
@@ -592,13 +623,7 @@ class DT_Metrics_Export_Tab_Location_Export {
         dt_write_log( 'action: delete' );
 
         if ( isset( $response['configuration'] ) && ! empty( $response['configuration'] ) ) {
-            $result = wp_delete_post( $response['configuration'] );
-            if ( empty( $result ) ) {
-                dt_write_log( $result );
-                return 0;
-            }
-            return $result->ID;
-
+            wp_delete_post( $response['configuration'] );
         }
         return 0;
     }
@@ -619,109 +644,10 @@ class DT_Metrics_Export_Tab_Location_Export {
         return 0;
     }
 }
-if ( ! function_exists( 'dt_get_simple_postmeta' ) ) {
-    function dt_get_simple_postmeta( $post_id ) {
-        return array_map( function ( $a ) { return maybe_unserialize( $a[0] );
-        }, get_post_meta( $post_id ) );
-    }
-}
 
-function get_dt_metrics_export_types() : array {
-    $types = [];
-
-    // Contacts
-    $types['contacts_all'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_all',
-        'label' => 'All'
-    ];
-    $types['contacts_active'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_active',
-        'label' => 'Active'
-    ];
-    $types['contacts_paused'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_paused',
-        'label' => 'Paused'
-    ];
-    $types['contacts_seekers'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_seekers',
-        'label' => 'Seekers'
-    ];
-    $types['contacts_believers'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_believers',
-        'label' => 'Believers'
-    ];
-
-    // Groups
-    $types['groups_all'] = [
-        'type' => 'groups',
-        'key' => 'groups_all',
-        'label' => 'All'
-    ];
-    $types['groups_active'] = [
-        'type' => 'groups',
-        'key' => 'groups_active',
-        'label' => 'Active'
-    ];
-    $types['groups_inactive'] = [
-        'type' => 'groups',
-        'key' => 'groups_inactive',
-        'label' => 'Inactive'
-    ];
-    $types['groups_pre_groups'] = [
-        'type' => 'groups',
-        'key' => 'groups_pre_groups',
-        'label' => 'Pre-Groups'
-    ];
-    $types['groups_groups'] = [
-        'type' => 'groups',
-        'key' => 'groups_groups',
-        'label' => 'Groups'
-    ];
-    $types['groups_churches'] = [
-        'type' => 'groups',
-        'key' => 'groups_churches',
-        'label' => 'Churches'
-    ];
-    $types['groups_unformed'] = [
-        'type' => 'groups',
-        'key' => 'groups_unformed',
-        'label' => 'Unformed Believers by Area'
-    ];
-
-    // Users
-    $types['users_all'] = [
-        'type' => 'users',
-        'key' => 'users_all',
-        'label' => 'Users'
-    ];
-    $types['users_active'] = [
-        'type' => 'users',
-        'key' => 'users_active',
-        'label' => 'Active'
-    ];
-    $types['users_inactive'] = [
-        'type' => 'users',
-        'key' => 'users_inactive',
-        'label' => 'Inactive'
-    ];
-    $types['users_by_roles'] = [
-        'type' => 'users',
-        'key' => 'users_by_roles',
-        'label' => 'Users by Roles'
-    ];
-
-    return apply_filters( 'dt_metrics_export_types', $types );
-}
-
-function get_dt_metrics_export_formats() : array {
-    return apply_filters( 'dt_metrics_export_format', [] );
-}
-
+/**
+ * Class DT_Metrics_Export_Tab_Webhooks
+ */
 class DT_Metrics_Export_Tab_Webhooks {
     public function content() {
         ?>
