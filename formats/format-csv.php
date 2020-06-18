@@ -44,37 +44,22 @@ if (defined( 'ABSPATH' )) {
             add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
         } // End __construct()
 
-        public function format( $formats) {
-            $types = get_dt_metrics_export_types();
-            $types = [];
-            $types['contacts_active'] = [
-                'type' => 'contacts',
-                'key' => 'contacts_active',
-                'label' => 'Active'
-            ];
-            $types['groups_active'] = [
-                'type' => 'groups',
-                'key' => 'groups_active',
-                'label' => 'Active'
-            ];
-            $types['users_active'] = [
-                'type' => 'users',
-                'key' => 'users_active',
-                'label' => 'Active'
-            ];
+        public function format( $format ) {
+            /* Build base template of a format*/
+            $format[$this->token] = get_dt_metrics_export_base_format();
 
-            $formats[$this->token] = [
-                'key' => $this->token,
-                'label' => $this->label,
-                'selectable_types' => $types,
-            ];
-            return $formats;
+            /* Add key and label for format */
+            $format[$this->token]['key'] = $this->token;
+            $format[$this->token]['label'] = $this->label;
+
+            return $format;
         }
 
         public function format_class( $classes) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
+
 
         public function export( $response) {
             global $wpdb;

@@ -139,11 +139,11 @@ class DT_Metrics_Export_Tab_Location_Export {
 
         $last_config = $this->process_post();
 
-        $configuration = get_dt_metrics_export_configuration();
+//        $configuration = get_dt_metrics_export_configuration();
 
-        $formats = get_dt_metrics_export_formats();
+//        $formats = get_dt_metrics_export_formats();
 
-        $destinations = get_dt_metrics_export_destinations();
+//        $destinations = get_dt_metrics_export_destinations();
 
         ?>
         <style>
@@ -184,12 +184,8 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td>
                                 Select Configuration<br>
-                                <select name="configuration" id="configuration" class="regular-text">
-                                    <option value="new">New</option>
-                                    <option disabled>-----</option>
-                                    <?php foreach ( $configuration as $config ) : ?>
-                                        <option value="<?php echo esc_attr( $config['id'] ) ?>"><?php echo esc_html( $config['label'] ) ?></option>
-                                    <?php endforeach; ?>
+                                <select name="configuration" id="input-configuration" class="regular-text" required>
+                                    <!-- load configurations -->
                                 </select>
                             </td>
                         </tr>
@@ -233,16 +229,16 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td colspan="2">
                                 Format<br>
-                                <select name="format" class="regular-text" id="input-format">
-                                    <?php foreach ( $formats as $item ) : ?>
-                                        <option value="<?php echo esc_attr( $item['key'] ) ?>"><?php echo esc_html( $item['label'] ) ?></option>
-                                    <?php endforeach; ?>
+                                <select name="format" class="regular-text" id="input-format" required>
+                                    <!-- load formats-->
                                 </select>
                             </td>
                         </tr>
                     </table>
                     <!-- Box -->
-                    <table class="widefat striped" id="selectable_types"></table>
+                    <table class="widefat striped" >
+                        <tbody id="types-list"><!-- List of types --></tbody>
+                    </table>
                     <br>
                     <!-- End Box -->
 
@@ -260,46 +256,15 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td>
                                 All Locations<br>
-                                <select name="all_locations" id="input-all-locations" class="regular-text">
-                                    <option value="admin2">Admin2 (County)</option>
-                                    <option disabled>---disabled---</option>
-                                    <option value="admin0">Admin0 (Country)</option>
-                                    <option value="admin1">Admin1 (State)</option>
-                                    <option value="admin2">Admin2 (County)</option>
-                                    <option value="admin3">Admin3</option>
-                                    <option value="admin4">Admin4</option>
-                                    <option value="admin5">Admin5</option>
-                                    <option value="raw">Raw (not recommended)</option>
-                                    <option disabled>------</option>
-                                    <option value="country_by_country">Country by Country</option>
+                                <select name="all_locations" id="input-all-locations" class="regular-text" required>
                                 </select>
                             </td>
                         </tr>
                         </tbody>
                     </table>
 
-                    <table class="widefat striped">
-                        <!-- List of countries -->
-                        <?php if ( ! empty( $countries ) ) : foreach ( $countries as $country ) : ?>
-                            <tr class="country-list" style="display:none;">
-                                <td>
-                                    <?php echo esc_html( $country['name'] ) ?>
-                                </td>
-                                <td>
-                                    <select class="selected-locations" name="selected_locations[<?php echo esc_attr( $country['grid_id'] ) ?>]" id="<?php echo esc_attr( $country['grid_id'] ) ?>">
-                                        <option value="disabled">---disabled---</option>
-                                        <option value="admin0">Admin0 (Country)</option>
-                                        <option value="admin1">Admin1 (State)</option>
-                                        <option value="admin2">Admin2 (County)</option>
-                                        <option value="admin3">Admin3</option>
-                                        <option value="admin4">Admin4</option>
-                                        <option value="admin5">Admin5</option>
-                                        <option value="raw">Raw (not recommended)</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        <?php endforeach;
-                        endif; ?>
+                    <table class="widefat striped" >
+                        <tbody id="country-list-table"><!-- List of countries --></tbody>
                     </table>
                     <br>
                     <!-- End Box -->
@@ -316,10 +281,8 @@ class DT_Metrics_Export_Tab_Location_Export {
                         <tr>
                             <td>
                                 Export Destination<br>
-                                <select name="destination" class="regular-text" id="input-destination">
-                                    <?php foreach( $destinations as $destination ) : ?>
-                                        <option value="<?php echo esc_attr( $destination['value'] ) ?>"><?php echo esc_html( $destination['label'] ) ?></option>
-                                    <?php endforeach; ?>
+                                <select name="destination" class="regular-text" id="input-destination" required>
+                                    <!-- load destination -->
                                 </select>
                             </td>
                         </tr>
@@ -349,102 +312,231 @@ class DT_Metrics_Export_Tab_Location_Export {
     public function content_scripts( $last_config_id = 0 ) {
         ?>
         <script>
-            window.export_configurations = [<?php echo json_encode( get_dt_metrics_export_configuration() ) ?>][0]
+            window.export_configurations = [<?php echo json_encode( get_dt_metrics_export_configurations() ) ?>][0]
             window.export_formats = [<?php echo json_encode( get_dt_metrics_export_formats() ) ?>][0]
-            window.export_destinations = [<?php echo json_encode( get_dt_metrics_export_destinations() ) ?>][0]
+            window.countries = [<?php echo json_encode( Disciple_Tools_Mapping_Queries::get_countries() ) ?>][0]
+
+            console.log( window.export_configurations )
+            console.log( window.export_formats )
+            console.log( window.countries )
 
             jQuery(document).ready(function() {
 
-                /* TYPES */
-                let format_input = jQuery('#input-format')
-                format_input.on('change', function() {
-                    load_selectable_types( format_input.val() )
-                })
-                load_selectable_types( format_input.val() )
-
-                /* LOCATIONS*/
-                let locations = jQuery('#input-all-locations')
-                locations.on('change', function() {
-                    if ( 'country_by_country' === jQuery(this).val()  ) {
-                        jQuery('.country-list').show()
-                    } else {
-                        jQuery('.country-list').hide()
-                    }
-                })
-                if ( 'country_by_country' === locations.val()  ) {
-                    jQuery('.country-list').show()
-                }
-
-
-                /* DESTINATION*/
-                let destination = jQuery('#destination')
-                destination.on('change', function() {
-                    load_destination( destination.val() )
-                })
-
-                /* CONFIGURATION */
-                let config = jQuery('#configuration')
-                config.on('change', function() {
-                    load_configuration( config.val() )
-                })
-                if ( <?php echo esc_attr( $last_config_id ) ?> > 0 ) {
-                    load_configuration( <?php echo esc_attr( $last_config_id ) ?> )
-                } else {
-                    load_configuration( config.val() )
-                }
-
-
-            })
-
-            function load_configuration( id ) {
-                console.log( id )
-
-                reset_locations()
-
-                let input_configuration = jQuery('#configuration')
-                let input_all_locations = jQuery('#input-all-locations')
-                let input_format = jQuery('#input-format')
-                let input_destination = jQuery('#input-destination')
-                let input_configuration_label = jQuery('#input-configuration-name')
-                let country_list = jQuery('.country-list')
                 let is_old = jQuery('.old')
                 let is_new = jQuery('.new')
 
-                /* if new */
-                if ( id === 'undefined' || id === 'new' || id === 0 ) {
-                    input_configuration.val('new')
-                    input_all_locations.val('admin2')
-                    country_list.hide()
-                    input_configuration_label.val('<?php echo esc_html( 'Configuration ' . time() ) ?>')
+                load_all_configurations()
+                let config = jQuery('#input-configuration')
+                config.on('change', function() {
+                    load_selected_configuration( config.val() )
+                    is_old.show()
+                    is_new.hide()
+                })
+                if ( <?php echo esc_attr( $last_config_id ) ?> > 0 ) {
+                    load_selected_configuration( <?php echo esc_attr( $last_config_id ) ?> )
+                    is_old.show()
+                    is_new.hide()
+                }
+                else {
                     is_old.hide()
                     is_new.show()
-                    return
                 }
 
+                let input_format = jQuery('#input-format')
+                input_format.on('change', function() {
+                    load_format( input_format.val() )
+                })
+
+
+
+                /* TYPES */
+                // let format_input = jQuery('#input-format')
+                // format_input.on('change', function() {
+                //     load_selectable_types( format_input.val() )
+                // })
+                // load_selectable_types( format_input.val() )
+
+                /* LOCATIONS*/
+                // let locations = jQuery('#input-all-locations')
+                // locations.on('change', function() {
+                //     if ( 'country_by_country' === jQuery(this).val()  ) {
+                //         jQuery('.country-list').show()
+                //     } else {
+                //         jQuery('.country-list').hide()
+                //     }
+                // })
+                // if ( 'country_by_country' === locations.val()  ) {
+                //     jQuery('.country-list').show()
+                // }
+
+                /* DESTINATION*/
+                // let destination = jQuery('#destination')
+                // destination.on('change', function() {
+                //     load_destination( destination.val() )
+                // })
+
+                /* CONFIGURATION */
+
+                //  else {
+                //
+                // }
+
+            })
+
+            function load_all_configurations() {
+                let input_configuration = jQuery('#input-configuration')
+
+                input_configuration.empty().append(`<option value="new">New</option><option disabled>----</option>`)
+                jQuery.each(  window.export_configurations, function(i,v) {
+                    input_configuration.append(`
+                    <option value="${v.id}">${v.label}</option>
+                    `)
+                })
+
+                load_all_formats()
+            }
+            function load_types( format_key ) {
+                let list = jQuery('#types-list')
+
+                list.empty()
+                jQuery.each( window.export_formats[format_key].types, function(i,v) {
+                    list.append(`<tr><td style="text-transform:capitalize;" ><strong>${i}</strong></td><td></td></tr>`)
+                    jQuery.each(v, function (ii, vv) {
+                        list.append(`<tr><td>-- ${vv.label}</td><td class="float-right"><input type="checkbox" id="${vv.key}" name="type[${vv.key}]" value="true" /></td></tr>`)
+                    })
+                })
+
+                let inputs = jQuery('#types-list input:checkbox')
+                inputs.prop('checked', true)
+            }
+            function load_all_formats() {
+                let input_format = jQuery('#input-format')
+
+                input_format.empty().append(`<option></option>`)
+                jQuery.each(  window.export_formats, function(i,v) {
+                    input_format.append(`
+                    <option value="${v.key}">${v.label}</option>
+                    `)
+                })
+            }
+            function load_all_locations( format_key ) {
+                if ( typeof format_key === 'undefined') {
+                    return
+                }
+                let list = jQuery('#input-all-locations')
+
+                list.empty()
+                jQuery.each(window.export_formats[format_key].locations.all, function(i,v){
+                    list.append(`<option value="${i}">${v}</option>`)
+                })
+
+            }
+            function load_countries() {
+                let countries_list = jQuery('#country-list-table')
+                countries_list.empty()
+
+                jQuery.each( window.countries, function(i,v) {
+                    countries_list.append(`
+                    <tr>
+                        <td>
+                            ${v.name}
+                        </td>
+                        <td>
+                            <select class="selected-locations" name="selected_locations[${v.grid_id}]" id="${v.grid_id}">
+                                <option value="disabled">---disabled---</option>
+                                <option value="admin0">Admin0 (Country)</option>
+                                <option value="admin1">Admin1 (State)</option>
+                                <option value="admin2">Admin2 (County)</option>
+                                <option value="admin3">Admin3</option>
+                                <option value="admin4">Admin4</option>
+                                <option value="admin5">Admin5</option>
+                                <option value="raw">Raw (not recommended)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    `)
+                })
+            }
+            function load_destinations( format_key ) {
+                let input_destination = jQuery('#input-destination')
+                input_destination.empty()
+
+                jQuery.each(  window.export_formats[format_key].destinations, function(i,v) {
+                    input_destination.append(`
+                    <option value="${v.value}">${v.label}</option>
+                    `)
+                })
+            }
+            function load_format( format_key ) {
+                let input_format = jQuery('#input-format')
+                input_format.val(format_key)
+                load_types( format_key )
+                load_countries( format_key )
+                load_all_locations(format_key)
+                load_destinations( format_key )
+            }
+            function load_selected_configuration( configuration_id ) {
+                if ( ! configuration_id) {
+                    return
+                }
+                console.log( configuration_id )
+
+                let format_key = window.export_configurations[configuration_id].format
+                let input_format = jQuery('#input-format')
+                input_format.val(format_key)
+                load_types( format_key )
+                load_countries( format_key )
+                load_all_locations(format_key)
+                load_destinations( format_key )
+return
+                let input_configuration = jQuery('#input-configuration')
+                let input_configuration_label = jQuery('#input-configuration-name')
+                let types_list = jQuery('#types-list')
+                let input_all_locations = jQuery('#input-all-locations')
+                let country_list = jQuery('.country-list')
+                let input_destination = jQuery('#input-destination')
+                let is_old = jQuery('.old')
+                let is_new = jQuery('.new')
+
+
                 /* if selected configuration */
-                input_configuration_label.val(window.export_configurations[id].label)
-                input_configuration.val(window.export_configurations[id].id)
-                input_format.val(window.export_configurations[id].format)
-                input_all_locations.val(window.export_configurations[id].all_locations)
-                jQuery.each( window.export_configurations[id].selected_locations, function(i,v){
+                input_configuration_label.val(window.export_configurations[configuration_id].label)
+                input_configuration.val(window.export_configurations[configuration_id].id)
+                input_format.val(window.export_configurations[configuration_id].format)
+                input_all_locations.val(window.export_configurations[configuration_id].all_locations)
+                jQuery.each( window.export_configurations[configuration_id].selected_locations, function(i,v){
                     jQuery('#'+i).val(v)
                 })
-                if ( 'country_by_country' === window.export_configurations[id].all_locations  ) {
+                if ( 'country_by_country' === window.export_configurations[configuration_id].all_locations  ) {
                     country_list.show()
                 } else {
                     country_list.hide()
                 }
-                input_destination.val(window.export_configurations[id].destination)
+                input_destination.val(window.export_configurations[configuration_id].destination)
                 is_old.show()
                 is_new.hide()
 
-                load_selectable_types( window.export_configurations[id].format )
-                load_destination( window.export_configurations[id].format )
 
             }
+            function getUnique(array){
+                var uniqueArray = [];
+                for(i=0; i < array.length; i++){
+                    if(uniqueArray.indexOf(array[i]) === -1) {
+                        uniqueArray.push(array[i]);
+                    }
+                }
+                return uniqueArray;
+            }
 
-            function load_selectable_types( id ) {
-                let container = jQuery('#selectable_types')
+            function reset_locations() {
+                let selected_locations = jQuery('.selected-locations')
+                selected_locations.each(function(){
+                    jQuery(this).val('disabled')
+                })
+            }
+
+            function load_selected_types( id ) {
+                let container = jQuery('#types-list')
 
                 if ( id === 'undefined' || typeof window.export_formats[id] === 'undefined') {
                     container.hide()
@@ -471,7 +563,7 @@ class DT_Metrics_Export_Tab_Location_Export {
 
                 container.html(html)
 
-                let inputs = jQuery('#selectable_types input:checkbox')
+                let inputs = jQuery('#types-list input:checkbox')
 
                 let configuration = jQuery('#configuration').val()
                 if ( 'new' === configuration ) {
@@ -484,29 +576,6 @@ class DT_Metrics_Export_Tab_Location_Export {
                 }
 
                 container.show()
-            }
-
-            function load_destination( id ) {
-                let input_destination = jQuery('#input-destination')
-
-
-            }
-
-            function getUnique(array){
-                var uniqueArray = [];
-                for(i=0; i < array.length; i++){
-                    if(uniqueArray.indexOf(array[i]) === -1) {
-                        uniqueArray.push(array[i]);
-                    }
-                }
-                return uniqueArray;
-            }
-
-            function reset_locations() {
-                let selected_locations = jQuery('.selected-locations')
-                selected_locations.each(function(){
-                    jQuery(this).val('disabled')
-                })
             }
 
         </script>
@@ -542,16 +611,6 @@ class DT_Metrics_Export_Tab_Location_Export {
             }
         }
         return 0;
-    }
-
-    public function get_configurations() : array {
-        $configurations = [];
-        $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export' ] );
-        foreach ( $config_posts as $key => $post ) {
-            $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
-            $configurations[$post->ID]['id'] = $post->ID;
-        }
-        return $configurations;
     }
 
     public function filter_post( $response ) : array {
@@ -649,103 +708,204 @@ if ( ! function_exists( 'dt_get_simple_postmeta' ) ) {
     }
 }
 
-function get_dt_metrics_export_types() : array {
-    $types = [];
-
-    // Contacts
-    $types['contacts_all'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_all',
-        'label' => 'All'
-    ];
-    $types['contacts_active'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_active',
-        'label' => 'Active'
-    ];
-    $types['contacts_paused'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_paused',
-        'label' => 'Paused'
-    ];
-    $types['contacts_seekers'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_seekers',
-        'label' => 'Seekers'
-    ];
-    $types['contacts_believers'] = [
-        'type' => 'contacts',
-        'key' => 'contacts_believers',
-        'label' => 'Believers'
-    ];
-
-    // Groups
-    $types['groups_all'] = [
-        'type' => 'groups',
-        'key' => 'groups_all',
-        'label' => 'All'
-    ];
-    $types['groups_active'] = [
-        'type' => 'groups',
-        'key' => 'groups_active',
-        'label' => 'Active'
-    ];
-    $types['groups_inactive'] = [
-        'type' => 'groups',
-        'key' => 'groups_inactive',
-        'label' => 'Inactive'
-    ];
-    $types['groups_pre_groups'] = [
-        'type' => 'groups',
-        'key' => 'groups_pre_groups',
-        'label' => 'Pre-Groups'
-    ];
-    $types['groups_groups'] = [
-        'type' => 'groups',
-        'key' => 'groups_groups',
-        'label' => 'Groups'
-    ];
-    $types['groups_churches'] = [
-        'type' => 'groups',
-        'key' => 'groups_churches',
-        'label' => 'Churches'
-    ];
-    $types['groups_unformed'] = [
-        'type' => 'groups',
-        'key' => 'groups_unformed',
-        'label' => 'Unformed Believers by Area'
-    ];
-
-    // Users
-    $types['users_all'] = [
-        'type' => 'users',
-        'key' => 'users_all',
-        'label' => 'Users'
-    ];
-    $types['users_active'] = [
-        'type' => 'users',
-        'key' => 'users_active',
-        'label' => 'Active'
-    ];
-    $types['users_inactive'] = [
-        'type' => 'users',
-        'key' => 'users_inactive',
-        'label' => 'Inactive'
-    ];
-    $types['users_by_roles'] = [
-        'type' => 'users',
-        'key' => 'users_by_roles',
-        'label' => 'Users by Roles'
-    ];
-
-    return apply_filters( 'dt_metrics_export_types', $types );
-}
+//function get_dt_metrics_export_types() : array {
+//    $types = [];
+//
+//    // Contacts
+//    $types['contacts_all'] = [
+//        'type' => 'contacts',
+//        'key' => 'contacts_all',
+//        'label' => 'All'
+//    ];
+//    $types['contacts_active'] = [
+//        'type' => 'contacts',
+//        'key' => 'contacts_active',
+//        'label' => 'Active'
+//    ];
+//    $types['contacts_paused'] = [
+//        'type' => 'contacts',
+//        'key' => 'contacts_paused',
+//        'label' => 'Paused'
+//    ];
+//    $types['contacts_seekers'] = [
+//        'type' => 'contacts',
+//        'key' => 'contacts_seekers',
+//        'label' => 'Seekers'
+//    ];
+//    $types['contacts_believers'] = [
+//        'type' => 'contacts',
+//        'key' => 'contacts_believers',
+//        'label' => 'Believers'
+//    ];
+//
+//    // Groups
+//    $types['groups_all'] = [
+//        'type' => 'groups',
+//        'key' => 'groups_all',
+//        'label' => 'All'
+//    ];
+//    $types['groups_active'] = [
+//        'type' => 'groups',
+//        'key' => 'groups_active',
+//        'label' => 'Active'
+//    ];
+//    $types['groups_inactive'] = [
+//        'type' => 'groups',
+//        'key' => 'groups_inactive',
+//        'label' => 'Inactive'
+//    ];
+//    $types['groups_pre_groups'] = [
+//        'type' => 'groups',
+//        'key' => 'groups_pre_groups',
+//        'label' => 'Pre-Groups'
+//    ];
+//    $types['groups_groups'] = [
+//        'type' => 'groups',
+//        'key' => 'groups_groups',
+//        'label' => 'Groups'
+//    ];
+//    $types['groups_churches'] = [
+//        'type' => 'groups',
+//        'key' => 'groups_churches',
+//        'label' => 'Churches'
+//    ];
+//    $types['groups_unformed'] = [
+//        'type' => 'groups',
+//        'key' => 'groups_unformed',
+//        'label' => 'Unformed Believers by Area'
+//    ];
+//
+//    // Users
+//    $types['users_all'] = [
+//        'type' => 'users',
+//        'key' => 'users_all',
+//        'label' => 'Users'
+//    ];
+//    $types['users_active'] = [
+//        'type' => 'users',
+//        'key' => 'users_active',
+//        'label' => 'Active'
+//    ];
+//    $types['users_inactive'] = [
+//        'type' => 'users',
+//        'key' => 'users_inactive',
+//        'label' => 'Inactive'
+//    ];
+//    $types['users_by_roles'] = [
+//        'type' => 'users',
+//        'key' => 'users_by_roles',
+//        'label' => 'Users by Roles'
+//    ];
+//
+//    return $types;
+//}
 
 function get_dt_metrics_export_formats() : array {
     return apply_filters( 'dt_metrics_export_format', [] );
 }
 
-function get_dt_metrics_export_configuration() : array {
+function get_dt_metrics_export_base_format() : array {
+    return [
+        'key' => '',
+        'label' => '',
+        'types' => [
+            'contacts' => [
+                'contacts_all' => [
+                    'key' => 'contacts_all',
+                    'label' => 'All'
+                ],
+                'contacts_active' => [
+                    'key' => 'contacts_active',
+                    'label' => 'Active'
+                ],
+                'contacts_paused' => [
+                    'key' => 'contacts_paused',
+                    'label' => 'Paused'
+                ],
+                'contacts_closed' => [
+                    'key' => 'contacts_closed',
+                    'label' => 'Closed'
+                ],
+            ],
+            'groups' => [
+                'groups_all' => [
+                    'key' => 'groups_all',
+                    'label' => 'All'
+                ],
+                'groups_active' => [
+                    'key' => 'groups_active',
+                    'label' => 'Active'
+                ],
+                'groups_inactive' => [
+                    'key' => 'groups_inactive',
+                    'label' => 'Inactive'
+                ],
+                'groups_pre_groups' => [
+                    'key' => 'groups_pre_groups',
+                    'label' => 'Pre-Groups'
+                ],
+                'groups_groups' => [
+                    'key' => 'groups_groups',
+                    'label' => 'Groups'
+                ],
+                'groups_churches' => [
+                    'key' => 'groups_churches',
+                    'label' => 'Churches'
+                ],
+            ],
+            'users' => [
+                'users_all' => [
+                    'key' => 'users_all',
+                    'label' => 'All'
+                ],
+                'users_active' => [
+                    'key' => 'users_active',
+                    'label' => 'Active'
+                ],
+                'users_inactive' => [
+                    'key' => 'users_inactive',
+                    'label' => 'Inactive'
+                ],
+                'users_by_roles' => [
+                    'key' => 'users_by_roles',
+                    'label' => 'Users by Roles'
+                ],
+            ]
+        ],
+        'locations' => [
+            'all' => [
+                'admin0' => 'Admin0 (Country)',
+                'admin1' => 'Admin1 (State)',
+                'admin2' => 'Admin2 (County)',
+                'admin3' => 'Admin3 (Blocks)',
+                'admin4' => 'Admin4 (Village)',
+                'admin5' => 'Admin5',
+                'raw' => 'Raw (not recommended)',
+            ],
+            'country_by_country' => [
+                'admin0' => 'Admin0 (Country)',
+                'admin1' => 'Admin1 (State)',
+                'admin2' => 'Admin2 (County)',
+                'admin3' => 'Admin3 (Blocks)',
+                'admin4' => 'Admin4 (Village)',
+                'admin5' => 'Admin5',
+                'raw' => 'Raw (not recommended)',
+            ]
+        ],
+        'destinations' => [
+            'download' => [
+                'value' => 'download',
+                'label' => 'Download Link'
+            ],
+            'uploads' => [
+                'value' => 'uploads',
+                'label' => 'Uploads Folder (unrestricted public access)'
+            ]
+        ],
+    ];
+}
+
+function get_dt_metrics_export_configurations() : array {
     $configurations = [];
     $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export' ] );
     foreach ( $config_posts as $key => $post ) {
@@ -755,19 +915,19 @@ function get_dt_metrics_export_configuration() : array {
     return $configurations;
 }
 
-function get_dt_metrics_export_destinations() : array {
-    $data = [];
-    $data['download'] = [
-        'value' => 'download',
-        'label' => 'Download Link'
-    ];
-    $data['uploads'] = [
-        'value' => 'uploads',
-        'label' => 'Uploads Folder (unrestricted public access)'
-    ];
-
-    return apply_filters( 'dt_metrics_export_destinations', $data );
-}
+//function get_dt_metrics_export_destinations() : array {
+//    $data = [];
+//    $data['download'] = [
+//        'value' => 'download',
+//        'label' => 'Download Link'
+//    ];
+//    $data['uploads'] = [
+//        'value' => 'uploads',
+//        'label' => 'Uploads Folder (unrestricted public access)'
+//    ];
+//
+//    return apply_filters( 'dt_metrics_export_destinations', $data );
+//}
 
 
 
