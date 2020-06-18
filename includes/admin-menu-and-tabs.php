@@ -355,7 +355,7 @@ class DT_Metrics_Export_Tab_Location_Export {
             function load_all_configurations() {
                 let input_configuration = jQuery('#input-configuration')
                 let input_configuration_label = jQuery('#input-configuration-name')
-                let rand_time = <?php echo time() ?>
+                let rand_time = <?php echo esc_attr( time() ) ?>
 
                 // load list
                 input_configuration.empty().append(`<option value="new">New</option><option disabled>----</option>`)
@@ -469,7 +469,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                 let input_configuration = jQuery('#input-configuration')
                 let input_configuration_label = jQuery('#input-configuration-name')
 
-                if ( typeof configuration_id === 'undefined' || 'new' === input_configuration.val() ) {
+                if ( typeof configuration_id === 'undefined' || 'new' === configuration_id ) {
                     load_all_configurations()
                     return
                 }
@@ -484,7 +484,6 @@ class DT_Metrics_Export_Tab_Location_Export {
                 configure_destinations( configuration_id )
 
                 // set name of configuration
-                console.log()
                 input_configuration.val( configuration_id )
                 input_configuration_label.val(window.export_configurations[configuration_id].label)
 

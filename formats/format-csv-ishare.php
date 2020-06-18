@@ -53,11 +53,6 @@ if ( defined( 'ABSPATH' ) ) {
             $format[$this->token]['types'] = [];
 
             unset( $format[$this->token]['destinations']['uploads'] );
-//            $format[$this->token]['destinations'] = [];
-//            $format[$this->token]['destinations']['download'] = [
-//                'value' => 'download',
-//                'label' => 'Download Link'
-//            ];
 
             return $format;
         }
