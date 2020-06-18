@@ -315,32 +315,26 @@ class DT_Metrics_Export_Tab_Location_Export {
             window.export_configurations = [<?php echo json_encode( get_dt_metrics_export_configurations() ) ?>][0]
             window.export_formats = [<?php echo json_encode( get_dt_metrics_export_formats() ) ?>][0]
             window.countries = [<?php echo json_encode( Disciple_Tools_Mapping_Queries::get_countries() ) ?>][0]
+            window.last_config = <?php echo esc_attr( $last_config_id ?? 0 ) ?>
 
             console.log( window.export_configurations )
             console.log( window.export_formats )
             console.log( window.countries )
+            console.log( window.last_config )
 
             jQuery(document).ready(function() {
 
-                let is_old = jQuery('.old')
-                let is_new = jQuery('.new')
-
+                if ( window.last_config > 0 ) {
+                    load_selected_configuration( <?php echo esc_attr( $last_config_id ) ?> )
+                }
                 load_all_configurations()
                 let config = jQuery('#input-configuration')
                 config.on('change', function() {
                     load_selected_configuration( config.val() )
-                    is_old.show()
-                    is_new.hide()
+                    set_buttons()
                 })
-                if ( <?php echo esc_attr( $last_config_id ) ?> > 0 ) {
-                    load_selected_configuration( <?php echo esc_attr( $last_config_id ) ?> )
-                    is_old.show()
-                    is_new.hide()
-                }
-                else {
-                    is_old.hide()
-                    is_new.show()
-                }
+
+                set_buttons()
 
                 let input_format = jQuery('#input-format')
                 input_format.on('change', function() {
@@ -383,9 +377,27 @@ class DT_Metrics_Export_Tab_Location_Export {
 
             })
 
+            function set_buttons() {
+                let is_old = jQuery('.old')
+                let is_new = jQuery('.new')
+
+                if ( jQuery('#input-configuration').val() === 'new' ) {
+                    is_old.hide()
+                    is_new.show()
+                }
+                else {
+                    is_old.show()
+                    is_new.hide()
+                }
+
+            }
+
             function load_all_configurations() {
                 let input_configuration = jQuery('#input-configuration')
+                let input_configuration_label = jQuery('#input-configuration-name')
+                let rand_time = <?php echo time() ?>
 
+                // load list
                 input_configuration.empty().append(`<option value="new">New</option><option disabled>----</option>`)
                 jQuery.each(  window.export_configurations, function(i,v) {
                     input_configuration.append(`
@@ -393,7 +405,32 @@ class DT_Metrics_Export_Tab_Location_Export {
                     `)
                 })
 
+                // load title field
+                input_configuration_label.val(`Configuration ${rand_time}`)
+
+                // load formats
                 load_all_formats()
+            }
+
+            function load_all_formats() {
+                let input_format = jQuery('#input-format')
+
+                // load formats
+                input_format.empty().append(`<option></option>`)
+                jQuery.each(  window.export_formats, function(i,v) {
+                    input_format.append(`
+                    <option value="${v.key}">${v.label}</option>
+                    `)
+                })
+
+                // clear other settings
+                jQuery('#types-list').empty()
+                jQuery('#input-all-locations').empty()
+                jQuery('#country-list-table').empty()
+                jQuery('#input-destination').empty()
+
+                // set buttons
+                set_buttons()
             }
             function load_types( format_key ) {
                 let list = jQuery('#types-list')
@@ -409,16 +446,6 @@ class DT_Metrics_Export_Tab_Location_Export {
                 let inputs = jQuery('#types-list input:checkbox')
                 inputs.prop('checked', true)
             }
-            function load_all_formats() {
-                let input_format = jQuery('#input-format')
-
-                input_format.empty().append(`<option></option>`)
-                jQuery.each(  window.export_formats, function(i,v) {
-                    input_format.append(`
-                    <option value="${v.key}">${v.label}</option>
-                    `)
-                })
-            }
             function load_all_locations( format_key ) {
                 if ( typeof format_key === 'undefined') {
                     return
@@ -429,6 +456,8 @@ class DT_Metrics_Export_Tab_Location_Export {
                 jQuery.each(window.export_formats[format_key].locations.all, function(i,v){
                     list.append(`<option value="${i}">${v}</option>`)
                 })
+
+                list.val('admin2')
 
             }
             function load_countries() {
@@ -476,7 +505,10 @@ class DT_Metrics_Export_Tab_Location_Export {
                 load_destinations( format_key )
             }
             function load_selected_configuration( configuration_id ) {
-                if ( ! configuration_id) {
+                let input_configuration = jQuery('#input-configuration')
+                let input_configuration_label = jQuery('#input-configuration-name')
+                if ( typeof configuration_id === 'undefined' || 'new' === input_configuration.val() ) {
+                    load_all_configurations()
                     return
                 }
                 console.log( configuration_id )
@@ -484,13 +516,14 @@ class DT_Metrics_Export_Tab_Location_Export {
                 let format_key = window.export_configurations[configuration_id].format
                 let input_format = jQuery('#input-format')
                 input_format.val(format_key)
+                input_configuration_label.val(window.export_configurations[configuration_id].label)
                 load_types( format_key )
                 load_countries( format_key )
                 load_all_locations(format_key)
                 load_destinations( format_key )
 return
-                let input_configuration = jQuery('#input-configuration')
-                let input_configuration_label = jQuery('#input-configuration-name')
+                // let input_configuration = jQuery('#input-configuration')
+                // let input_configuration_label = jQuery('#input-configuration-name')
                 let types_list = jQuery('#types-list')
                 let input_all_locations = jQuery('#input-all-locations')
                 let country_list = jQuery('.country-list')
@@ -513,27 +546,25 @@ return
                     country_list.hide()
                 }
                 input_destination.val(window.export_configurations[configuration_id].destination)
-                is_old.show()
-                is_new.hide()
-
-
+                // is_old.show()
+                // is_new.hide()
             }
-            function getUnique(array){
-                var uniqueArray = [];
-                for(i=0; i < array.length; i++){
-                    if(uniqueArray.indexOf(array[i]) === -1) {
-                        uniqueArray.push(array[i]);
-                    }
-                }
-                return uniqueArray;
-            }
+            // function getUnique(array){
+            //     var uniqueArray = [];
+            //     for(i=0; i < array.length; i++){
+            //         if(uniqueArray.indexOf(array[i]) === -1) {
+            //             uniqueArray.push(array[i]);
+            //         }
+            //     }
+            //     return uniqueArray;
+            // }
 
-            function reset_locations() {
-                let selected_locations = jQuery('.selected-locations')
-                selected_locations.each(function(){
-                    jQuery(this).val('disabled')
-                })
-            }
+            // function reset_locations() {
+            //     let selected_locations = jQuery('.selected-locations')
+            //     selected_locations.each(function(){
+            //         jQuery(this).val('disabled')
+            //     })
+            // }
 
             function load_selected_types( id ) {
                 let container = jQuery('#types-list')
