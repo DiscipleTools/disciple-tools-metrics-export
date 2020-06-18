@@ -254,7 +254,6 @@ class DT_Metrics_Export_Tab_Location_Export {
                         </tr>
                         </tbody>
                     </table>
-
                     <table class="widefat striped" id="countries-wrapper">
                         <tbody id="country-list-table"><!-- List of countries --></tbody>
                     </table>
@@ -292,7 +291,6 @@ class DT_Metrics_Export_Tab_Location_Export {
                     </table>
                     <br>
                     <!-- End Box -->
-
                 </div>
             </div>
             </form>
@@ -322,9 +320,8 @@ class DT_Metrics_Export_Tab_Location_Export {
                     set_buttons()
                 })
                 if ( window.last_config > 0 ) {
-                    load_selected_configuration( <?php echo esc_attr( $last_config_id ) ?> )
+                    load_selected_configuration( window.last_config )
                 }
-
                 set_buttons()
 
                 let input_format = jQuery('#input-format')
@@ -481,13 +478,15 @@ class DT_Metrics_Export_Tab_Location_Export {
                 let format_key = window.export_configurations[configuration_id].format
                 load_format( format_key )
 
-                // set name of configuration
-                input_configuration_label.val(window.export_configurations[configuration_id].label)
-
                 // configure elements to the configuration
                 configure_types( configuration_id )
                 configure_all_locations( configuration_id )
                 configure_destinations( configuration_id )
+
+                // set name of configuration
+                console.log()
+                input_configuration.val( configuration_id )
+                input_configuration_label.val(window.export_configurations[configuration_id].label)
 
                 set_buttons()
             }
@@ -517,9 +516,6 @@ class DT_Metrics_Export_Tab_Location_Export {
                 jQuery.each( selected_locations, function(i,v){
                     jQuery('#'+i).val(v)
                 })
-
-
-
             }
             function configure_destinations( configuration_id ) {
                 let input_destination = jQuery('#input-destination')

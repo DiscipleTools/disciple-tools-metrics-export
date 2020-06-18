@@ -26,6 +26,11 @@ if ( ! function_exists( 'get_dt_metrics_export_formats' ) ) {
 if ( ! function_exists( 'get_dt_metrics_export_base_format' ) ) {
     function get_dt_metrics_export_base_format(): array
     {
+        /**
+         * This is the default configuration and template
+         * Through the add_filter('dt_metrics_export_format') this template can have elements added or removed.
+         * The key is to follow the pattern of the array, to remain consistent with the ui javascript.
+         */
         return [
             'key' => '',
             'label' => '',

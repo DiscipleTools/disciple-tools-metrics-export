@@ -71,11 +71,7 @@ if (defined( 'ABSPATH' )) {
                 ]
             ];
 
-            // add destination
-            $format[$this->token]['destinations']['google'] = [
-                'value' => 'google',
-                'label' => 'Google Update'
-            ];
+            unset( $format[$this->token]['destinations']['uploads'] );
 
             return $format;
         }
