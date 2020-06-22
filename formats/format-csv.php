@@ -71,6 +71,61 @@ if (defined( 'ABSPATH' )) {
                 ]
             ];
 
+            $format[$this->token]['types'] = [
+                'contacts' => [
+                    'contacts_active' => [
+                        'key' => 'contacts_all',
+                        'label' => 'Active'
+                    ],
+                    'contacts_pre_active' => [
+                        'key' => 'contacts_pre_active',
+                        'label' => 'New-ish (All pre-active)'
+                    ],
+                    'contacts_activeish' => [
+                        'key' => 'contacts_activeish',
+                        'label' => 'Active-ish (All Non-Closed)'
+                    ],
+                    'contacts_paused' => [
+                        'key' => 'contacts_paused',
+                        'label' => 'Paused'
+                    ],
+                ],
+                'groups' => [
+                    'groups_all' => [
+                        'key' => 'groups_all',
+                        'label' => 'All'
+                    ],
+                    'groups_active' => [
+                        'key' => 'groups_active',
+                        'label' => 'Active'
+                    ],
+                    'groups_inactive' => [
+                        'key' => 'groups_inactive',
+                        'label' => 'Inactive'
+                    ],
+                ],
+                'churches' => [
+                    'churches_all' => [
+                        'key' => 'churches_all',
+                        'label' => 'All'
+                    ],
+                    'churches_active' => [
+                        'key' => 'churches_active',
+                        'label' => 'Active'
+                    ],
+                    'churches_inactive' => [
+                        'key' => 'churches_inactive',
+                        'label' => 'Inactive'
+                    ],
+                ],
+                'users' => [
+                    'users_all' => [
+                        'key' => 'users_all',
+                        'label' => 'All'
+                    ],
+                ]
+            ];
+
             unset( $format[$this->token]['destinations']['uploads'] );
 
             return $format;
