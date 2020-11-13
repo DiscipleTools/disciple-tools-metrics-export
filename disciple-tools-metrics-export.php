@@ -62,7 +62,7 @@ function dt_metrics_export() {
          * This action fires after the DT_Metrics_Export plugin is loaded.
          * Use this to hook custom export formats from other plugins.
          */
-        do_action('dt_metrics_export_loaded' );
+        do_action( 'dt_metrics_export_loaded' );
         return true;
     }
     return false;

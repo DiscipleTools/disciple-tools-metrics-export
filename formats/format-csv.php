@@ -411,6 +411,7 @@ if (defined( 'ABSPATH' )) {
                     break;
             }
 
+            // @phpcs:disable
             $results = $wpdb->get_results("
                 SELECT
                     '{$type_title}' as type,
@@ -532,6 +533,7 @@ if (defined( 'ABSPATH' )) {
             ", ARRAY_A );
             return $results;
         }
+        // @phpcs:enable
     }
 
     DT_Metrics_Export_CSV::instance();
