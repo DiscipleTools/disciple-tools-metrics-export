@@ -398,12 +398,11 @@ class DT_Metrics_Export_Tab_Location_Export {
                 jQuery.each( window.export_formats[format_key].types, function(i,v) {
                     list.append(`<tr><td style="text-transform:capitalize;" ><strong>${i}</strong></td><td></td></tr>`)
                     jQuery.each(v, function (ii, vv) {
-                        list.append(`<tr><td>-- ${vv.label}</td><td class="float-right"><input type="checkbox" id="${vv.key}" name="type[${vv.key}]" value="true" /></td></tr>`)
+                        list.append(`<tr><td>-- ${vv.label}</td><td class="float-right"><input type="radio" id="${vv.key}" name="type[${i}]" value="${vv.key}" /></td></tr>`)
                     })
                 })
 
-                let inputs = jQuery('#types-list input:checkbox')
-                inputs.prop('checked', true)
+               list.append('<tr><th></th><th class="float-right"><a href="javascript:void(0)" onclick="jQuery(\'#types-list input[type=radio]\').prop(\'checked\', false)">clear</a></th></tr>')
             }
             function load_all_locations( format_key ) {
                 if ( typeof format_key === 'undefined') {

@@ -40,61 +40,23 @@ if ( ! function_exists( 'get_dt_metrics_export_base_format' ) ) {
                         'key' => 'contacts_all',
                         'label' => 'All'
                     ],
-                    'contacts_active' => [
-                        'key' => 'contacts_active',
-                        'label' => 'Active'
-                    ],
-                    'contacts_paused' => [
-                        'key' => 'contacts_paused',
-                        'label' => 'Paused'
-                    ],
-                    'contacts_closed' => [
-                        'key' => 'contacts_closed',
-                        'label' => 'Closed'
-                    ],
                 ],
                 'groups' => [
                     'groups_all' => [
                         'key' => 'groups_all',
                         'label' => 'All'
                     ],
-                    'groups_active' => [
-                        'key' => 'groups_active',
-                        'label' => 'Active'
-                    ],
-                    'groups_inactive' => [
-                        'key' => 'groups_inactive',
-                        'label' => 'Inactive'
-                    ],
-                    'groups_pre_groups' => [
-                        'key' => 'groups_pre_groups',
-                        'label' => 'Pre-Groups'
-                    ],
-                    'groups_groups' => [
-                        'key' => 'groups_groups',
-                        'label' => 'Groups'
-                    ],
-                    'groups_churches' => [
-                        'key' => 'groups_churches',
-                        'label' => 'Churches'
+                ],
+                'churches' => [
+                    'churches_all' => [
+                        'key' => 'churches_all',
+                        'label' => 'All'
                     ],
                 ],
                 'users' => [
                     'users_all' => [
                         'key' => 'users_all',
                         'label' => 'All'
-                    ],
-                    'users_active' => [
-                        'key' => 'users_active',
-                        'label' => 'Active'
-                    ],
-                    'users_inactive' => [
-                        'key' => 'users_inactive',
-                        'label' => 'Inactive'
-                    ],
-                    'users_by_roles' => [
-                        'key' => 'users_by_roles',
-                        'label' => 'Users by Roles'
                     ],
                 ]
             ],

@@ -57,8 +57,15 @@ function dt_metrics_export() {
      */
     $is_rest = dt_is_rest();
     if ( ! $is_rest || strpos( dt_get_url_path(), 'metrics-export' ) !== false ){
-        return DT_Metrics_Export::get_instance();
+        DT_Metrics_Export::get_instance();
+        /**
+         * This action fires after the DT_Metrics_Export plugin is loaded.
+         * Use this to hook custom export formats from other plugins.
+         */
+        do_action( 'dt_metrics_export_loaded' );
+        return true;
     }
+    return false;
 }
 add_action( 'init', 'dt_metrics_export' );
 
