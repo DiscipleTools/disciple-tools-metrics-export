@@ -2,9 +2,8 @@
 /**
  * Plugin Name: Disciple Tools - Metrics Export
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
- * Description: Disciple Tools - Metrics Export help facilitate security controlled exports with locations data.
- * of the Disciple Tools system.
- * Version:  1.1
+ * Description: Disciple Tools - Metrics Export plugin is an expandable data export tool with support for location levels.
+ * Version:  1.3
  * Author URI: https://github.com/DiscipleTools
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
  * Requires at least: 4.7.0
@@ -15,12 +14,14 @@
  * @link    https://github.com/DiscipleTools
  * @license GPL-2.0 or later
  *          https://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * @version 1.3 Disciple Tools version 1.0 compatibility and dt_metrics_export_loaded action added
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
-$dt_metrics_export_required_dt_theme_version = '0.30.0'; // @todo 0.31.0 required for dt_site_id option
+$dt_metrics_export_required_dt_theme_version = '0.31';
 
 /**
  * Gets the instance of the `DT_Metrics_Export` class.
