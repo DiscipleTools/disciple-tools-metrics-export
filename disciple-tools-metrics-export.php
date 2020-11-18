@@ -204,14 +204,8 @@ class DT_Metrics_Export {
             if ( ! class_exists( 'Puc_v4_Factory' ) ) {
                 require( get_template_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
             }
-            /**
-             * Below is the publicly hosted .json file that carries the version information. This file can be hosted
-             * anywhere as long as it is publicly accessible. You can download the version file listed below and use it as
-             * a template.
-             * Also, see the instructions for version updating to understand the steps involved.
-             * @see https://github.com/DiscipleTools/disciple-tools-version-control/wiki/How-to-Update-the-Starter-Plugin
-             */
-            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/disciple-tools-metrics-export-version-control.json";
+           
+            $hosted_json = "https://disciple.tools/wp-content/themes/disciple-tools-public-site/version-control.php?id=709df012e236dc3f5c53b8ce75c5adf74c39054aef58e3eca5d852fa5f2244de";
             Puc_v4_Factory::buildUpdateChecker(
                 $hosted_json,
                 __FILE__,
