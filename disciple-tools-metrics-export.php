@@ -204,7 +204,7 @@ class DT_Metrics_Export {
             if ( ! class_exists( 'Puc_v4_Factory' ) ) {
                 require( get_template_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
             }
-           
+
             $hosted_json = "https://disciple.tools/wp-content/themes/disciple-tools-public-site/version-control.php?id=709df012e236dc3f5c53b8ce75c5adf74c39054aef58e3eca5d852fa5f2244de";
             Puc_v4_Factory::buildUpdateChecker(
                 $hosted_json,
