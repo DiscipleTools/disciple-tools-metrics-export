@@ -634,6 +634,14 @@ class DT_Metrics_Export_Tab_Location_Export {
 
         if ( isset( $response['format'] ) && ! empty( $response['format'] ) && isset( $formats[$response['format']] ) && class_exists( $formats[$response['format']] ) ) {
             $result = $formats[$response['format']]::instance()->export( $response );
+            dt_activity_insert(
+                [
+                    'action' => 'export',
+                    'object_type' => 'metrics', // If this could be contacts/groups, that would be best
+                    'object_subtype' => 'metrics',
+                    'object_note' => "disciple-tools-metrics-export",
+                ]
+            );
             if ( is_wp_error( $result ) ) {
                 dt_write_log( $result );
                 return 0;
