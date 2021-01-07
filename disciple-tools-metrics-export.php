@@ -3,7 +3,7 @@
  * Plugin Name: Disciple Tools - Metrics Export
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
  * Description: Disciple Tools - Metrics Export plugin is an expandable data export tool with support for location levels.
- * Version:  1.3
+ * Version:  1.4
  * Author URI: https://github.com/DiscipleTools
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
  * Requires at least: 4.7.0
@@ -174,7 +174,7 @@ class DT_Metrics_Export {
 
         // Admin and settings variables
         $this->token             = 'dt_metrics_export';
-        $this->version             = '1.1';
+        $this->version             = '1.4';
 
         if ( is_admin() ) {
             // storage post type for export configurations
