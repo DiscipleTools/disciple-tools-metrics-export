@@ -3,7 +3,7 @@
 # Disciple Tools Metrics Export
 This plugin enables a Disciple Tools system to export telemetry data in a secure manner to visualization systems. The key to this plugin is that it is expandable to serve other kinds of exports beyond the default export.
 
-[Overview](wiki)
+[Overview](https://github.com/DiscipleTools/disciple-tools-metrics-export/wiki)
 
 [Developer Documentation for Expanding the Plugin](samples/format-plugin-template.php)
 
