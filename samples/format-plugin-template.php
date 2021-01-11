@@ -197,8 +197,8 @@ if (defined( 'ABSPATH' )) { // confirm wp is loaded
                     // kill if no results
                     if (empty( $results )) {
                         echo '<div class="notice notice-warning is-dismissible">
-                     <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
-                 </div>';
+                                 <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
+                             </div>';
                         return $response['configuration'] ?? 0;
                     }
 
@@ -227,13 +227,13 @@ if (defined( 'ABSPATH' )) { // confirm wp is loaded
 
                     // admin notification with link
                     echo '<div class="notice notice-warning is-dismissible">
-                     <p>
-                         One time download link (expires in 48 hours):<br>
-                         <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '"
-                         target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '
-                         </a>
-                     </p>
-                 </div>';
+                             <p>
+                                 One time download link (expires in 48 hours):<br>
+                                 <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '"
+                                 target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key ) . '
+                                 </a>
+                             </p>
+                         </div>';
 
                     // return configuration selection from before export
                     return $response['configuration'] ?? 0; // return int config id, so ui reloads on same config
@@ -243,18 +243,18 @@ if (defined( 'ABSPATH' )) { // confirm wp is loaded
                 public function query_contacts() {
                     global $wpdb;
                     $results = $wpdb->get_results("
-                SELECT
-                    p.ID,
-                    p.post_title as name,
-                    ( SELECT GROUP_CONCAT( pm1.meta_value) FROM  $wpdb->postmeta as pm1 WHERE p.ID=pm1.post_id AND pm1.meta_key LIKE 'contact_phone%' AND pm1.meta_key NOT LIKE '%details' ) as phone,
-                    ( SELECT GROUP_CONCAT( pm2.meta_value) FROM  $wpdb->postmeta as pm2 WHERE p.ID=pm2.post_id AND pm2.meta_key LIKE 'contact_email%' AND pm2.meta_key NOT LIKE '%details' ) as email,
-                    ( SELECT GROUP_CONCAT( (SELECT CONCAT( $wpdb->dt_location_grid.name, '-', lg.name ) as name FROM $wpdb->dt_location_grid JOIN $wpdb->dt_location_grid as lg ON $wpdb->dt_location_grid.admin0_grid_id=lg.grid_id WHERE $wpdb->dt_location_grid.grid_id = pm3.meta_value )) FROM  $wpdb->postmeta as pm3 WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location,
-                    ( SELECT GROUP_CONCAT( pm4.meta_value) FROM  $wpdb->postmeta as pm4 WHERE pm4.post_id=p.ID AND pm4.meta_key = 'description' ) as description,
-                    ( SELECT GROUP_CONCAT( pm5.meta_value) FROM  $wpdb->postmeta as pm5 WHERE pm5.post_id=p.ID AND pm5.meta_key = 'region' ) as region,
-                    ( SELECT GROUP_CONCAT( pm6.meta_value) FROM  $wpdb->postmeta as pm6 WHERE pm6.post_id=p.ID AND pm6.meta_key = 'security_level' ) as security_level
-                    FROM $wpdb->posts as p
-                    WHERE post_type = 'contacts';
-            ", ARRAY_A);
+                        SELECT
+                            p.ID,
+                            p.post_title as name,
+                            ( SELECT GROUP_CONCAT( pm1.meta_value) FROM  $wpdb->postmeta as pm1 WHERE p.ID=pm1.post_id AND pm1.meta_key LIKE 'contact_phone%' AND pm1.meta_key NOT LIKE '%details' ) as phone,
+                            ( SELECT GROUP_CONCAT( pm2.meta_value) FROM  $wpdb->postmeta as pm2 WHERE p.ID=pm2.post_id AND pm2.meta_key LIKE 'contact_email%' AND pm2.meta_key NOT LIKE '%details' ) as email,
+                            ( SELECT GROUP_CONCAT( (SELECT CONCAT( $wpdb->dt_location_grid.name, '-', lg.name ) as name FROM $wpdb->dt_location_grid JOIN $wpdb->dt_location_grid as lg ON $wpdb->dt_location_grid.admin0_grid_id=lg.grid_id WHERE $wpdb->dt_location_grid.grid_id = pm3.meta_value )) FROM  $wpdb->postmeta as pm3 WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location,
+                            ( SELECT GROUP_CONCAT( pm4.meta_value) FROM  $wpdb->postmeta as pm4 WHERE pm4.post_id=p.ID AND pm4.meta_key = 'description' ) as description,
+                            ( SELECT GROUP_CONCAT( pm5.meta_value) FROM  $wpdb->postmeta as pm5 WHERE pm5.post_id=p.ID AND pm5.meta_key = 'region' ) as region,
+                            ( SELECT GROUP_CONCAT( pm6.meta_value) FROM  $wpdb->postmeta as pm6 WHERE pm6.post_id=p.ID AND pm6.meta_key = 'security_level' ) as security_level
+                            FROM $wpdb->posts as p
+                            WHERE post_type = 'contacts';
+                    ", ARRAY_A);
                     return $results;
                 }
             }
