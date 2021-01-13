@@ -1,30 +1,29 @@
 {
   "name": "Disciple Tools - Metrics Export",
   "version": "1.4",
-  "download_url": "https://github.com/DiscipleTools/disciple-tools-metrics-export/releases/latest/download/disciple-tools-metrics-export.zip",
-  "sections": {
-    "description": "This plugin enables a Disciple Tools system to export telemetry data in a secure manner to visualization systems. The key to this plugin is that it is expandable to serve other kinds of exports beyond the default export",
-    "installation": "(Required) You must have Disciple.Tools Theme installed before using this plugin. Once Disciple.Tools is installed, you can use the normal Plugin system to install the plugin.",
-    "changelog": "Initialization of export plugin"
-  },
   "last_updated": "2021-01",
-  "upgrade_notice": "",
-
-  "requires": "4.7",
-  "tested": "5.6",
-  "banners": {
-    "low": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/images/dt-placeholder-772x250.jpg",
-    "high": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/images/dt-placeholder-1544x500.jpg"
-  },
-
   "author": "Disciple Tools",
   "author_homepage": "https://disciple.tools",
-
+  "git_owner": "DiscipleTools",
+  "git_repo": "disciple-tools-metrics-export",
+  "download_url": "https://github.com/DiscipleTools/disciple-tools-metrics-export/releases/latest/download/disciple-tools-metrics-export.zip",
   "homepage": "https://github.com/DiscipleTools/disciple-tools-metrics-export",
   "issues_url": "https://github.com/DiscipleTools/disciple-tools-metrics-export/issues",
   "projects_url": "https://github.com/DiscipleTools/disciple-tools-metrics-export/projects",
   "discussions_url": "https://github.com/DiscipleTools/disciple-tools-metrics-export/discussions",
   "wiki_url": "https://github.com/DiscipleTools/disciple-tools-metrics-export/wiki",
-  "license_url": "https://github.com/DiscipleTools/disciple-tools-metrics-export/blob/master/LICENSE",
-  "readme_url": "https://github.com/DiscipleTools/disciple-tools-metrics-export/blob/master/README.md"
+  "license_url": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/LICENSE",
+  "readme_url": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/README.md",
+  "requires": "4.7",
+  "tested": "5.6",
+  "upgrade_notice": "Here's why you should upgrade...",
+  "banners": {
+    "low": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/images/dt-placeholder-772x250.jpg",
+    "high": "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-version-control/master/images/dt-placeholder-1544x500.jpg"
+  },
+  "sections": {
+    "description": "Disciple Tools - Metrics Export",
+    "installation": "(Required) You must have Disciple.Tools Theme installed before using this plugin. Once Disciple.Tools is installed, you can use the normal Plugin system to install the plugin.",
+    "changelog": ""
+  }
 }
