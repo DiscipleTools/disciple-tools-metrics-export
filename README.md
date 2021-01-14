@@ -36,3 +36,11 @@ In this column you configure locations and levels of precision for the export.
 For a new configuration, you need to save the configuration. Once a configuration is saved, then you can get a one time download link that will expire once that export is downloaded.
 
 ![one time link](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-step-4.png)
+
+---
+
+# Video Walkthrough
+
+
+[![Alt text](https://img.youtube.com/vi/ylYhsEUYQwc/maxresdefault.jpg)](https://www.youtube.com/watch?v=ylYhsEUYQwc)
+[View Video](https://www.youtube.com/watch?v=ylYhsEUYQwc)
