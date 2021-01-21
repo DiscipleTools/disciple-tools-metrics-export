@@ -9,7 +9,7 @@ if ( ! function_exists( 'get_dt_metrics_export_configurations' ) ) {
     function get_dt_metrics_export_configurations(): array
     {
         $configurations = [];
-        $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export' ] );
+        $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export', 'numberposts' => -1 ] );
         foreach ($config_posts as $key => $post) {
             $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
             $configurations[$post->ID]['id'] = $post->ID;
@@ -84,11 +84,19 @@ if ( ! function_exists( 'get_dt_metrics_export_base_format' ) ) {
             'destinations' => [
                 'download' => [
                     'value' => 'download',
-                    'label' => 'Download Link'
+                    'label' => 'One-Time Download Link'
                 ],
-                'uploads' => [
-                    'value' => 'uploads',
-                    'label' => 'Uploads Folder (unrestricted public access)'
+                'expiring48' => [
+                    'value' => 'expiring48',
+                    'label' => 'Expiring 48 Hour Link'
+                ],
+                'expiring360' => [
+                    'value' => 'expiring360',
+                    'label' => 'Expiring 15 Day Link'
+                ],
+                'permanent' => [
+                    'value' => 'permanent',
+                    'label' => 'Permanent Link'
                 ]
             ],
         ];

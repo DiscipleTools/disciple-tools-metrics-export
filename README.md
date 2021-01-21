@@ -1,46 +1,55 @@
 [![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-metrics-export.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-metrics-export)
 
-# Disciple Tools Metrics Export
+# Disciple Tools - Metrics Export
+
+Add exporting to Disciple Tools system to export telemetry data in a secure manner for visualization systems.
+
+
+## Purpose
+
+The key to this plugin is that it is expandable to serve other kinds of exports beyond the default export.
+
+## Usage
+#### Will Do
+
+- Adds compatible export for iShare system.
+- Adds specialized csv export with locations for churches and believers.
+- Adds saving of export configurations.
+- Adds adjustable level of location precision (admin0, admin1, admin2).
+- Creates distributable one time links to CSV exports.
+- Allows expansion for other custom exports.
+
+#### Will Not Do
+
+- Allow export configuration
+- Item
+
+## Requirements
+
+- Disciple Tools Theme installed on a Wordpress Server.
+
+## Installing
+
+- Install as a standard Disciple.Tools/Wordpress plugin in the system Admin/Plugins area.
+- Requires the user role of Administrator.
+
+## Contribution
+
+Contributions welcome. You can report issues and bugs in the
+[Issues](https://github.com/DiscipleTools/disciple-tools-metrics-export/issues) section of the repo. You can present ideas
+in the [Discussions](https://github.com/DiscipleTools/disciple-tools-metrics-export/discussions) section of the repo. And
+code contributions are welcome using the [Pull Request](https://github.com/DiscipleTools/disciple-tools-metrics-export/pulls)
+system for git. For a more details on contribution see the
+[contribution guidelines](https://github.com/DiscipleTools/disciple-tools-metrics-export/blob/master/CONTRIBUTING.md).
+
+
+## Screenshots
+
 This plugin enables a Disciple Tools system to export telemetry data in a secure manner to visualization systems. The key to this plugin is that it is expandable to serve other kinds of exports beyond the default export.
 
 ![one time link](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-one-time-link.png)
 
----
-
-## Step 1 (Create or Manage Configuration)
-
-This first column configures both new and already configured exports. In this column you can name, duplicate, update, and delete configurations.
-
-![one time link](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-step-1.png)
-
-
-
-## Step 2 (Select Data Types)
-
-Dropdown for selecting available export types.
-
-![one time link](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-step-2.png)
-
-
-
-## Step 3 (Select Locations & Levels) 
-
-In this column you configure locations and levels of precision for the export.
-
-![one time link](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-step-3.png)
-
-
-
-## Step 4 (Export)
-
-For a new configuration, you need to save the configuration. Once a configuration is saved, then you can get a one time download link that will expire once that export is downloaded.
-
-![one time link](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-step-4.png)
-
----
-
-# Video Walkthrough
-
+## Video Walkthrough
 
 [![Alt text](https://img.youtube.com/vi/ylYhsEUYQwc/maxresdefault.jpg)](https://www.youtube.com/watch?v=ylYhsEUYQwc)
 [View Video](https://www.youtube.com/watch?v=ylYhsEUYQwc)

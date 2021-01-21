@@ -15,6 +15,6 @@ before_install:
 before_script:
   - composer install --no-interaction
 script:
-  - includes/admin/test/test_for_syntax_errors.sh
-  - includes/admin/test/test_installation.sh
-  - includes/admin/test/test_phpcs.sh
+  - includes/test/test_for_syntax_errors.sh
+  - includes/test/test_installation.sh
+  - includes/test/test_phpcs.sh

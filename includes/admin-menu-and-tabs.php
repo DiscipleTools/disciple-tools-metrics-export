@@ -58,8 +58,8 @@ class DT_Metrics_Export_Menu {
      * @since 0.1
      */
     public function register_menu() {
-        add_menu_page( __( 'Extensions (DT)', 'disciple_tools' ), __( 'Extensions (DT)', 'disciple_tools' ), 'manage_dt', 'dt_extensions', [ $this, 'extensions_menu' ], 'dashicons-admin-generic', 59 );
-        add_submenu_page( 'dt_extensions', __( 'Metrics Export', 'dt_metrics_export' ), __( 'Metrics Export', 'dt_metrics_export' ), 'manage_dt', $this->token, [ $this, 'content' ] );
+        add_menu_page( 'Extensions (DT)', 'Extensions (DT)', 'manage_dt', 'dt_extensions', [ $this, 'extensions_menu' ], 'dashicons-admin-generic', 59 );
+        add_submenu_page( 'dt_extensions', 'Metrics Export', 'Metrics Export', 'manage_dt', $this->token, [ $this, 'content' ] );
     }
 
     /**
@@ -74,13 +74,13 @@ class DT_Metrics_Export_Menu {
     public function content() {
 
         if ( !current_user_can( 'manage_dt' ) ) { // manage dt is a permission that is specific to Disciple Tools and allows admins, strategists and dispatchers into the wp-admin
-            wp_die( esc_attr__( 'You do not have sufficient permissions to access this page.' ) );
+            wp_die( esc_html( 'You do not have sufficient permissions to access this page.' ) );
         }
 
         if ( isset( $_GET["tab"] ) ) {
             $tab = sanitize_key( wp_unslash( $_GET["tab"] ) );
         } else {
-            $tab = 'location_export';
+            $tab = 'active';
         }
 
         $link = 'admin.php?page='.$this->token.'&tab=';
@@ -89,15 +89,20 @@ class DT_Metrics_Export_Menu {
         <div class="wrap">
             <h2><?php esc_attr_e( 'Metrics Export', 'dt_metrics_export' ) ?></h2>
             <h2 class="nav-tab-wrapper">
-                <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Location Exports', 'dt_metrics_export' ) ?></a>
-                <!-- <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cron', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Webhooks', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Cloud Storage', 'dt_metrics_export' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' ) ? 'nav-tab-active' : '' ); ?>"><?php esc_attr_e( 'Tutorial', 'dt_metrics_export' ) ?></a> -->
+                <a href="<?php echo esc_attr( $link ) . 'active' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'active' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Current Links') ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Create Links' ) ?></a>
+                <!-- <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Cron' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Webhooks' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Cloud Storage' ) ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Tutorial' ) ?></a> -->
             </h2>
 
             <?php
             switch ($tab) {
+                case "active":
+                    $object = new DT_Metrics_Export_Tab_Active();
+                    $object->content();
+                    break;
                 case "location_export":
                     $object = new DT_Metrics_Export_Tab_Location_Export();
                     $object->content();
@@ -128,6 +133,368 @@ class DT_Metrics_Export_Menu {
         <?php
     }
 
+}
+
+class DT_Metrics_Export_Tab_Active {
+    public function content() {
+        $this->process_post();
+        ?>
+        <div class="wrap">
+            <div id="poststuff">
+                <div id="post-body" class="metabox-holder columns-1">
+                    <div id="post-body-content">
+                        <!-- Main Column -->
+
+                        <?php $this->one_time_exports() ?>
+                        <?php $this->expiring_seven_day_exports() ?>
+                        <?php $this->permanent_linked_exports() ?>
+
+                        <script>
+                            const copyToClipboard = str => {
+                                const el = document.createElement('textarea');
+                                el.value = str;
+                                el.setAttribute('readonly', '');
+                                el.style.position = 'absolute';
+                                el.style.left = '-9999px';
+                                document.body.appendChild(el);
+                                const selected =
+                                    document.getSelection().rangeCount > 0
+                                        ? document.getSelection().getRangeAt(0)
+                                        : false;
+                                el.select();
+                                document.execCommand('copy');
+                                document.body.removeChild(el);
+                                if (selected) {
+                                    document.getSelection().removeAllRanges();
+                                    document.getSelection().addRange(selected);
+                                }
+                                alert('Copied')
+                            };
+                        </script>
+
+                        <!-- End Main Column -->
+                    </div><!-- end post-body-content -->
+                    <div id="postbox-container-2" class="postbox-container">
+                    </div><!-- postbox-container 2 -->
+                </div><!-- post-body meta box container -->
+            </div><!--poststuff end -->
+        </div><!-- wrap end -->
+
+        <?php
+    }
+
+    public function process_post() {
+        if ( empty( $_POST ) ) {
+            return;
+        }
+        global $wpdb;
+        dt_write_log($_POST);
+
+        if ( isset( $_POST['one_time_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['one_time_nonce'] ) ), 'one_time'.get_current_user_id() )
+            && ! empty( $_POST['delete_one_time'] )
+        ) {
+            $token = sanitize_text_field( wp_unslash( $_POST['delete_one_time'] ) );
+            $wpdb->query(  $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", 'download_'.$token) );
+
+        }
+        if ( isset( $_POST['expiring_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['expiring_nonce'] ) ), 'expiring'.get_current_user_id() )
+            && ! empty( $_POST['delete_expiring'] )
+        ){
+            $token = sanitize_text_field( wp_unslash( $_POST['delete_expiring'] ) );
+            delete_transient( 'metrics_exports_'. $token );
+        }
+        if ( isset( $_POST['permanent_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['permanent_nonce'] ) ), 'permanent'.get_current_user_id() )
+                && ! empty( $_POST['delete_permanent'] )
+            ){
+            $token = sanitize_text_field( wp_unslash( $_POST['delete_permanent'] ) );
+            $wpdb->query(  $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_'.$token) );
+        }
+
+    }
+
+    public function one_time_exports() {
+        global $wpdb;
+
+        $links = $wpdb->get_results(  "
+            SELECT *
+            FROM $wpdb->posts as p
+            JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND meta_key LIKE 'download_%'
+            WHERE post_type = 'dt_metrics_export'
+        ",  ARRAY_A );
+
+        $configurations = get_dt_metrics_export_formats();
+        ?>
+        <!-- Box -->
+        <form method="post">
+            <?php wp_nonce_field('one_time'.get_current_user_id(), 'one_time_nonce') ?>
+            <table class="widefat unstriped">
+                <thead>
+                <tr>
+                    <th>One-Time Links</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if ( ! empty( $links ) ) :
+                    foreach( $links as $row ):
+                        $value = maybe_unserialize( $row['meta_value']);
+                        if ( ! isset( $configurations[$value['export']['format']] ) ) {
+                            continue;
+                        }
+                        ?>
+                        <tr>
+                            <td>
+                                <table class="widefat striped">
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong><?php echo $configurations[$value['export']['format']]['label'] ?></strong>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="button" name="delete_one_time" value="<?php echo $value['key'] ?>" style="float:right;">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <?php echo $value['export']['label'] ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"> Contents:
+                                            <?php
+                                            foreach( $value['export']['type'] as $index => $type_key ) {
+                                                echo $configurations[$value['export']['format']]['types'][$index][$type_key]['label'];
+                                            }
+                                            ?>
+                                            on <?php echo $value['timestamp'] ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo $value['link'] ?>')">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo $value['key'] ?>').toggle()">Show link</a> |
+                                            <a href="<?php echo $value['link'] ?>" target="_blank" class="download-reload">Download and delete this one-time link</a>
+                                        </td>
+                                    </tr>
+                                    <tr id="link-<?php echo $value['key'] ?>" style="display:none;">
+                                        <td colspan="2">
+                                            <input type="text" value="<?php echo $value['link'] ?>" style="width:100%;" id="input-<?php echo $value['key'] ?>" />
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <script>
+                                    jQuery(document).ready(function(){
+                                        jQuery('.download-reload').on('click', function(){
+                                            window.location.reload();
+                                        })
+                                    })
+                                </script>
+                            </td>
+                        </tr>
+                    <?php
+                    endforeach;
+                else :
+                    ?>
+                    <tr>
+                        <td>
+                            No links found
+                        </td>
+                    </tr>
+                <?php
+                endif;
+                ?>
+                </tbody>
+            </table>
+        </form>
+        <br>
+        <!-- End Box -->
+        <?php
+    }
+
+    public function expiring_seven_day_exports() {
+        global $wpdb;
+        $results = $wpdb->get_results("SELECT * FROM $wpdb->options WHERE option_name LIKE '_transient_metrics_export%'", ARRAY_A );
+        $configurations = get_dt_metrics_export_formats();
+        ?>
+        <form method="post">
+            <?php wp_nonce_field('expiring'.get_current_user_id(), 'expiring_nonce') ?>
+            <!-- Box -->
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <th>Expiring Links</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if ( ! empty( $results ) ) :
+                    foreach ( $results as $result ) :
+                        $value = maybe_unserialize( $result['option_value'] );
+                        ?>
+                        <tr>
+                            <td>
+                                <table class="widefat striped">
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong><?php echo $configurations[$value['export']['format']]['label'] ?></strong>
+                                            <?php echo $configurations[$value['export']['format']]['destinations'][$value['export']['destination']]['label']; ?>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="button" name="delete_expiring" value="<?php echo $value['key'] ?>" style="float:right;">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <?php echo $value['export']['label'] ?>
+                                            <?php
+                                            $expires = (int) get_option( '_transient_timeout_metrics_exports_'.$value['key'] );
+                                            if ( ! empty( $expires ) ){
+                                                echo '| Expires: ' . date( 'Y-m-d H:i', $expires);
+                                            }
+                                            ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"> Contents:
+                                            <?php
+                                            foreach( $value['export']['type'] as $index => $type_key ) {
+                                                echo $configurations[$value['export']['format']]['types'][$index][$type_key]['label'];
+                                            }
+
+                                            ?>
+                                            on <?php echo $value['timestamp'] ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo $value['link'] ?>')">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo $value['key'] ?>').toggle()">Show link</a> |
+                                            <a href="<?php echo $value['link'] ?>">Download</a>
+                                        </td>
+                                    </tr>
+                                    <tr id="link-<?php echo $value['key'] ?>" style="display:none;">
+                                        <td colspan="2">
+                                            <input type="text" value="<?php echo $value['link'] ?>" style="width:100%;" id="input-<?php echo $value['key'] ?>" />
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    <?php
+                    endforeach;
+                else :
+                    ?>
+                    <tr>
+                        <td>
+                            No expiring links
+                        </td>
+                    </tr>
+                    <?php
+                endif;
+                ?>
+                </tbody>
+            </table>
+        </form>
+        <br>
+        <!-- End Box -->
+        <?php
+    }
+
+    public function permanent_linked_exports() {
+        global $wpdb;
+
+        $links = $wpdb->get_results(  "
+            SELECT *
+            FROM $wpdb->posts as p
+            JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND meta_key LIKE 'permanent_%'
+            WHERE post_type = 'dt_metrics_export'
+        ",  ARRAY_A );
+
+        $configurations = get_dt_metrics_export_formats();
+        ?>
+        <!-- Box -->
+        <form method="post">
+            <?php wp_nonce_field('permanent'.get_current_user_id(), 'permanent_nonce') ?>
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <th>Permanent Links</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if ( ! empty( $links ) ) :
+                    foreach( $links as $row ):
+                        $value = maybe_unserialize( $row['meta_value']);
+                        if ( ! isset( $configurations[$value['export']['format']] ) ) {
+                            continue;
+                        }
+                        ?>
+                        <tr>
+                            <td>
+                                <table class="widefat striped">
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong><?php echo $configurations[$value['export']['format']]['label'] ?></strong>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="button" name="delete_permanent" value="<?php echo $value['key'] ?>" style="float:right;">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <?php echo $value['export']['label'] ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"> Contents:
+                                            <?php
+                                            foreach( $value['export']['type'] as $index => $type_key ) {
+                                                echo $configurations[$value['export']['format']]['types'][$index][$type_key]['label'];
+                                            }
+                                            ?>
+                                            on <?php echo $value['timestamp'] ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo $value['link'] ?>')">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo $value['key'] ?>').toggle()">Show link</a> |
+                                            <a href="<?php echo $value['link'] ?>">Download</a>
+                                        </td>
+                                    </tr>
+                                    <tr id="link-<?php echo $value['key'] ?>" style="display:none;">
+                                        <td colspan="2">
+                                            <input type="text" value="<?php echo $value['link'] ?>" style="width:100%;" id="input-<?php echo $value['key'] ?>" />
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    <?php
+                    endforeach;
+                  else :
+                     ?>
+                    <tr>
+                        <td>
+                            No expiring links
+                        </td>
+                    </tr>
+                    <?php
+                    endif;
+                    ?>
+                </tbody>
+            </table>
+        </form>
+        <br>
+        <!-- End Box -->
+        <?php
+    }
 }
 
 /**
@@ -307,9 +674,13 @@ class DT_Metrics_Export_Tab_Location_Export {
             window.countries = [<?php echo json_encode( Disciple_Tools_Mapping_Queries::get_countries() ) ?>][0]
             window.last_config = <?php echo esc_attr( $last_config_id ?? 0 ) ?>
 
+            console.log( `window.export_configurations` )
             console.log( window.export_configurations )
+            console.log( `window.export_formats` )
             console.log( window.export_formats )
+            console.log( `window.countries` )
             console.log( window.countries )
+            console.log( `window.last_config` )
             console.log( window.last_config )
 
             jQuery(document).ready(function() {
@@ -402,6 +773,13 @@ class DT_Metrics_Export_Tab_Location_Export {
                     })
                 })
 
+                let selected_configuration = jQuery('#input-configuration').val()
+                if ( 'new' !== selected_configuration && typeof window.export_configurations[selected_configuration] !== 'undefined' ) {
+                    jQuery.each( window.export_configurations[selected_configuration].type, function(ind, val) {
+                        jQuery('#'+val).prop('checked', 'checked')
+                    } )
+                }
+
                list.append('<tr><th></th><th class="float-right"><a href="javascript:void(0)" onclick="jQuery(\'#types-list input[type=radio]\').prop(\'checked\', false)">clear</a></th></tr>')
             }
             function load_all_locations( format_key ) {
@@ -415,8 +793,10 @@ class DT_Metrics_Export_Tab_Location_Export {
                     list.append(`<option value="${i}">${v}</option>`)
                 })
 
-                list.append(`<option disabled>-----</option>`)
-                list.append(`<option value="country_by_country">Country by Country</option>`)
+                if ( typeof window.export_formats[format_key].locations.country_by_country !== 'undefined' ){
+                    list.append(`<option disabled>-----</option>`)
+                    list.append(`<option value="country_by_country">Country by Country</option>`)
+                }
 
                 list.val('admin2')
 
@@ -468,6 +848,8 @@ class DT_Metrics_Export_Tab_Location_Export {
                 let input_configuration = jQuery('#input-configuration')
                 let input_configuration_label = jQuery('#input-configuration-name')
 
+                console.log(configuration_id)
+
                 if ( typeof configuration_id === 'undefined' || 'new' === configuration_id ) {
                     load_all_configurations()
                     return
@@ -482,6 +864,8 @@ class DT_Metrics_Export_Tab_Location_Export {
                 configure_all_locations( configuration_id )
                 configure_destinations( configuration_id )
 
+
+
                 // set name of configuration
                 input_configuration.val( configuration_id )
                 input_configuration_label.val(window.export_configurations[configuration_id].label)
@@ -493,7 +877,7 @@ class DT_Metrics_Export_Tab_Location_Export {
 
                 inputs.prop('checked', false)
                 jQuery.each( window.export_configurations[configuration_id].type, function(iii, vvv ) {
-                    jQuery('#'+iii).prop('checked', true)
+                    jQuery('#'+vvv).prop('checked', 'checked')
                 })
             }
             function configure_all_locations( configuration_id ) {
@@ -525,7 +909,6 @@ class DT_Metrics_Export_Tab_Location_Export {
     }
 
     public function process_post() {
-        dt_write_log( __METHOD__ );
 
         if ( isset( $_POST['metrics-location-export'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['metrics-location-export'] ) ), 'metrics-location-export'.get_current_user_id() ) ) {
             // create

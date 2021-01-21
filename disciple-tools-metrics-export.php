@@ -8,7 +8,7 @@
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
- * Tested up to: 5.4.1
+ * Tested up to: 5.6
  *
  * @package Disciple_Tools
  * @link    https://github.com/DiscipleTools
@@ -58,7 +58,7 @@ function dt_metrics_export() {
      */
     $is_rest = dt_is_rest();
     if ( ! $is_rest || strpos( dt_get_url_path(), 'metrics-export' ) !== false ){
-        DT_Metrics_Export::get_instance();
+        DT_Metrics_Export::instance();
         /**
          * This action fires after the DT_Metrics_Export plugin is loaded.
          * Use this to hook custom export formats from other plugins.
@@ -68,7 +68,7 @@ function dt_metrics_export() {
     }
     return false;
 }
-add_action( 'init', 'dt_metrics_export' );
+add_action( 'after_setup_theme', 'dt_metrics_export' );
 
 /**
  * Singleton class for setting up the plugin.
@@ -78,109 +78,48 @@ add_action( 'init', 'dt_metrics_export' );
  */
 class DT_Metrics_Export {
 
-    /**
-     * Declares public variables
-     *
-     * @since  0.1
-     * @access public
-     * @return object
-     */
-    public $token;
-    public $version;
-    public $dir_path = '';
-    public $dir_uri = '';
-    public $img_uri = '';
-    public $includes_path;
-
-    /**
-     * Returns the instance.
-     *
-     * @since  0.1
-     * @access public
-     * @return object
-     */
-    public static function get_instance() {
-
-        static $instance = null;
-
-        if ( is_null( $instance ) ) {
-            $instance = new dt_metrics_export();
-            $instance->setup();
-            $instance->includes();
-            $instance->setup_actions();
+    private static $_instance = null;
+    public static function instance() {
+        if ( is_null( self::$_instance ) ) {
+            self::$_instance = new self();
         }
-        return $instance;
+        return self::$_instance;
     }
 
-    /**
-     * Constructor method.
-     *
-     * @since  0.1
-     * @access private
-     * @return void
-     */
     private function __construct() {
-    }
-
-    /**
-     * Loads files needed by the plugin.
-     *
-     * @since  0.1
-     * @access public
-     * @return void
-     */
-    private function includes() {
         if ( is_admin() ) {
+
+            // storage post type for export configurations
+            add_action('init', [$this, 'register_post_type']);
+
+            // load files
             require_once( 'includes/admin-menu-and-tabs.php' );
-            require_once( 'includes/format-base.php' );
             require_once( 'includes/format-utilities.php' );
 
-            $format_files = scandir( plugin_dir_path( __FILE__ ) .'/formats/' );
-            if ( ! empty( $format_files ) ) {
-                foreach ( $format_files as $file ) {
-                    if ( substr( $file, -4, '4' ) === '.php' ) {
-                        require_once( plugin_dir_path( __FILE__ ) . '/formats/' .$file );
+            // load all files in formats folder
+            require_once( 'formats/format-base.php' ); // load dependency first
+            $format_files = scandir(plugin_dir_path(__FILE__) . '/formats/');
+            if (!empty($format_files)) {
+                foreach ($format_files as $file) {
+                    if (substr($file, -4, '4') === '.php') {
+                        require_once(plugin_dir_path(__FILE__) . '/formats/' . $file);
                     }
                 }
             }
         }
-    }
-
-    /**
-     * Sets up globals.
-     *
-     * @since  0.1
-     * @access public
-     * @return void
-     */
-    private function setup() {
-
-        $this->dt_site_id = get_option( 'dt_site_id' );
-        if ( empty( $this->dt_site_id ) ) {
-            $site_id = hash( 'SHA256', site_url() . time() );
-            add_option( 'dt_site_id', $site_id );
-            $this->dt_site_id = $site_id;
-        }
-
-        // Main plugin directory path and URI.
-        $this->dir_path     = trailingslashit( plugin_dir_path( __FILE__ ) );
-        $this->dir_uri      = trailingslashit( plugin_dir_url( __FILE__ ) );
-
-        // Plugin directory paths.
-        $this->includes_path      = trailingslashit( $this->dir_path . 'includes' );
-
-        // Plugin directory URIs.
-        $this->img_uri      = trailingslashit( $this->dir_uri . 'img' );
-
-        // Admin and settings variables
-        $this->token             = 'dt_metrics_export';
-        $this->version             = '1.4';
 
         if ( is_admin() ) {
-            // storage post type for export configurations
-            add_action( 'init', [ $this, 'register_post_type' ] );
+            // Check for plugin updates
+            if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+                require( get_template_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
+            }
+            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/version-control.json";
+            Puc_v4_Factory::buildUpdateChecker(
+                $hosted_json,
+                __FILE__,
+                'disciple-tools-metrics-export'
+            );
         }
-
     }
 
     public function register_post_type() {
@@ -191,35 +130,6 @@ class DT_Metrics_Export {
     }
 
     /**
-     * Sets up main plugin actions and filters.
-     *
-     * @since  0.1
-     * @access public
-     * @return void
-     */
-    private function setup_actions() {
-
-        if ( is_admin() ){
-            // Check for plugin updates
-            if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-                require( get_template_directory() . '/dt-core/libraries/plugin-update-checker/plugin-update-checker.php' );
-            }
-
-            $hosted_json = "https://disciple.tools/wp-content/themes/disciple-tools-public-site/version-control.php?id=709df012e236dc3f5c53b8ce75c5adf74c39054aef58e3eca5d852fa5f2244de";
-            Puc_v4_Factory::buildUpdateChecker(
-                $hosted_json,
-                __FILE__,
-                'disciple-tools-metrics-export'
-            );
-        }
-
-        // Internationalize the text strings used.
-        add_action( 'init', array( $this, 'i18n' ), 2 );
-    }
-
-
-
-    /**
      * Method that runs only when the plugin is activated.
      *
      * @since  0.1
@@ -227,14 +137,11 @@ class DT_Metrics_Export {
      * @return void
      */
     public static function activation() {
-
-        // Confirm 'Administrator' has 'manage_dt' privilege. This is key in 'remote' configuration when
-        // Disciple Tools theme is not installed, otherwise this will already have been installed by the Disciple Tools Theme
-        $role = get_role( 'administrator' );
-        if ( !empty( $role ) ) {
-            $role->add_cap( 'manage_dt' ); // gives access to dt plugin options
+        $dt_site_id = get_option( 'dt_site_id' );
+        if ( empty( $dt_site_id ) ) {
+            $site_id = hash( 'SHA256', site_url() . time() );
+            add_option( 'dt_site_id', $site_id );
         }
-
     }
 
     /**
@@ -246,17 +153,6 @@ class DT_Metrics_Export {
      */
     public static function deactivation() {
         delete_option( 'dismissed-dt-metrics-export' );
-    }
-
-    /**
-     * Loads the translation files.
-     *
-     * @since  0.1
-     * @access public
-     * @return void
-     */
-    public function i18n() {
-        load_plugin_textdomain( 'dt_metrics_export', false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ). 'languages' );
     }
 
     /**
@@ -317,9 +213,9 @@ function dt_metrics_export_hook_admin_notice() {
     global $dt_metrics_export_required_dt_theme_version;
     $wp_theme = wp_get_theme();
     $current_version = $wp_theme->version;
-    $message = __( "'Disciple Tools - Metrics Export' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or make sure it is latest version.", "dt_metrics_export" );
+    $message = "'Disciple Tools - Metrics Export' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or make sure it is latest version.";
     if ( $wp_theme->get_template() === "disciple-tools-theme" ){
-        $message .= sprintf( esc_html__( 'Current Disciple Tools version: %1$s, required version: %2$s', 'dt_metrics_export' ), esc_html( $current_version ), esc_html( $dt_metrics_export_required_dt_theme_version ) );
+        $message .= sprintf( esc_html( 'Current Disciple Tools version: %1$s, required version: %2$s' ), esc_html( $current_version ), esc_html( $dt_metrics_export_required_dt_theme_version ) );
     }
     // Check if it's been dismissed...
     if ( ! get_option( 'dismissed-dt-metrics-export', false ) ) { ?>

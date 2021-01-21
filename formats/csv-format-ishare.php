@@ -52,8 +52,6 @@ if ( defined( 'ABSPATH' ) ) {
             $format[$this->token]['label'] = $this->label;
             $format[$this->token]['types'] = [];
 
-            unset( $format[$this->token]['destinations']['uploads'] );
-
             return $format;
         }
 
@@ -546,12 +544,13 @@ if ( defined( 'ABSPATH' ) ) {
             $args = [
                 'timestamp' => current_time( 'Y-m-d_H-i-s' ),
                 'columns' => $columns,
-                'rows' => $results
+                'rows' => $results,
+                'export' => $response
             ];
 
             // build transient
             $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
-            set_transient( $one_time_key, $args, 60 . 60 . 48 );
+            set_transient( 'metrics_exports_' . $one_time_key, $args, 60 . 60 . 48 );
 
             // admin notification with link
             echo '<div class="notice notice-warning is-dismissible">
@@ -580,7 +579,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     }
 
     $token = sanitize_text_field( wp_unslash( $_GET['csv'] ) );
-    $results = get_transient( $token );
+    $results = get_transient( 'metrics_exports_' . $token );
     if ( empty( $results ) ) {
         echo 'Link no longer available';
         return;
