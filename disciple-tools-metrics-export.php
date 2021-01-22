@@ -90,7 +90,7 @@ class DT_Metrics_Export {
         if ( is_admin() ) {
 
             // storage post type for export configurations
-            add_action('init', [$this, 'register_post_type']);
+            add_action( 'init', [ $this, 'register_post_type' ] );
 
             // load files
             require_once( 'includes/admin-menu-and-tabs.php' );
@@ -98,11 +98,11 @@ class DT_Metrics_Export {
 
             // load all files in formats folder
             require_once( 'formats/format-base.php' ); // load dependency first
-            $format_files = scandir(plugin_dir_path(__FILE__) . '/formats/');
-            if (!empty($format_files)) {
+            $format_files = scandir( plugin_dir_path( __FILE__ ) . '/formats/' );
+            if ( !empty( $format_files )) {
                 foreach ($format_files as $file) {
-                    if (substr($file, -4, '4') === '.php') {
-                        require_once(plugin_dir_path(__FILE__) . '/formats/' . $file);
+                    if (substr( $file, -4, '4' ) === '.php') {
+                        require_once( plugin_dir_path( __FILE__ ) . '/formats/' . $file );
                     }
                 }
             }

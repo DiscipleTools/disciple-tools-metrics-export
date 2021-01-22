@@ -89,7 +89,7 @@ class DT_Metrics_Export_Menu {
         <div class="wrap">
             <h2><?php esc_attr_e( 'Metrics Export', 'dt_metrics_export' ) ?></h2>
             <h2 class="nav-tab-wrapper">
-                <a href="<?php echo esc_attr( $link ) . 'active' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'active' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Current Links') ?></a>
+                <a href="<?php echo esc_attr( $link ) . 'active' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'active' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Current Links' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Create Links' ) ?></a>
                 <!-- <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Cron' ) ?></a>
                 <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Webhooks' ) ?></a>
@@ -188,13 +188,12 @@ class DT_Metrics_Export_Tab_Active {
             return;
         }
         global $wpdb;
-        dt_write_log($_POST);
 
         if ( isset( $_POST['one_time_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['one_time_nonce'] ) ), 'one_time'.get_current_user_id() )
             && ! empty( $_POST['delete_one_time'] )
         ) {
             $token = sanitize_text_field( wp_unslash( $_POST['delete_one_time'] ) );
-            $wpdb->query(  $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", 'download_'.$token) );
+            $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", 'download_'.$token ) );
 
         }
         if ( isset( $_POST['expiring_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['expiring_nonce'] ) ), 'expiring'.get_current_user_id() )
@@ -207,7 +206,7 @@ class DT_Metrics_Export_Tab_Active {
                 && ! empty( $_POST['delete_permanent'] )
             ){
             $token = sanitize_text_field( wp_unslash( $_POST['delete_permanent'] ) );
-            $wpdb->query(  $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_'.$token) );
+            $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_'.$token ) );
         }
 
     }
@@ -220,13 +219,13 @@ class DT_Metrics_Export_Tab_Active {
             FROM $wpdb->posts as p
             JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND meta_key LIKE 'download_%'
             WHERE post_type = 'dt_metrics_export'
-        ",  ARRAY_A );
+        ", ARRAY_A );
 
         $configurations = get_dt_metrics_export_formats();
         ?>
         <!-- Box -->
         <form method="post">
-            <?php wp_nonce_field('one_time'.get_current_user_id(), 'one_time_nonce') ?>
+            <?php wp_nonce_field( 'one_time'.get_current_user_id(), 'one_time_nonce' ) ?>
             <table class="widefat unstriped">
                 <thead>
                 <tr>
@@ -236,8 +235,8 @@ class DT_Metrics_Export_Tab_Active {
                 <tbody>
                 <?php
                 if ( ! empty( $links ) ) :
-                    foreach( $links as $row ):
-                        $value = maybe_unserialize( $row['meta_value']);
+                    foreach ( $links as $row ):
+                        $value = maybe_unserialize( $row['meta_value'] );
                         if ( ! isset( $configurations[$value['export']['format']] ) ) {
                             continue;
                         }
@@ -248,37 +247,41 @@ class DT_Metrics_Export_Tab_Active {
                                     <tbody>
                                     <tr>
                                         <td>
-                                            <strong><?php echo $configurations[$value['export']['format']]['label'] ?></strong>
+                                            <strong><?php echo esc_html( $configurations[$value['export']['format']]['label'] ?? '' ) ?></strong>
                                         </td>
                                         <td>
-                                            <button type="submit" class="button" name="delete_one_time" value="<?php echo $value['key'] ?>" style="float:right;">Delete</button>
+                                            <button type="submit" class="button" name="delete_one_time" value="<?php echo esc_html( $value['key'] ) ?>" style="float:right;">Delete</button>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <?php echo $value['export']['label'] ?>
+                                            <?php echo esc_html( $value['export']['label'] ?? '' ) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2"> Contents:
                                             <?php
-                                            foreach( $value['export']['type'] as $index => $type_key ) {
-                                                echo $configurations[$value['export']['format']]['types'][$index][$type_key]['label'];
+                                            if ( isset( $value['export']['type'] ) ) {
+                                                foreach ( $value['export']['type'] as $index => $type_key ) {
+                                                    if ( isset( $configurations[$value['export']['format']]['types'][$index][$type_key]['label'] ) ) {
+                                                        echo esc_html( $configurations[$value['export']['format']]['types'][$index][$type_key]['label'] );
+                                                    }
+                                                }
                                             }
                                             ?>
-                                            on <?php echo $value['timestamp'] ?>
+                                            on <?php echo esc_html( $value['timestamp'] ?? '' ) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo $value['link'] ?>')">Copy Link</a> |
-                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo $value['key'] ?>').toggle()">Show link</a> |
-                                            <a href="<?php echo $value['link'] ?>" target="_blank" class="download-reload">Download and delete this one-time link</a>
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo esc_url( $value['link'] ?? '' ) ?>')">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo esc_attr( $value['key'] ) ?>').toggle()">Show link</a> |
+                                            <a href="<?php echo esc_url( $value['link'] ) ?>" target="_blank" class="download-reload">Download and delete this one-time link</a>
                                         </td>
                                     </tr>
-                                    <tr id="link-<?php echo $value['key'] ?>" style="display:none;">
+                                    <tr id="link-<?php echo esc_attr( $value['key'] ) ?>" style="display:none;">
                                         <td colspan="2">
-                                            <input type="text" value="<?php echo $value['link'] ?>" style="width:100%;" id="input-<?php echo $value['key'] ?>" />
+                                            <input type="text" value="<?php echo esc_url( $value['link'] ) ?>" style="width:100%;" id="input-<?php echo esc_attr( $value['key'] ) ?>" />
                                         </td>
                                     </tr>
                                     </tbody>
@@ -292,7 +295,7 @@ class DT_Metrics_Export_Tab_Active {
                                 </script>
                             </td>
                         </tr>
-                    <?php
+                        <?php
                     endforeach;
                 else :
                     ?>
@@ -301,7 +304,7 @@ class DT_Metrics_Export_Tab_Active {
                             No links found
                         </td>
                     </tr>
-                <?php
+                    <?php
                 endif;
                 ?>
                 </tbody>
@@ -314,11 +317,11 @@ class DT_Metrics_Export_Tab_Active {
 
     public function expiring_seven_day_exports() {
         global $wpdb;
-        $results = $wpdb->get_results("SELECT * FROM $wpdb->options WHERE option_name LIKE '_transient_metrics_export%'", ARRAY_A );
+        $results = $wpdb->get_results( "SELECT * FROM $wpdb->options WHERE option_name LIKE '_transient_metrics_export%'", ARRAY_A );
         $configurations = get_dt_metrics_export_formats();
         ?>
         <form method="post">
-            <?php wp_nonce_field('expiring'.get_current_user_id(), 'expiring_nonce') ?>
+            <?php wp_nonce_field( 'expiring'.get_current_user_id(), 'expiring_nonce' ) ?>
             <!-- Box -->
             <table class="widefat striped">
                 <thead>
@@ -338,20 +341,20 @@ class DT_Metrics_Export_Tab_Active {
                                     <tbody>
                                     <tr>
                                         <td>
-                                            <strong><?php echo $configurations[$value['export']['format']]['label'] ?></strong>
-                                            <?php echo $configurations[$value['export']['format']]['destinations'][$value['export']['destination']]['label']; ?>
+                                            <strong><?php echo esc_html( $configurations[$value['export']['format']]['label'] ?? '' ) ?></strong>
+                                            <?php echo esc_html( $configurations[$value['export']['format']]['destinations'][$value['export']['destination']]['label'] ?? '' ); ?>
                                         </td>
                                         <td>
-                                            <button type="submit" class="button" name="delete_expiring" value="<?php echo $value['key'] ?>" style="float:right;">Delete</button>
+                                            <button type="submit" class="button" name="delete_expiring" value="<?php echo esc_attr( $value['key'] ) ?>" style="float:right;">Delete</button>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <?php echo $value['export']['label'] ?>
+                                            <?php echo esc_html( $value['export']['label'] ??'' ) ?>
                                             <?php
-                                            $expires = (int) get_option( '_transient_timeout_metrics_exports_'.$value['key'] );
+                                            $expires = (int) get_option( '_transient_timeout_metrics_exports_'.esc_attr( $value['key'] ) );
                                             if ( ! empty( $expires ) ){
-                                                echo '| Expires: ' . date( 'Y-m-d H:i', $expires);
+                                                echo '| Expires: ' . esc_html( gmdate( 'Y-m-d H:i', $expires ) );
                                             }
                                             ?>
                                         </td>
@@ -359,31 +362,34 @@ class DT_Metrics_Export_Tab_Active {
                                     <tr>
                                         <td colspan="2"> Contents:
                                             <?php
-                                            foreach( $value['export']['type'] as $index => $type_key ) {
-                                                echo $configurations[$value['export']['format']]['types'][$index][$type_key]['label'];
+                                            if ( isset( $value['export']['type'] ) ) {
+                                                foreach ( $value['export']['type'] as $index => $type_key ) {
+                                                    if ( isset( $configurations[$value['export']['format']]['types'][$index][$type_key]['label'] ) ) {
+                                                        echo esc_html( $configurations[$value['export']['format']]['types'][$index][$type_key]['label'] );
+                                                    }
+                                                }
                                             }
-
                                             ?>
-                                            on <?php echo $value['timestamp'] ?>
+                                            on <?php echo esc_html( $value['timestamp'] ??'' ) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo $value['link'] ?>')">Copy Link</a> |
-                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo $value['key'] ?>').toggle()">Show link</a> |
-                                            <a href="<?php echo $value['link'] ?>">Download</a>
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo esc_url( $value['link'] ) ?>')">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo esc_attr( $value['key'] ) ?>').toggle()">Show link</a> |
+                                            <a href="<?php echo esc_url( $value['link'] ) ?>">Download</a>
                                         </td>
                                     </tr>
-                                    <tr id="link-<?php echo $value['key'] ?>" style="display:none;">
+                                    <tr id="link-<?php echo esc_attr( $value['key'] ??'' ) ?>" style="display:none;">
                                         <td colspan="2">
-                                            <input type="text" value="<?php echo $value['link'] ?>" style="width:100%;" id="input-<?php echo $value['key'] ?>" />
+                                            <input type="text" value="<?php echo esc_url( $value['link'] ??'' ) ?>" style="width:100%;" id="input-<?php echo esc_attr( $value['key'] ??'' ) ?>" />
                                         </td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </td>
                         </tr>
-                    <?php
+                        <?php
                     endforeach;
                 else :
                     ?>
@@ -411,13 +417,13 @@ class DT_Metrics_Export_Tab_Active {
             FROM $wpdb->posts as p
             JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND meta_key LIKE 'permanent_%'
             WHERE post_type = 'dt_metrics_export'
-        ",  ARRAY_A );
+        ", ARRAY_A );
 
         $configurations = get_dt_metrics_export_formats();
         ?>
         <!-- Box -->
         <form method="post">
-            <?php wp_nonce_field('permanent'.get_current_user_id(), 'permanent_nonce') ?>
+            <?php wp_nonce_field( 'permanent'.get_current_user_id(), 'permanent_nonce' ) ?>
             <table class="widefat striped">
                 <thead>
                 <tr>
@@ -427,8 +433,8 @@ class DT_Metrics_Export_Tab_Active {
                 <tbody>
                 <?php
                 if ( ! empty( $links ) ) :
-                    foreach( $links as $row ):
-                        $value = maybe_unserialize( $row['meta_value']);
+                    foreach ( $links as $row ):
+                        $value = maybe_unserialize( $row['meta_value'] );
                         if ( ! isset( $configurations[$value['export']['format']] ) ) {
                             continue;
                         }
@@ -439,53 +445,57 @@ class DT_Metrics_Export_Tab_Active {
                                     <tbody>
                                     <tr>
                                         <td>
-                                            <strong><?php echo $configurations[$value['export']['format']]['label'] ?></strong>
+                                            <strong><?php echo esc_html( $configurations[$value['export']['format']]['label'] ??'' ) ?></strong>
                                         </td>
                                         <td>
-                                            <button type="submit" class="button" name="delete_permanent" value="<?php echo $value['key'] ?>" style="float:right;">Delete</button>
+                                            <button type="submit" class="button" name="delete_permanent" value="<?php echo esc_attr( $value['key'] ??'' ) ?>" style="float:right;">Delete</button>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <?php echo $value['export']['label'] ?>
+                                            <?php echo esc_html( $value['export']['label'] ??'' ) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2"> Contents:
                                             <?php
-                                            foreach( $value['export']['type'] as $index => $type_key ) {
-                                                echo $configurations[$value['export']['format']]['types'][$index][$type_key]['label'];
+                                            if ( isset( $value['export']['type'] ) ) {
+                                                foreach ( $value['export']['type'] as $index => $type_key ) {
+                                                    if ( isset( $configurations[$value['export']['format']]['types'][$index][$type_key]['label'] ) ) {
+                                                        echo esc_html( $configurations[$value['export']['format']]['types'][$index][$type_key]['label'] );
+                                                    }
+                                                }
                                             }
                                             ?>
-                                            on <?php echo $value['timestamp'] ?>
+                                            on <?php echo esc_html( $value['timestamp'] ??'' ) ?>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo $value['link'] ?>')">Copy Link</a> |
-                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo $value['key'] ?>').toggle()">Show link</a> |
-                                            <a href="<?php echo $value['link'] ?>">Download</a>
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo esc_url( $value['link'] ??'' ) ?>')">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo esc_attr( $value['key'] ??'' ) ?>').toggle()">Show link</a> |
+                                            <a href="<?php echo esc_url( $value['link'] ??'' ) ?>">Download</a>
                                         </td>
                                     </tr>
-                                    <tr id="link-<?php echo $value['key'] ?>" style="display:none;">
+                                    <tr id="link-<?php echo esc_attr( $value['key'] ??'' )?>" style="display:none;">
                                         <td colspan="2">
-                                            <input type="text" value="<?php echo $value['link'] ?>" style="width:100%;" id="input-<?php echo $value['key'] ?>" />
+                                            <input type="text" value="<?php echo esc_url( $value['link'] ??'' ) ?>" style="width:100%;" id="input-<?php echo esc_attr( $value['key'] ??'' ) ?>" />
                                         </td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </td>
                         </tr>
-                    <?php
+                        <?php
                     endforeach;
                   else :
-                     ?>
+                        ?>
                     <tr>
                         <td>
                             No expiring links
                         </td>
                     </tr>
-                    <?php
+                      <?php
                     endif;
                     ?>
                 </tbody>
@@ -513,7 +523,7 @@ class DT_Metrics_Export_Tab_Location_Export {
                 padding-right: 5px;
                 float: left;
             }
-            @media screen and (max-width : 1000px) {
+            @media screen and (max-width : 1790px) {
                 .quarter {
                     width: 100%;
                     float: left;

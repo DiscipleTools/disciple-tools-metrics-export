@@ -103,15 +103,15 @@ if (defined( 'ABSPATH' )) {
              */
             if ( 'contacts_basic' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_contacts_basic();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             }
             else if ( 'contacts_lnglat' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_contacts_lnglat();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             }
             else if ( 'contacts_active' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_contacts_active();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             }
 
             // kill if no results
@@ -125,7 +125,7 @@ if (defined( 'ABSPATH' )) {
             // destination
             $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
             $postid = $response['configuration'];
-            switch( $response['destination'] ) {
+            switch ( $response['destination'] ) {
                 case 'expiring48':
                     $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
@@ -186,7 +186,7 @@ if (defined( 'ABSPATH' )) {
             if ( empty( $key ) ){
                 return false;
             }
-            if ( ! isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'],$args['export']['destination'],$args['export']['type']['contacts'] ) ) {
+            if ( ! isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['contacts'] ) ) {
                 return false;
             }
 
@@ -210,7 +210,7 @@ if (defined( 'ABSPATH' )) {
 
             // update destination
             $postid = $args['export']['configuration'];
-            switch( $args['export']['destination'] ) {
+            switch ( $args['export']['destination'] ) {
                 case 'expiring48':
                     set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 48 );
                     break;
@@ -310,13 +310,13 @@ if ( !defined( 'ABSPATH' )) {
 
     if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
 
-        $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash($_GET['expiring360'] ) );
+        $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
 
         header( 'Content-type: application/json' );
 
         if (empty( $results )) {
-            echo json_encode(['status' => 'FAIL'] );
+            echo json_encode( [ 'status' => 'FAIL' ] );
             return;
         }
 
@@ -328,7 +328,7 @@ if ( !defined( 'ABSPATH' )) {
 
         $token = sanitize_text_field( wp_unslash( $_GET['download'] ) );
 
-        $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token), ARRAY_A );
+        $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token ), ARRAY_A );
 
         if ( empty( $raw ) ) {
             echo 'No link found';
@@ -341,7 +341,7 @@ if ( !defined( 'ABSPATH' )) {
         header( 'Content-type: application/json' );
 
         if (empty( $results )) {
-            echo json_encode(['status' => 'FAIL'] );
+            echo json_encode( [ 'status' => 'FAIL' ] );
             return;
         }
 
@@ -353,7 +353,7 @@ if ( !defined( 'ABSPATH' )) {
 
         // test if key exists
         $token = sanitize_text_field( wp_unslash( $_GET['permanent'] ) );
-        $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token) );
+        $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token ) );
         if ( empty( $raw ) ) {
             echo 'No link found';
             return;
@@ -368,7 +368,7 @@ if ( !defined( 'ABSPATH' )) {
         header( 'Content-type: application/json' );
 
         if (empty( $results )) {
-            echo json_encode(['status' => 'FAIL'] );
+            echo json_encode( [ 'status' => 'FAIL' ] );
             return;
         }
 

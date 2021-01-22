@@ -9,7 +9,10 @@ if ( ! function_exists( 'get_dt_metrics_export_configurations' ) ) {
     function get_dt_metrics_export_configurations(): array
     {
         $configurations = [];
-        $config_posts = get_posts( [ 'post_type' => 'dt_metrics_export', 'numberposts' => -1 ] );
+        $config_posts = get_posts( [
+            'post_type' => 'dt_metrics_export',
+            'numberposts' => -1
+        ] );
         foreach ($config_posts as $key => $post) {
             $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
             $configurations[$post->ID]['id'] = $post->ID;

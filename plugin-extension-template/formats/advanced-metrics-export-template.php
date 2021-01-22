@@ -1,55 +1,67 @@
 <?php
 /**
- * Export Format: CSV Groups
+ * @todo 1. Rename DT_Advanced_Metrics_Export_Template
+ * @todo 2. Rename $token
+ * @todo 3. Rename $label
+ * @todo 4. Refactor types and labels
+ * @todo 5. Update keys and the queries they are pointing too
+ * @todo 6. Update keys and the queries they are pointing too
+ * @todo 7. Rewrite MYSQL queries
+ * @todo 8. Update required_once file name to the name of this file.
  */
 
 /**
- *
- * When ABSPATH is defined then WP has loaded, if ABSPATH is not defined then the file is being accessed directly.
- *
- * Direct access is used to generate the CSV from the transient store. It is directly accessed link.
- * By both supplying the format and the export from the same file, this pattern attempt to make adding additional formats
- * simple and self contained.
+ * @todo 1. Rename DT_Advanced_Metrics_Export_Template (3 uses)
  */
+if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template' )) { // confirm wp is loaded
 
-/**
- * LOAD DATA TYPE FORMAT
- */
-if (defined( 'ABSPATH' )) {
-    /**
-     * Class DT_Metrics_Export_CSV
-     */
-    class DT_Metrics_Export_CSV_Groups extends DT_Metrics_Export_Format_Base
+    class DT_Advanced_Metrics_Export_Template
     {
-
-        public $token = 'csv_groups';
-        public $label = 'CSV (Groups)';
-
-        private static $_instance = null;
-
-        public static function instance() {
-            if (is_null( self::$_instance )) {
-                self::$_instance = new self();
-            }
-            return self::$_instance;
-        }
+        /**
+         * @todo 2. Rename $token
+         * @todo 3. Rename $label
+         */
+        public $token = 'advanced_csv_template';
+        public $label = 'Advanced CSV Template';
 
         /**
-         * DT_Metrics_Export_CSV constructor.
+         * The format function builds the template of the format. From this format template, multiple configurations can
+         * be created and stored.
+         *
+         * @note This function does not need modified for the simplest use of the export template.
+         *
+         * @link https://github.com/DiscipleTools/disciple-tools-metrics-export/master/includes/format-utilities.php:27 get_dt_metrics_export_base_format():
+         *
+         * @param $format
+         * @return mixed
          */
-        public function __construct() {
-            parent::__construct();
-            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
-            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
-        } // End __construct()
-
-        public function format( $format ) {
+        public function format( $format) {
             /* Build base template of a format*/
             $format[$this->token] = get_dt_metrics_export_base_format();
 
             /* Add key and label for format */
             $format[$this->token]['key'] = $this->token;
             $format[$this->token]['label'] = $this->label;
+
+            /**
+             * @todo 4. Refactor types and labels
+             */
+            $format[$this->token]['types'] = [
+                'advanced' => [
+                    'advanced_basic' => [
+                        'key' => 'advanced_basic',
+                        'label' => 'Advanced Basic'
+                    ],
+                    'advanced_active_only' => [
+                        'key' => 'advanced_active_only',
+                        'label' => 'Advanced Active Contacts Only'
+                    ],
+                    'advanced_lnglat' => [
+                        'key' => 'advanced_lnglat',
+                        'label' => 'Advanced Longitude and Latitude'
+                    ],
+                ],
+            ];
 
             // remove raw
             $format[$this->token]['locations'] = [
@@ -58,34 +70,19 @@ if (defined( 'ABSPATH' )) {
                 ],
             ];
 
-            $format[$this->token]['types'] = [
-                'groups' => [
-                    'groups_active' => [
-                        'key' => 'groups_active',
-                        'label' => 'All active groups. Fields: [name, status, member_count, leader_count, locations]'
-                    ],
-                    'groups_basic' => [
-                        'key' => 'groups_basic',
-                        'label' => 'All groups. Fields: [name, status, member_count, leader_count, locations]'
-                    ],
-                    'groups_lnglat' => [
-                        'key' => 'groups_lnglat',
-                        'label' => 'All groups with a row for each location. This can have duplicates if the group has multiple locations. Fields: [name, status, lng, lat, location label]'
-                    ],
-                ],
-            ];
-
             return $format;
         }
 
-        public function format_class( $classes) {
-            $classes[$this->token] = __CLASS__;
-            return $classes;
-        }
-
-
+        /**
+         * This function is the create link function called by the tab "creat links".
+         *
+         * @note This function does not need modified for the simplest use of the export template.
+         *
+         * @param $response
+         * @return false|int|mixed
+         */
         public function export( $response) {
-            if ( ! isset( $response['type']['groups'], $response['configuration'], $response['destination'] ) ){
+            if ( !isset( $response['configuration'], $response['destination'] ) ) {
                 return false;
             }
 
@@ -100,17 +97,19 @@ if (defined( 'ABSPATH' )) {
 
             /**
              * Create results according to selected type
+             *
+             * @todo 5. Update keys and the queries they are pointing too
              */
-            if ( 'groups_basic' === $response['type']['groups'] ) {
-                 $args['rows'] = $this->query_groups_basic();
+            if ( 'advanced_basic' === $args['export']['type']['advanced'] ) {
+                $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'groups_lnglat' === $response['type']['groups'] ) {
-                 $args['rows'] = $this->query_groups_lnglat();
+            else if ( 'advanced_active_only' === $args['export']['type']['advanced'] ) {
+                $args['rows'] = $this->query_active_only();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'groups_active' === $response['type']['groups'] ) {
-                 $args['rows'] = $this->query_groups_active();
+            else if ( 'advanced_lnglat' === $args['export']['type']['advanced'] ) {
+                $args['rows'] = $this->query_lnglat();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
 
@@ -125,7 +124,7 @@ if (defined( 'ABSPATH' )) {
             // destination
             $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
             $postid = $response['configuration'];
-            switch ( $response['destination'] ) {
+            switch ($response['destination']) {
                 case 'expiring48':
                     $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
@@ -182,35 +181,43 @@ if (defined( 'ABSPATH' )) {
             return $response['configuration'] ?? 0; // return int config id, so ui reloads on same config
         }
 
-        public function update( $key, array $args ) {
-            if ( empty( $key ) ){
-                return false;
-            }
-            if ( ! isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['groups'] ) ) {
+        /**
+         * This function is mainly used by the permanent link, which rebuilds each time requested.
+         *
+         * @note This function does not need modified for the simplest use of the export template.
+         *
+         * @param $key
+         * @param array $args
+         * @return array|false
+         */
+        public function update( $key, array $args) {
+            if ( !isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'] ) ) {
                 return false;
             }
 
+            // timestamp
             $args['timestamp'] = current_time( 'Y-m-d H:i:s' );
 
+            // Create results according to selected type
             /**
-             * Create results according to selected type
+             * @todo 6. Update keys and the queries they are pointing too
              */
-            if ( 'groups_basic' === $args['export']['type']['groups'] ) {
-                $args['rows'] = $this->query_groups_basic();
+            if ( 'advanced_basic' === $args['export']['type']['advanced'] ) {
+                $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'groups_lnglat' === $args['export']['type']['groups'] ) {
-                $args['rows'] = $this->query_groups_lnglat();
+            else if ( 'advanced_active_only' === $args['export']['type']['advanced'] ) {
+                $args['rows'] = $this->query_active_only();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'groups_active' === $args['export']['type']['groups'] ) {
-                $args['rows'] = $this->query_groups_active();
+            else if ( 'advanced_lnglat' === $args['export']['type']['advanced'] ) {
+                $args['rows'] = $this->query_lnglat();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
 
             // update destination
             $postid = $args['export']['configuration'];
-            switch ( $args['export']['destination'] ) {
+            switch ($args['export']['destination']) {
                 case 'expiring48':
                     set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 48 );
                     break;
@@ -228,97 +235,120 @@ if (defined( 'ABSPATH' )) {
             return $args;
         }
 
-        public function query_groups_active() {
+        /**
+         * @todo 7. Rewrite MYSQL queries
+         * @todo Build this query to output the columns of data you need, and it will be converted to a csv through his template
+         *
+         * @return array|object|null
+         */
+        public function query_basic() {
+            global $wpdb;
+            $results = $wpdb->get_results("
+                    SELECT
+                        p.ID,
+                        p.post_title as name,
+                        pm.meta_value as status
+                        FROM $wpdb->posts as p
+                        LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'overall_status'
+                        WHERE post_type = 'contacts';
+                ", ARRAY_A);
+            return $results;
+        }
+
+        /**
+         * @todo 7. Rewrite MYSQL queries
+         * @todo Build this query to output the columns of data you need, and it will be converted to a csv through his template
+         *
+         * @return array|object|null
+         */
+        public function query_active_only() {
+            global $wpdb;
+            $results = $wpdb->get_results("
+                    SELECT
+                        p.ID,
+                        p.post_title as name,
+                        pm.meta_value as status
+                        FROM $wpdb->posts as p
+                        JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'overall_status' AND pm.meta_value = 'active'
+                        WHERE post_type = 'contacts';
+                ", ARRAY_A);
+            return $results;
+        }
+
+        /**
+         * @todo 7. Rewrite MYSQL queries
+         * @todo Build this query to output the columns of data you need, and it will be converted to a csv through his template
+         *
+         * @return array|object|null
+         */
+        public function query_lnglat() {
             global $wpdb;
             $results = $wpdb->get_results("
                     SELECT
                         p.ID,
                         p.post_title as name,
                         pm.meta_value as status,
-                        pm3.meta_value as type,
-                        IF ( pm1.meta_value, pm1.meta_value, 0) as member_count,
-                        IF ( pm2.meta_value, pm2.meta_value, 0) as leader_count,
-                        ( SELECT GROUP_CONCAT( ' ', (SELECT GROUP_CONCAT( $wpdb->dt_location_grid.name, ' | ', lg.name ) as name
-                        FROM $wpdb->dt_location_grid JOIN $wpdb->dt_location_grid as lg ON $wpdb->dt_location_grid.admin0_grid_id=lg.grid_id
-                        WHERE $wpdb->dt_location_grid.grid_id = pm3.meta_value ), ' ')
-                        FROM  $wpdb->postmeta as pm3
-                        WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
+                        IF ( lg.longitude, lg.longitude, NULL) as longitude,
+                        IF ( lg.latitude, lg.latitude, NULL) as latitude
                         FROM $wpdb->posts as p
-                        JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'group_status' AND pm.meta_value = 'active'
-                        LEFT JOIN $wpdb->postmeta as pm1 ON pm1.post_id=p.ID AND pm1.meta_key = 'member_count'
-                        LEFT JOIN $wpdb->postmeta as pm2 ON pm2.post_id=p.ID AND pm2.meta_key = 'leader_count'
-                        LEFT JOIN $wpdb->postmeta as pm3 ON pm3.post_id=p.ID AND pm3.meta_key = 'group_type'
-                        WHERE post_type = 'groups';
+                        LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'overall_status'
+                        JOIN $wpdb->postmeta as pmlg ON p.ID=pmlg.post_id AND pmlg.meta_key = 'location_grid'
+                        LEFT JOIN $wpdb->dt_location_grid as lg ON pmlg.meta_value=lg.grid_id
+                        WHERE post_type = 'contacts';
                 ", ARRAY_A);
             return $results;
         }
 
-        public function query_groups_basic() {
-            global $wpdb;
-            $results = $wpdb->get_results("
-                    SELECT
-                        p.ID,
-                        p.post_title as name,
-                        pm.meta_value as status,
-                        pm3.meta_value as type,
-                        IF ( pm1.meta_value, pm1.meta_value, 0) as member_count,
-                        IF ( pm2.meta_value, pm2.meta_value, 0) as leader_count,
-                        ( SELECT GROUP_CONCAT( ' ', (SELECT GROUP_CONCAT( $wpdb->dt_location_grid.name, ' | ', lg.name ) as name
-                        FROM $wpdb->dt_location_grid JOIN $wpdb->dt_location_grid as lg ON $wpdb->dt_location_grid.admin0_grid_id=lg.grid_id
-                        WHERE $wpdb->dt_location_grid.grid_id = pm3.meta_value ), ' ')
-                        FROM  $wpdb->postmeta as pm3
-                        WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
-                        FROM $wpdb->posts as p
-                        JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'group_status'
-                        LEFT JOIN $wpdb->postmeta as pm1 ON pm1.post_id=p.ID AND pm1.meta_key = 'member_count'
-                        LEFT JOIN $wpdb->postmeta as pm2 ON pm2.post_id=p.ID AND pm2.meta_key = 'leader_count'
-                        LEFT JOIN $wpdb->postmeta as pm3 ON pm3.post_id=p.ID AND pm3.meta_key = 'group_type'
-                        WHERE post_type = 'groups';
-                ", ARRAY_A);
-            return $results;
+        /**
+         * This function builds the class used by the build tab.
+         *
+         * @note This function does not need modified for the simplest use of the export template.
+         *
+         * @param $classes
+         * @return mixed
+         */
+        public function format_class( $classes) {
+            $classes[$this->token] = __CLASS__;
+            return $classes;
         }
 
-        public function query_groups_lnglat() {
-            global $wpdb;
-            $results = $wpdb->get_results("
-                    SELECT
-                    p.ID,
-                    p.post_title as name,
-                    pm5.meta_value as status,
-                    pm4.meta_value as type,
-                    ( SELECT pm0.meta_value FROM $wpdb->postmeta as pm0 WHERE pm0.post_id = p.ID AND pm0.meta_key = 'group_status' LIMIT 1) as status,
-                    IF ( lg.longitude, lg.longitude, NULL) as lng,
-                    IF ( lg.latitude, lg.latitude, NULL) as lat,
-                    ( SELECT GROUP_CONCAT( ' ', (SELECT GROUP_CONCAT( $wpdb->dt_location_grid.name, ' | ', lg.name ) as name
-                    FROM $wpdb->dt_location_grid JOIN $wpdb->dt_location_grid as lg ON $wpdb->dt_location_grid.admin0_grid_id=lg.grid_id
-                    WHERE $wpdb->dt_location_grid.grid_id = pm3.meta_value ), ' ')
-                    FROM  $wpdb->postmeta as pm3
-                    WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
-                    FROM $wpdb->posts as p
-                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'location_grid'
-                    LEFT JOIN $wpdb->dt_location_grid as lg ON pm.meta_value=lg.grid_id
-                    LEFT JOIN $wpdb->postmeta as pm4 ON pm4.post_id=p.ID AND pm4.meta_key = 'group_type'
-                    LEFT JOIN $wpdb->postmeta as pm5 ON pm5.post_id=p.ID AND pm5.meta_key = 'group_status'
-                    WHERE post_type = 'groups';
-                ", ARRAY_A);
-            return $results;
+        /**
+         * Singleton and Construct Functions
+         * @note This function does not need modified
+         * @var null
+         */
+        private static $_instance = null;
+        public static function instance() {
+            if (is_null( self::$_instance )) {
+                self::$_instance = new self();
+            }
+            return self::$_instance;
+        }
+        public function __construct() {
+            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
+            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
         }
     }
-
-    DT_Metrics_Export_CSV_Groups::instance();
+    DT_Advanced_Metrics_Export_Template::instance();
 }
-
 
 
 /**
  * CREATE CSV FILE
+ * This section only loads if accessed directly.
+ * These 4 sections support expiring48, expiring360, download, permanent links
+ *
+ * @note This function does not need modified for the simplest use of the export template.
  */
 if ( !defined( 'ABSPATH' )) {
 
     // @codingStandardsIgnoreLine
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
 
-    if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
+    /**
+     * Lookup from available transients for matching token given in the url
+     */
+    if (isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] )) {
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
@@ -339,15 +369,16 @@ if ( !defined( 'ABSPATH' )) {
         }
 
         fpassthru( $output );
-    }
-    else if ( isset( $_GET['download'] ) ) {
+
+        // The download link deletes itself after being collected.
+    } else if (isset( $_GET['download'] )) {
         global $wpdb;
 
         $token = sanitize_text_field( wp_unslash( $_GET['download'] ) );
 
         $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token ), ARRAY_A );
 
-        if ( empty( $raw ) ) {
+        if (empty( $raw )) {
             echo 'No link found';
             return;
         }
@@ -367,23 +398,33 @@ if ( !defined( 'ABSPATH' )) {
         }
 
         fpassthru( $output );
-    }
-    else if ( isset( $_GET['permanent'] ) ) {
+
+    /**
+     * The permanent link requires reloading this page in the context of WP and using the update function to get a new
+     * snapshot. If the permanent link is not needed, you could delete this 'if' section and the update function in the
+     * class.
+     *
+     * @todo 8. Update required_once file name to the name of this file.
+     */
+    } else if (isset( $_GET['permanent'] )) {
         global $wpdb;
 
         // test if key exists
         $token = sanitize_text_field( wp_unslash( $_GET['permanent'] ) );
         $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token ) );
-        if ( empty( $raw ) ) {
+        if (empty( $raw )) {
             echo 'No link found';
             return;
         }
 
-        // refresh data
-        require_once( 'format-base.php' );
-        require_once( 'csv-format-groups.php' );
+        /**
+         * @todo 8. Update required_once file name to the name of this file.
+         */
+        require_once( 'advanced-metrics-export-template.php' );
+
+
         $raw = maybe_unserialize( $raw );
-        $results = DT_Metrics_Export_CSV_Groups::instance()->update( $token, $raw );
+        $results = DT_Advanced_Metrics_Export_Template::instance()->update( $token, $raw );
 
         // load export header
         header( 'Content-Type: text/csv; charset=utf-8' );
@@ -396,8 +437,7 @@ if ( !defined( 'ABSPATH' )) {
             fputcsv( $output, $row );
         }
         fpassthru( $output );
-    }
-    else {
+    } else {
         echo 'parameters not set correctly';
         return;
     }

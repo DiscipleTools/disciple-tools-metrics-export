@@ -83,12 +83,12 @@ if (defined( 'ABSPATH' )) {
              */
             if ( 'groups_lnglat' === $response['type']['groups'] ) {
                 $args['rows'] = $this->query_groups_lnglat();
-                $args['columns'] = array_keys( $args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             }
 
 
             // kill if no results
-            if (empty(  $args['rows'] )) {
+            if (empty( $args['rows'] )) {
                 echo '<div class="notice notice-warning is-dismissible">
                      <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
                  </div>';
@@ -98,7 +98,7 @@ if (defined( 'ABSPATH' )) {
             // destination
             $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
             $postid = $response['configuration'];
-            switch( $response['destination'] ) {
+            switch ( $response['destination'] ) {
                 case 'expiring48':
                     $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
@@ -159,7 +159,7 @@ if (defined( 'ABSPATH' )) {
             if ( empty( $key ) ){
                 return false;
             }
-            if ( ! isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'],$args['export']['destination'],$args['export']['type']['groups'] ) ) {
+            if ( ! isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['groups'] ) ) {
                 return false;
             }
 
@@ -176,7 +176,7 @@ if (defined( 'ABSPATH' )) {
 
             // update destination
             $postid = $args['export']['configuration'];
-            switch( $args['export']['destination'] ) {
+            switch ( $args['export']['destination'] ) {
                 case 'expiring48':
                     set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 48 );
                     break;
@@ -229,20 +229,20 @@ if (defined( 'ABSPATH' )) {
 /**
  * CREATE KML FILE
  */
-if (!defined('ABSPATH')) {
+if ( !defined( 'ABSPATH' )) {
 
-    // @codingStandardsIgnoreLine
+    // phpcs:disable
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
 
-    if (isset($_GET['expiring48']) || isset($_GET['expiring360'])) {
+    if (isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] )) {
 
-        $token = isset($_GET['expiring48']) ? sanitize_text_field(wp_unslash($_GET['expiring48'])) : sanitize_text_field(wp_unslash($_GET['expiring360']));
-        $results = get_transient('metrics_exports_' . $token);
+        $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
+        $results = get_transient( 'metrics_exports_' . $token );
 
-        header('Content-type: application/vnd.google-earth.kml+xml');
+        header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty($results)) {
+        if (empty( $results )) {
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -267,26 +267,26 @@ if (!defined('ABSPATH')) {
         echo '</kml>';
 
         exit;
-    } else if (isset($_GET['download'])) {
+    } else if (isset( $_GET['download'] )) {
         global $wpdb;
 
-        $token = sanitize_text_field(wp_unslash($_GET['download']));
+        $token = sanitize_text_field( wp_unslash( $_GET['download'] ) );
 
-        $raw = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token), ARRAY_A);
+        $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token ), ARRAY_A );
 
-        if (empty($raw)) {
+        if (empty( $raw )) {
             echo 'No link found';
             return;
         }
-        $results = maybe_unserialize($raw['meta_value']);
+        $results = maybe_unserialize( $raw['meta_value'] );
 
-        delete_post_meta($raw['post_id'], $raw['meta_key']); // delete after collection
+        delete_post_meta( $raw['post_id'], $raw['meta_key'] ); // delete after collection
 
 
-        header('Content-type: application/vnd.google-earth.kml+xml');
+        header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty($results)) {
+        if (empty( $results )) {
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -311,27 +311,27 @@ if (!defined('ABSPATH')) {
         echo '</kml>';
 
         exit;
-    } else if (isset($_GET['permanent'])) {
+    } else if (isset( $_GET['permanent'] )) {
         global $wpdb;
 
         // test if key exists
-        $token = sanitize_text_field(wp_unslash($_GET['permanent']));
-        $raw = $wpdb->get_var($wpdb->prepare("SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token));
-        if (empty($raw)) {
+        $token = sanitize_text_field( wp_unslash( $_GET['permanent'] ) );
+        $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token ) );
+        if (empty( $raw )) {
             echo 'No link found';
             return;
         }
 
         // refresh data
-        require_once('format-base.php');
-        require_once('kml-format-groups.php');
-        $raw = maybe_unserialize($raw);
-        $results = DT_Metrics_Export_KML_Groups::instance()->update($token, $raw);
+        require_once( 'format-base.php' );
+        require_once( 'kml-format-groups.php' );
+        $raw = maybe_unserialize( $raw );
+        $results = DT_Metrics_Export_KML_Groups::instance()->update( $token, $raw );
 
-        header('Content-type: application/vnd.google-earth.kml+xml');
+        header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty($results)) {
+        if (empty( $results )) {
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -360,4 +360,5 @@ if (!defined('ABSPATH')) {
         echo 'parameters not set correctly';
         return;
     }
+    // phpcs:enable
 }

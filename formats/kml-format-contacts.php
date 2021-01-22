@@ -3,7 +3,7 @@
 /**
  * LOAD DATA TYPE FORMAT
  */
-if (defined('ABSPATH')) {
+if (defined( 'ABSPATH' )) {
     /**
      * Class DT_Metrics_Export_KML_Contacts
      */
@@ -15,9 +15,8 @@ if (defined('ABSPATH')) {
 
         private static $_instance = null;
 
-        public static function instance()
-        {
-            if (is_null(self::$_instance)) {
+        public static function instance() {
+            if (is_null( self::$_instance )) {
                 self::$_instance = new self();
             }
             return self::$_instance;
@@ -26,15 +25,13 @@ if (defined('ABSPATH')) {
         /**
          * DT_Metrics_Export_KML constructor.
          */
-        public function __construct()
-        {
+        public function __construct() {
             parent::__construct();
-            add_filter('dt_metrics_export_format', [$this, 'format'], 10, 1);
-            add_filter('dt_metrics_export_register_format_class', [$this, 'format_class'], 10, 1);
+            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
+            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
         } // End __construct()
 
-        public function format($format)
-        {
+        public function format( $format) {
             /* Build base template of a format*/
             $format[$this->token] = get_dt_metrics_export_base_format();
 
@@ -60,21 +57,19 @@ if (defined('ABSPATH')) {
             return $format;
         }
 
-        public function format_class($classes)
-        {
+        public function format_class( $classes) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
 
-        public function export($response)
-        {
+        public function export( $response) {
 
-            if (!isset($response['type']['contacts'], $response['configuration'], $response['destination'])) {
+            if ( !isset( $response['type']['contacts'], $response['configuration'], $response['destination'] )) {
                 return false;
             }
 
             $args = [
-                'timestamp' => current_time('Y-m-d H:i:s'),
+                'timestamp' => current_time( 'Y-m-d H:i:s' ),
                 'columns' => [],
                 'rows' => [],
                 'export' => $response,
@@ -87,17 +82,17 @@ if (defined('ABSPATH')) {
              */
             if ('contacts_basic' === $response['type']['contacts']) {
                 $args['rows'] = $this->query_contacts_basic();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             } else if ('contacts_lnglat' === $response['type']['contacts']) {
                 $args['rows'] = $this->query_contacts_lnglat();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             } else if ('contacts_active' === $response['type']['contacts']) {
                 $args['rows'] = $this->query_contacts_active();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             }
 
             // kill if no results
-            if (empty($args['rows'])) {
+            if (empty( $args['rows'] )) {
                 echo '<div class="notice notice-warning is-dismissible">
                      <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
                  </div>';
@@ -105,55 +100,55 @@ if (defined('ABSPATH')) {
             }
 
             // destination
-            $one_time_key = hash('sha256', get_current_user_id() . time() . dt_get_site_id() . rand(0, 999));
+            $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
             $postid = $response['configuration'];
             switch ($response['destination']) {
                 case 'expiring48':
-                    $args['link'] = esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?expiring48=' . esc_attr($one_time_key);
+                    $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
-                    set_transient('metrics_exports_' . $one_time_key, $args, 60 . 60 . 48);
+                    set_transient( 'metrics_exports_' . $one_time_key, $args, 60 . 60 . 48 );
                     echo '<div class="notice notice-warning is-dismissible">
                              <p>
                                  Link expiring in 48 hours:<br>
-                                 <a href="' . esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?expiring48=' . esc_attr($one_time_key) . '"
-                                 target="_blank">' . esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?expiring48=' . esc_attr($one_time_key) . '
+                                 <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key ) . '"
+                                 target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key ) . '
                                  </a>
                              </p>
                          </div>';
                     break;
                 case 'expiring360':
-                    $args['link'] = esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?expiring360=' . esc_attr($one_time_key);
+                    $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring360=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
-                    set_transient('metrics_exports_' . $one_time_key, $args, 60 . 60 . 360);
+                    set_transient( 'metrics_exports_' . $one_time_key, $args, 60 . 60 . 360 );
                     echo '<div class="notice notice-warning is-dismissible">
                              <p>
                                  Link expiring in 15 days:<br>
-                                 <a href="' . esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?expiring360=' . esc_attr($one_time_key) . '"
-                                 target="_blank">' . esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?expiring360=' . esc_attr($one_time_key) . '
+                                 <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring360=' . esc_attr( $one_time_key ) . '"
+                                 target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring360=' . esc_attr( $one_time_key ) . '
                                  </a>
                              </p>
                          </div>';
                     break;
                 case 'download':
-                    $args['link'] = esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?download=' . esc_attr($one_time_key);
+                    $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?download=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
-                    update_post_meta($postid, 'download_' . $one_time_key, $args);
+                    update_post_meta( $postid, 'download_' . $one_time_key, $args );
                     echo '<div class="notice notice-warning is-dismissible">
                              <p>
                                  One time download link:<br>
-                                 ' . esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?download=' . esc_attr($one_time_key) . '
+                                 ' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?download=' . esc_attr( $one_time_key ) . '
                              </p>
                          </div>';
                     break;
                 case 'permanent':
-                    $args['link'] = esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?permanent=' . esc_attr($one_time_key);
+                    $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?permanent=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
-                    update_post_meta($postid, 'permanent_' . $one_time_key, $args);
+                    update_post_meta( $postid, 'permanent_' . $one_time_key, $args );
                     echo '<div class="notice notice-warning is-dismissible">
                              <p>
                                  Permanent link (must be deleted manually):<br>
-                                 <a href="' . esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?permanent=' . esc_attr($one_time_key) . '"
-                                 target="_blank">' . esc_url(plugin_dir_url(__FILE__)) . esc_url(basename(__FILE__)) . '?permanent=' . esc_attr($one_time_key) . '
+                                 <a href="' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?permanent=' . esc_attr( $one_time_key ) . '"
+                                 target="_blank">' . esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?permanent=' . esc_attr( $one_time_key ) . '
                                  </a>
                              </p>
                          </div>';
@@ -164,53 +159,51 @@ if (defined('ABSPATH')) {
             return $response['configuration'] ?? 0; // return int config id, so ui reloads on same config
         }
 
-        public function update($key, array $args)
-        {
-            if (empty($key)) {
+        public function update( $key, array $args) {
+            if (empty( $key )) {
                 return false;
             }
-            if (!isset($args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['contacts'])) {
+            if ( !isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['contacts'] )) {
                 return false;
             }
 
-            $args['timestamp'] = current_time('Y-m-d H:i:s');
+            $args['timestamp'] = current_time( 'Y-m-d H:i:s' );
 
             /**
              * Create results according to selected type
              */
             if ('contacts_basic' === $args['export']['type']['contacts']) {
                 $args['rows'] = $this->query_contacts_basic();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             } else if ('contacts_lnglat' === $args['export']['type']['contacts']) {
                 $args['rows'] = $this->query_contacts_lnglat();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             } else if ('contacts_active' === $args['export']['type']['contacts']) {
                 $args['rows'] = $this->query_contacts_active();
-                $args['columns'] = array_keys($args['rows'][0]);
+                $args['columns'] = array_keys( $args['rows'][0] );
             }
 
             // update destination
             $postid = $args['export']['configuration'];
             switch ($args['export']['destination']) {
                 case 'expiring48':
-                    set_transient('metrics_exports_' . $key, $args, 60 . 60 . 48);
+                    set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 48 );
                     break;
                 case 'expiring360':
-                    set_transient('metrics_exports_' . $key, $args, 60 . 60 . 360);
+                    set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 360 );
                     break;
                 case 'download':
-                    update_post_meta($postid, 'download_' . $key, $args);
+                    update_post_meta( $postid, 'download_' . $key, $args );
                     break;
                 case 'permanent':
-                    update_post_meta($postid, 'permanent_' . $key, $args);
+                    update_post_meta( $postid, 'permanent_' . $key, $args );
                     break;
             }
 
             return $args;
         }
 
-        public function query_contacts_active()
-        {
+        public function query_contacts_active() {
             global $wpdb;
             $results = $wpdb->get_results("
                     SELECT
@@ -233,8 +226,7 @@ if (defined('ABSPATH')) {
             return $results;
         }
 
-        public function query_contacts_basic()
-        {
+        public function query_contacts_basic() {
             global $wpdb;
             $results = $wpdb->get_results("
                     SELECT
@@ -256,8 +248,7 @@ if (defined('ABSPATH')) {
             return $results;
         }
 
-        public function query_contacts_lnglat()
-        {
+        public function query_contacts_lnglat() {
             global $wpdb;
             $results = $wpdb->get_results("
                     SELECT
@@ -287,20 +278,20 @@ if (defined('ABSPATH')) {
 /**
  * CREATE KML FILE
  */
-if (!defined('ABSPATH')) {
+if ( !defined( 'ABSPATH' )) {
 
-    // @codingStandardsIgnoreLine
+    // phpcs:disable
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
 
-    if (isset($_GET['expiring48']) || isset($_GET['expiring360'])) {
+    if (isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] )) {
 
-        $token = isset($_GET['expiring48']) ? sanitize_text_field(wp_unslash($_GET['expiring48'])) : sanitize_text_field(wp_unslash($_GET['expiring360']));
-        $results = get_transient('metrics_exports_' . $token);
+        $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
+        $results = get_transient( 'metrics_exports_' . $token );
 
-        header('Content-type: application/vnd.google-earth.kml+xml');
+        header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty($results)) {
+        if (empty( $results )) {
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -325,26 +316,26 @@ if (!defined('ABSPATH')) {
         echo '</kml>';
 
         exit;
-    } else if (isset($_GET['download'])) {
+    } else if (isset( $_GET['download'] )) {
         global $wpdb;
 
-        $token = sanitize_text_field(wp_unslash($_GET['download']));
+        $token = sanitize_text_field( wp_unslash( $_GET['download'] ) );
 
-        $raw = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token), ARRAY_A);
+        $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token ), ARRAY_A );
 
-        if (empty($raw)) {
+        if (empty( $raw )) {
             echo 'No link found';
             return;
         }
-        $results = maybe_unserialize($raw['meta_value']);
+        $results = maybe_unserialize( $raw['meta_value'] );
 
-        delete_post_meta($raw['post_id'], $raw['meta_key']); // delete after collection
+        delete_post_meta( $raw['post_id'], $raw['meta_key'] ); // delete after collection
 
 
-        header('Content-type: application/vnd.google-earth.kml+xml');
+        header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty($results)) {
+        if (empty( $results )) {
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -369,27 +360,27 @@ if (!defined('ABSPATH')) {
         echo '</kml>';
 
         exit;
-    } else if (isset($_GET['permanent'])) {
+    } else if (isset( $_GET['permanent'] )) {
         global $wpdb;
 
         // test if key exists
-        $token = sanitize_text_field(wp_unslash($_GET['permanent']));
-        $raw = $wpdb->get_var($wpdb->prepare("SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token));
-        if (empty($raw)) {
+        $token = sanitize_text_field( wp_unslash( $_GET['permanent'] ) );
+        $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token ) );
+        if (empty( $raw )) {
             echo 'No link found';
             return;
         }
 
         // refresh data
-        require_once('format-base.php');
-        require_once('kml-format-contacts.php');
-        $raw = maybe_unserialize($raw);
-        $results = DT_Metrics_Export_KML_Contacts::instance()->update($token, $raw);
+        require_once( 'format-base.php' );
+        require_once( 'kml-format-contacts.php' );
+        $raw = maybe_unserialize( $raw );
+        $results = DT_Metrics_Export_KML_Contacts::instance()->update( $token, $raw );
 
-        header('Content-type: application/vnd.google-earth.kml+xml');
+        header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty($results)) {
+        if (empty( $results )) {
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -418,5 +409,6 @@ if (!defined('ABSPATH')) {
         echo 'parameters not set correctly';
         return;
     }
+    // phpcs:enable
 }
 
