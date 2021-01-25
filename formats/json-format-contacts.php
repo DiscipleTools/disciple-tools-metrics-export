@@ -1,48 +1,14 @@
 <?php
-/**
- * Export Format: CSV Contacts export
- */
-
-/**
- * Export Format: CSV export in the COTW Standard
- *
- * When ABSPATH is defined then WP has loaded, if ABSPATH is not defined then the file is being accessed directly.
- *
- * Direct access is used to generate the CSV from the transient store. It is directly accessed link.
- * By both supplying the format and the export from the same file, this pattern attempt to make adding additional formats
- * simple and self contained.
- */
 
 /**
  * LOAD DATA TYPE FORMAT
  */
 if (defined( 'ABSPATH' )) {
-    /**
-     * Class DT_Metrics_Export_CSV
-     */
-    class DT_Metrics_Export_JSON_Contacts extends DT_Metrics_Export_Format_Base
+    class DT_Metrics_Export_JSON_Contacts
     {
 
         public $token = 'json_contacts';
         public $label = 'JSON (Contacts)';
-
-        private static $_instance = null;
-
-        public static function instance() {
-            if (is_null( self::$_instance )) {
-                self::$_instance = new self();
-            }
-            return self::$_instance;
-        }
-
-        /**
-         * DT_Metrics_Export_CSV constructor.
-         */
-        public function __construct() {
-            parent::__construct();
-            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
-            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
-        } // End __construct()
 
         public function format( $format ) {
             /* Build base template of a format*/
@@ -61,16 +27,16 @@ if (defined( 'ABSPATH' )) {
 
             $format[$this->token]['types'] = [
                 'contacts' => [
-                    'contacts_active' => [
-                        'key' => 'contacts_active',
-                        'label' => 'All active contacts with grouping fields. Fields: [name, status, email, phone, locations]'
+                    'active' => [
+                        'key' => 'active',
+                        'label' => 'All active contacts with grouping fields. Fields: [name, status, phone, email, locations]'
                     ],
-                    'contacts_basic' => [
-                        'key' => 'contacts_basic',
-                        'label' => 'All contacts with grouping fields. Fields: [name, status, email, phone, locations]'
+                    'basic' => [
+                        'key' => 'basic',
+                        'label' => 'All contacts with grouping fields. Fields: [name, status, phone, email, locations]'
                     ],
-                    'contacts_lnglat' => [
-                        'key' => 'contacts_lnglat',
+                    'lnglat' => [
+                        'key' => 'lnglat',
                         'label' => 'All contacts with a row for each location. This can have duplicates if the contact has multiple locations. Fields: [name, status, lng, lat, location label]'
                     ],
                 ],
@@ -83,7 +49,7 @@ if (defined( 'ABSPATH' )) {
             return $classes;
         }
 
-        public function export( $response ) {
+        public function create( $response ) {
 
             if ( ! isset( $response['type']['contacts'], $response['configuration'], $response['destination'] ) ){
                 return false;
@@ -101,16 +67,16 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ( 'contacts_basic' === $response['type']['contacts'] ) {
-                $args['rows'] = $this->query_contacts_basic();
+            if ( 'basic' === $response['type']['contacts'] ) {
+                $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'contacts_lnglat' === $response['type']['contacts'] ) {
-                $args['rows'] = $this->query_contacts_lnglat();
+            else if ( 'lnglat' === $response['type']['contacts'] ) {
+                $args['rows'] = $this->query_lnglat();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'contacts_active' === $response['type']['contacts'] ) {
-                $args['rows'] = $this->query_contacts_active();
+            else if ( 'active' === $response['type']['contacts'] ) {
+                $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
 
@@ -195,16 +161,16 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ( 'contacts_basic' === $args['export']['type']['contacts'] ) {
-                $args['rows'] = $this->query_contacts_basic();
+            if ( 'basic' === $args['export']['type']['contacts'] ) {
+                $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'contacts_lnglat' === $args['export']['type']['contacts'] ) {
-                $args['rows'] = $this->query_contacts_lnglat();
+            else if ( 'lnglat' === $args['export']['type']['contacts'] ) {
+                $args['rows'] = $this->query_lnglat();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'contacts_active' === $args['export']['type']['contacts'] ) {
-                $args['rows'] = $this->query_contacts_active();
+            else if ( 'active' === $args['export']['type']['contacts'] ) {
+                $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
 
@@ -228,7 +194,7 @@ if (defined( 'ABSPATH' )) {
             return $args;
         }
 
-        public function query_contacts_active() {
+        public function query_active() {
             global $wpdb;
             $results = $wpdb->get_results("
                     SELECT
@@ -246,12 +212,12 @@ if (defined( 'ABSPATH' )) {
                         WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
                         FROM $wpdb->posts as p
                         JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'overall_status' AND pm.meta_value = 'active'
-                        WHERE post_type = 'contacts';
+                        WHERE p.post_type = 'contacts';
                 ", ARRAY_A);
             return $results;
         }
 
-        public function query_contacts_basic() {
+        public function query_basic() {
             global $wpdb;
             $results = $wpdb->get_results("
                     SELECT
@@ -268,34 +234,59 @@ if (defined( 'ABSPATH' )) {
                         FROM  $wpdb->postmeta as pm3
                         WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
                         FROM $wpdb->posts as p
-                        WHERE post_type = 'contacts';
+                        WHERE p.post_type = 'contacts';
                 ", ARRAY_A);
             return $results;
         }
 
-        public function query_contacts_lnglat() {
+        public function query_lnglat() {
             global $wpdb;
-            $results = $wpdb->get_results("
+            if ( DT_Mapbox_API::get_key() ) {
+                $results = $wpdb->get_results("
                     SELECT
                     p.ID,
                     p.post_title as name,
+                    IF ( lgm.lng, lgm.lng, NULl ) as lng,
+                    IF ( lgm.lng, lgm.lat, NULL ) as lat,
                     ( SELECT pm0.meta_value FROM $wpdb->postmeta as pm0 WHERE pm0.post_id = p.ID AND pm0.meta_key = 'overall_status' LIMIT 1) as status,
-                    IF ( lg.longitude, lg.longitude, NULL) as lng,
-                    IF ( lg.latitude, lg.latitude, NULL) as lat,
-                    ( SELECT GROUP_CONCAT( ' ', (SELECT GROUP_CONCAT( $wpdb->dt_location_grid.name, ' | ', lg.name ) as name
-                    FROM $wpdb->dt_location_grid JOIN $wpdb->dt_location_grid as lg ON $wpdb->dt_location_grid.admin0_grid_id=lg.grid_id
-                    WHERE $wpdb->dt_location_grid.grid_id = pm3.meta_value ), ' ')
-                    FROM  $wpdb->postmeta as pm3
-                    WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
+                    ( SELECT GROUP_CONCAT( pm1.meta_value) FROM  $wpdb->postmeta as pm1 WHERE p.ID=pm1.post_id AND pm1.meta_key LIKE 'contact_phone%' AND pm1.meta_key NOT LIKE '%details' ) as phone,
+                    ( SELECT GROUP_CONCAT( pm2.meta_value) FROM  $wpdb->postmeta as pm2 WHERE p.ID=pm2.post_id AND pm2.meta_key LIKE 'contact_email%' AND pm2.meta_key NOT LIKE '%details' ) as email
                     FROM $wpdb->posts as p
-                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'location_grid'
-                    LEFT JOIN $wpdb->dt_location_grid as lg ON pm.meta_value=lg.grid_id
-                    WHERE post_type = 'contacts';
+                    JOIN $wpdb->postmeta as pmlgm ON p.ID=pmlgm.post_id AND pmlgm.meta_key = 'location_grid_meta'
+                    JOIN $wpdb->dt_location_grid_meta as lgm ON pmlgm.meta_value=lgm.grid_meta_id
+                    WHERE p.post_type = 'contacts';
                 ", ARRAY_A);
+            } else {
+                $results = $wpdb->get_results("
+                    SELECT
+                    p.ID,
+                    p.post_title as name,
+                    IF ( lg.longitude, lg.longitude, NULL ) as lng,
+                    IF ( lg.latitude, lg.latitude, NULL) as lat,
+                    ( SELECT pm0.meta_value FROM $wpdb->postmeta as pm0 WHERE pm0.post_id = p.ID AND pm0.meta_key = 'overall_status' LIMIT 1) as status,
+                    ( SELECT GROUP_CONCAT( pm1.meta_value) FROM  $wpdb->postmeta as pm1 WHERE p.ID=pm1.post_id AND pm1.meta_key LIKE 'contact_phone%' AND pm1.meta_key NOT LIKE '%details' ) as phone,
+                    ( SELECT GROUP_CONCAT( pm2.meta_value) FROM  $wpdb->postmeta as pm2 WHERE p.ID=pm2.post_id AND pm2.meta_key LIKE 'contact_email%' AND pm2.meta_key NOT LIKE '%details' ) as email
+                    FROM $wpdb->posts as p
+                    JOIN $wpdb->postmeta as pmlg ON p.ID=pmlg.post_id AND pmlg.meta_key = 'location_grid'
+                    JOIN $wpdb->dt_location_grid as lg ON pmlg.meta_value=lg.grid_id
+                    WHERE p.post_type = 'contacts';
+                ", ARRAY_A);
+            }
             return $results;
         }
-    }
 
+        private static $_instance = null;
+        public static function instance() {
+            if (is_null( self::$_instance )) {
+                self::$_instance = new self();
+            }
+            return self::$_instance;
+        }
+        public function __construct() {
+            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
+            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
+        } // End __construct()
+    }
     DT_Metrics_Export_JSON_Contacts::instance();
 }
 
@@ -360,7 +351,6 @@ if ( !defined( 'ABSPATH' )) {
         }
 
         // refresh data
-        require_once( 'format-base.php' );
         require_once( 'json-format-contacts.php' );
         $raw = maybe_unserialize( $raw );
         $results = DT_Metrics_Export_JSON_Contacts::instance()->update( $token, $raw );
@@ -380,4 +370,3 @@ if ( !defined( 'ABSPATH' )) {
         return;
     }
 }
-

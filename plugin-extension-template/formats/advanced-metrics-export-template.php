@@ -81,7 +81,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
          * @param $response
          * @return false|int|mixed
          */
-        public function export( $response) {
+        public function create( $response) {
             if ( !isset( $response['configuration'], $response['destination'] ) ) {
                 return false;
             }

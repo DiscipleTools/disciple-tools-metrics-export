@@ -60,7 +60,7 @@ if ( defined( 'ABSPATH' ) ) { // confirm wp is loaded
          * @param $response
          * @return false|int|mixed
          */
-        public function export( $response) {
+        public function create( $response) {
             if ( !isset( $response['configuration'], $response['destination'] ) ) {
                 return false;
             }

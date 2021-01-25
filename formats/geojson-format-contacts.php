@@ -1,17 +1,22 @@
 <?php
+/**
+ * Export Format: GEOJSON Export
+ *
+ * When ABSPATH is defined then WP has loaded, if ABSPATH is not defined then the file is being accessed directly.
+ *
+ * Direct access is used to generate the CSV from the transient store. It is directly accessed link.
+ * By both supplying the format and the export from the same file, this pattern attempt to make adding additional formats
+ * simple and self contained.
+ */
 
 /**
  * LOAD DATA TYPE FORMAT
  */
 if (defined( 'ABSPATH' )) {
-    /**
-     * Class DT_Metrics_Export_CSV
-     */
-    class DT_Metrics_Export_KML_Groups
+    class DT_Metrics_Export_GEOJSON_Contacts
     {
-
-        public $token = 'kml_groups';
-        public $label = 'KML (Groups)';
+        public $token = 'geojson_contacts';
+        public $label = 'GEOJSON (Contacts)';
 
         public function format( $format ) {
             /* Build base template of a format*/
@@ -29,23 +34,23 @@ if (defined( 'ABSPATH' )) {
             ];
 
             $format[$this->token]['types'] = [
-                'groups' => [
+                'contacts' => [
                     'active' => [
                         'key' => 'active',
-                        'label' => 'All active groups. Fields: [name, status, member_count, leader_count, group_type, lng, lat]'
+                        'label' => 'All active contacts with grouping fields. Fields: [name, lng, lat, status, email, phone]'
                     ],
                     'basic' => [
                         'key' => 'basic',
-                        'label' => 'All groups. Fields: [name, status, member_count, leader_count, group_type, lng, lat]'
-                    ],
+                        'label' => 'All contacts with grouping fields. Fields: [name, lng, lat, status, email, phone]'
+                    ]
                 ],
             ];
-
             return $format;
         }
 
-        public function create( $response) {
-            if ( ! isset( $response['type']['groups'], $response['configuration'], $response['destination'] ) ){
+        public function create( $response ) {
+
+            if ( ! isset( $response['type']['contacts'], $response['configuration'], $response['destination'] ) ){
                 return false;
             }
 
@@ -61,15 +66,14 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ( 'basic' === $args['export']['type']['groups'] ) {
+            if ( 'basic' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'active' === $args['export']['type']['groups'] ) {
+            else if ( 'active' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-
 
             // kill if no results
             if (empty( $args['rows'] )) {
@@ -143,7 +147,7 @@ if (defined( 'ABSPATH' )) {
             if ( empty( $key ) ){
                 return false;
             }
-            if ( ! isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['groups'] ) ) {
+            if ( ! isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['contacts'] ) ) {
                 return false;
             }
 
@@ -152,15 +156,14 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ( 'basic' === $args['export']['type']['groups'] ) {
-                $args['rows'] = $this->query_basic();
-                $args['columns'] = array_keys( $args['rows'][0] );
-            }
-            else if ( 'active' === $args['export']['type']['groups'] ) {
+            if ( 'active' === $args['export']['type']['contacts'] ) {
                 $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-
+            else if ( 'basic' === $args['export']['type']['contacts'] ) {
+                $args['rows'] = $this->query_basic();
+                $args['columns'] = array_keys( $args['rows'][0] );
+            }
 
             // update destination
             $postid = $args['export']['configuration'];
@@ -189,40 +192,32 @@ if (defined( 'ABSPATH' )) {
                     SELECT
                     p.ID,
                     p.post_title as name,
+                    IF ( lgm.lng, lgm.lng, NULl ) as lng,
+                    IF ( lgm.lng, lgm.lat, NULL ) as lat,
                     pm.meta_value as status,
-                    pm1.meta_value as member_count,
-                    pm2.meta_value as leader_count,
-                    pm3.meta_value as group_type,
-                    IF ( lgm.lng, lgm.lng, NULL ) as lng,
-                    IF ( lgm.lng, lgm.lat, NULL) as lat
+                    ( SELECT GROUP_CONCAT( pm1.meta_value) FROM  $wpdb->postmeta as pm1 WHERE p.ID=pm1.post_id AND pm1.meta_key LIKE 'contact_phone%' AND pm1.meta_key NOT LIKE '%details' ) as phone,
+                    ( SELECT GROUP_CONCAT( pm2.meta_value) FROM  $wpdb->postmeta as pm2 WHERE p.ID=pm2.post_id AND pm2.meta_key LIKE 'contact_email%' AND pm2.meta_key NOT LIKE '%details' ) as email
                     FROM $wpdb->posts as p
                     JOIN $wpdb->postmeta as pmlgm ON p.ID=pmlgm.post_id AND pmlgm.meta_key = 'location_grid_meta'
                     JOIN $wpdb->dt_location_grid_meta as lgm ON pmlgm.meta_value=lgm.grid_meta_id
-                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'group_status'
-                    LEFT JOIN $wpdb->postmeta as pm1 ON pm1.post_id=p.ID AND pm1.meta_key = 'member_count'
-                    LEFT JOIN $wpdb->postmeta as pm2 ON pm2.post_id=p.ID AND pm2.meta_key = 'leader_count'
-                    LEFT JOIN $wpdb->postmeta as pm3 ON pm3.post_id=p.ID AND pm3.meta_key = 'group_type'
-                    WHERE p.post_type = 'groups' AND pm.meta_value = 'active';
+                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'overall_status'
+                    WHERE p.post_type = 'contacts' AND pm.meta_value = 'active';
                 ", ARRAY_A);
             } else {
                 $results = $wpdb->get_results("
                     SELECT
                     p.ID,
                     p.post_title as name,
-                    pm.meta_value as status,
-                    pm1.meta_value as member_count,
-                    pm2.meta_value as leader_count,
-                    pm3.meta_value as group_type,
                     IF ( lg.longitude, lg.longitude, NULL ) as lng,
-                    IF ( lg.latitude, lg.latitude, NULL) as lat
+                    IF ( lg.latitude, lg.latitude, NULL) as lat,
+                    pm.meta_value as status,
+                    ( SELECT GROUP_CONCAT( pm1.meta_value) FROM  $wpdb->postmeta as pm1 WHERE p.ID=pm1.post_id AND pm1.meta_key LIKE 'contact_phone%' AND pm1.meta_key NOT LIKE '%details' ) as phone,
+                    ( SELECT GROUP_CONCAT( pm2.meta_value) FROM  $wpdb->postmeta as pm2 WHERE p.ID=pm2.post_id AND pm2.meta_key LIKE 'contact_email%' AND pm2.meta_key NOT LIKE '%details' ) as email
                     FROM $wpdb->posts as p
                     JOIN $wpdb->postmeta as pmlg ON p.ID=pmlg.post_id AND pmlg.meta_key = 'location_grid'
                     JOIN $wpdb->dt_location_grid as lg ON pmlg.meta_value=lg.grid_id
-                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'group_status'
-                    LEFT JOIN $wpdb->postmeta as pm1 ON pm1.post_id=p.ID AND pm1.meta_key = 'member_count'
-                    LEFT JOIN $wpdb->postmeta as pm2 ON pm2.post_id=p.ID AND pm2.meta_key = 'leader_count'
-                    LEFT JOIN $wpdb->postmeta as pm3 ON pm3.post_id=p.ID AND pm3.meta_key = 'group_type'
-                    WHERE p.post_type = 'groups' AND pm.meta_value = 'active';
+                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'overall_status'
+                    WHERE p.post_type = 'contacts' AND pm.meta_value = 'active';
                 ", ARRAY_A);
             }
             return $results;
@@ -235,40 +230,30 @@ if (defined( 'ABSPATH' )) {
                     SELECT
                     p.ID,
                     p.post_title as name,
-                    pm.meta_value as status,
-                    pm1.meta_value as member_count,
-                    pm2.meta_value as leader_count,
-                    pm3.meta_value as group_type,
-                    IF ( lgm.lng, lgm.lng, NULL ) as lng,
-                    IF ( lgm.lng, lgm.lat, NULL) as lat
+                    IF ( lgm.lng, lgm.lng, NULl ) as lng,
+                    IF ( lgm.lng, lgm.lat, NULL ) as lat,
+                    ( SELECT pm0.meta_value FROM $wpdb->postmeta as pm0 WHERE pm0.post_id = p.ID AND pm0.meta_key = 'overall_status' LIMIT 1) as status,
+                    ( SELECT GROUP_CONCAT( pm1.meta_value) FROM  $wpdb->postmeta as pm1 WHERE p.ID=pm1.post_id AND pm1.meta_key LIKE 'contact_phone%' AND pm1.meta_key NOT LIKE '%details' ) as phone,
+                    ( SELECT GROUP_CONCAT( pm2.meta_value) FROM  $wpdb->postmeta as pm2 WHERE p.ID=pm2.post_id AND pm2.meta_key LIKE 'contact_email%' AND pm2.meta_key NOT LIKE '%details' ) as email
                     FROM $wpdb->posts as p
                     JOIN $wpdb->postmeta as pmlgm ON p.ID=pmlgm.post_id AND pmlgm.meta_key = 'location_grid_meta'
                     JOIN $wpdb->dt_location_grid_meta as lgm ON pmlgm.meta_value=lgm.grid_meta_id
-                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'group_status'
-                    LEFT JOIN $wpdb->postmeta as pm1 ON pm1.post_id=p.ID AND pm1.meta_key = 'member_count'
-                    LEFT JOIN $wpdb->postmeta as pm2 ON pm2.post_id=p.ID AND pm2.meta_key = 'leader_count'
-                    LEFT JOIN $wpdb->postmeta as pm3 ON pm3.post_id=p.ID AND pm3.meta_key = 'group_type'
-                    WHERE p.post_type = 'groups';
+                    WHERE p.post_type = 'contacts';
                 ", ARRAY_A);
             } else {
                 $results = $wpdb->get_results("
                     SELECT
                     p.ID,
                     p.post_title as name,
-                    pm.meta_value as status,
-                    pm1.meta_value as member_count,
-                    pm2.meta_value as leader_count,
-                    pm3.meta_value as group_type,
                     IF ( lg.longitude, lg.longitude, NULL ) as lng,
-                    IF ( lg.latitude, lg.latitude, NULL) as lat
+                    IF ( lg.latitude, lg.latitude, NULL) as lat,
+                    ( SELECT pm0.meta_value FROM $wpdb->postmeta as pm0 WHERE pm0.post_id = p.ID AND pm0.meta_key = 'overall_status' LIMIT 1) as status,
+                    ( SELECT GROUP_CONCAT( pm1.meta_value) FROM  $wpdb->postmeta as pm1 WHERE p.ID=pm1.post_id AND pm1.meta_key LIKE 'contact_phone%' AND pm1.meta_key NOT LIKE '%details' ) as phone,
+                    ( SELECT GROUP_CONCAT( pm2.meta_value) FROM  $wpdb->postmeta as pm2 WHERE p.ID=pm2.post_id AND pm2.meta_key LIKE 'contact_email%' AND pm2.meta_key NOT LIKE '%details' ) as email
                     FROM $wpdb->posts as p
                     JOIN $wpdb->postmeta as pmlg ON p.ID=pmlg.post_id AND pmlg.meta_key = 'location_grid'
                     JOIN $wpdb->dt_location_grid as lg ON pmlg.meta_value=lg.grid_id
-                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'group_status'
-                    LEFT JOIN $wpdb->postmeta as pm1 ON pm1.post_id=p.ID AND pm1.meta_key = 'member_count'
-                    LEFT JOIN $wpdb->postmeta as pm2 ON pm2.post_id=p.ID AND pm2.meta_key = 'leader_count'
-                    LEFT JOIN $wpdb->postmeta as pm3 ON pm3.post_id=p.ID AND pm3.meta_key = 'group_type'
-                    WHERE p.post_type = 'groups';
+                    WHERE p.post_type = 'contacts';
                 ", ARRAY_A);
             }
             return $results;
@@ -292,60 +277,78 @@ if (defined( 'ABSPATH' )) {
         } // End __construct()
     }
 
-    DT_Metrics_Export_KML_Groups::instance();
+    DT_Metrics_Export_GEOJSON_Contacts::instance();
 }
 
 
-
 /**
- * CREATE KML FILE
+ * CREATE JSON FILE
  */
 if ( !defined( 'ABSPATH' )) {
 
-    // phpcs:disable
+    // @codingStandardsIgnoreLine
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
 
-    if (isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] )) {
+    if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
 
-        header( 'Content-type: application/vnd.google-earth.kml+xml' );
-        header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
+        header( 'Content-type: application/json' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
+            echo json_encode( metrics_export_empty_geojson() );
             return;
         }
-        echo '<?xml version="1.0" encoding="UTF-8"?>';
-        echo '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">';
-        echo '<Document>';
 
-        // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
-            if ( empty( $row['lng'] ) ){
+        $features = [];
+        foreach ( $results['rows'] as $value ) {
+            if ( ! isset( $value['lng'] ) && empty( $value['lng'] ) ) {
                 continue;
             }
-            echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
-            echo '<description></description>';
-            echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
-            echo '</Point>';
-            echo '</Placemark>';
-        };
 
-        echo '</Document>';
-        echo '</kml>';
+            $properties = [];
+            foreach ( $results['columns'] as $column ){
+                if ( 'lng' === $column || 'lat' === $column ){
+                    continue;
+                }
+                if ( isset( $value[$column] ) ) {
+                    $properties[$column] = $value[$column];
+                } else {
+                    $properties[$column] = '';
+                }
+            }
 
+            $features[] = [
+                'type' => 'Feature',
+                'properties' => $properties,
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [
+                        (float) $value['lng'],
+                        (float) $value['lat'],
+                        1
+                    ],
+                ],
+            ];
+        }
+
+        $geojson = [
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ];
+
+        echo json_encode( $geojson );
         exit;
-    } else if (isset( $_GET['download'] )) {
+    }
+    else if ( isset( $_GET['download'] ) ) {
         global $wpdb;
 
         $token = sanitize_text_field( wp_unslash( $_GET['download'] ) );
 
         $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token ), ARRAY_A );
 
-        if (empty( $raw )) {
+        if ( empty( $raw ) ) {
             echo 'No link found';
             return;
         }
@@ -353,82 +356,119 @@ if ( !defined( 'ABSPATH' )) {
 
         delete_post_meta( $raw['post_id'], $raw['meta_key'] ); // delete after collection
 
-
-        header( 'Content-type: application/vnd.google-earth.kml+xml' );
-        header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
+        header( 'Content-type: application/json' );
 
         if (empty( $results )) {
+            echo json_encode( metrics_export_empty_geojson() );
             return;
         }
-        echo '<?xml version="1.0" encoding="UTF-8"?>';
-        echo '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">';
-        echo '<Document>';
 
-        // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
-            if ( empty( $row['lng'] ) ){
+        $features = [];
+        foreach ( $results['rows'] as $value ) {
+            if ( ! isset( $value['lng'] ) && empty( $value['lng'] ) ) {
                 continue;
             }
-            echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
-            echo '<description></description>';
-            echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
-            echo '</Point>';
-            echo '</Placemark>';
-        };
 
-        echo '</Document>';
-        echo '</kml>';
+            $properties = [];
+            foreach ( $results['columns'] as $column ){
+                if ( 'lng' === $column || 'lat' === $column ){
+                    continue;
+                }
+                if ( isset( $value[$column] ) ) {
+                    $properties[$column] = $value[$column];
+                } else {
+                    $properties[$column] = '';
+                }
+            }
 
+            $features[] = [
+                'type' => 'Feature',
+                'properties' => $properties,
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [
+                        (float) $value['lng'],
+                        (float) $value['lat'],
+                        1
+                    ],
+                ],
+            ];
+        }
+
+        $geojson = [
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ];
+
+        echo json_encode( $geojson );
         exit;
-    } else if (isset( $_GET['permanent'] )) {
+    }
+    else if ( isset( $_GET['permanent'] ) ) {
         global $wpdb;
 
         // test if key exists
         $token = sanitize_text_field( wp_unslash( $_GET['permanent'] ) );
         $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token ) );
-        if (empty( $raw )) {
+        if ( empty( $raw ) ) {
             echo 'No link found';
             return;
         }
 
         // refresh data
-        require_once( 'kml-format-groups.php' );
+        require_once( 'geojson-format-contacts.php' );
         $raw = maybe_unserialize( $raw );
-        $results = DT_Metrics_Export_KML_Groups::instance()->update( $token, $raw );
+        $results = DT_Metrics_Export_GEOJSON_Contacts::instance()->update( $token, $raw );
 
-        header( 'Content-type: application/vnd.google-earth.kml+xml' );
-        header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
+        header( 'Content-type: application/json' );
 
         if (empty( $results )) {
+            echo json_encode( metrics_export_empty_geojson() );
             return;
         }
-        echo '<?xml version="1.0" encoding="UTF-8"?>';
-        echo '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">';
-        echo '<Document>';
 
-        // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
-            if ( empty( $row['lng'] ) ){
+        $features = [];
+        foreach ( $results['rows'] as $value ) {
+            if ( ! isset( $value['lng'] ) && empty( $value['lng'] ) ) {
                 continue;
             }
-            echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
-            echo '<description></description>';
-            echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
-            echo '</Point>';
-            echo '</Placemark>';
-        };
 
-        echo '</Document>';
-        echo '</kml>';
+            $properties = [];
+            foreach ( $results['columns'] as $column ){
+                if ( 'lng' === $column || 'lat' === $column ){
+                    continue;
+                }
+                if ( isset( $value[$column] ) ) {
+                    $properties[$column] = $value[$column];
+                } else {
+                    $properties[$column] = '';
+                }
+            }
 
+            $features[] = [
+                'type' => 'Feature',
+                'properties' => $properties,
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [
+                        (float) $value['lng'],
+                        (float) $value['lat'],
+                        1
+                    ],
+                ],
+            ];
+        }
+
+        $geojson = [
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ];
+
+        echo json_encode( $geojson );
         exit;
-    } else {
+    }
+    else {
         echo 'parameters not set correctly';
         return;
     }
-    // phpcs:enable
 }
+

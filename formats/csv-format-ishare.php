@@ -16,28 +16,10 @@ if ( defined( 'ABSPATH' ) ) {
     /**
      * Class DT_Metrics_Export_CSV_COTW
      */
-    class DT_Metrics_Export_CSV_COTW extends DT_Metrics_Export_Format_Base {
+    class DT_Metrics_Export_CSV_COTW {
 
         public $token = 'csv_ishare';
         public $label = 'CSV (iShare)';
-
-
-        private static $_instance = null;
-        public static function instance() {
-            if ( is_null( self::$_instance ) ) {
-                self::$_instance = new self();
-            }
-            return self::$_instance;
-        }
-
-        /**
-         * DT_Metrics_Export_CSV_COTW constructor.
-         */
-        public function __construct() {
-            parent::__construct();
-            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
-            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
-        } // End __construct()
 
         public function format( $format ) {
             /**
@@ -60,7 +42,7 @@ if ( defined( 'ABSPATH' ) ) {
             return $classes;
         }
 
-        public function export( $response ) {
+        public function create( $response ) {
             global $wpdb;
 
             if ( ! isset( $response['all_locations'] ) || empty( $response['all_locations'] ) ) {
@@ -559,6 +541,18 @@ if ( defined( 'ABSPATH' ) ) {
 
             // return configuration selection from before export
             return $response['configuration'] ?? 0; // return int config id, so ui reloads on same config
+        }
+
+        private static $_instance = null;
+        public static function instance() {
+            if (is_null( self::$_instance )) {
+                self::$_instance = new self();
+            }
+            return self::$_instance;
+        }
+        public function __construct() {
+            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
+            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
         }
     }
     DT_Metrics_Export_CSV_COTW::instance();

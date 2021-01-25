@@ -97,7 +97,6 @@ class DT_Metrics_Export {
             require_once( 'includes/format-utilities.php' );
 
             // load all files in formats folder
-            require_once( 'formats/format-base.php' ); // load dependency first
             $format_files = scandir( plugin_dir_path( __FILE__ ) . '/formats/' );
             if ( !empty( $format_files )) {
                 foreach ($format_files as $file) {
@@ -253,14 +252,5 @@ if ( !function_exists( "dt_hook_ajax_notice_handler" )){
     }
 }
 
-if ( ! function_exists( 'dt_get_site_id' ) ) {
-    function dt_get_site_id() {
-        $dt_site_id = get_option( 'dt_site_id' );
-        if ( empty( $dt_site_id ) ) {
-            $site_id = hash( 'SHA256', site_url() . time() );
-            add_option( 'dt_site_id', $site_id );
-            $dt_site_id = $site_id;
-        }
-        return $dt_site_id;
-    }
-}
+
+

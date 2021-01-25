@@ -1,17 +1,22 @@
 <?php
+/**
+ * Export Format: GEOJSON Export
+ *
+ * When ABSPATH is defined then WP has loaded, if ABSPATH is not defined then the file is being accessed directly.
+ *
+ * Direct access is used to generate the CSV from the transient store. It is directly accessed link.
+ * By both supplying the format and the export from the same file, this pattern attempt to make adding additional formats
+ * simple and self contained.
+ */
 
 /**
  * LOAD DATA TYPE FORMAT
  */
 if (defined( 'ABSPATH' )) {
-    /**
-     * Class DT_Metrics_Export_CSV
-     */
-    class DT_Metrics_Export_KML_Groups
+    class DT_Metrics_Export_GEOJSON_Groups
     {
-
-        public $token = 'kml_groups';
-        public $label = 'KML (Groups)';
+        public $token = 'geojson_groups';
+        public $label = 'GEOJSON (Groups)';
 
         public function format( $format ) {
             /* Build base template of a format*/
@@ -37,14 +42,14 @@ if (defined( 'ABSPATH' )) {
                     'basic' => [
                         'key' => 'basic',
                         'label' => 'All groups. Fields: [name, status, member_count, leader_count, group_type, lng, lat]'
-                    ],
+                    ]
                 ],
             ];
-
             return $format;
         }
 
-        public function create( $response) {
+        public function create( $response ) {
+
             if ( ! isset( $response['type']['groups'], $response['configuration'], $response['destination'] ) ){
                 return false;
             }
@@ -61,15 +66,14 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ( 'basic' === $args['export']['type']['groups'] ) {
+            if ( 'basic' === $response['type']['groups'] ) {
                 $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'active' === $args['export']['type']['groups'] ) {
+            else if ( 'active' === $response['type']['groups'] ) {
                 $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-
 
             // kill if no results
             if (empty( $args['rows'] )) {
@@ -152,15 +156,14 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ( 'basic' === $args['export']['type']['groups'] ) {
-                $args['rows'] = $this->query_basic();
-                $args['columns'] = array_keys( $args['rows'][0] );
-            }
-            else if ( 'active' === $args['export']['type']['groups'] ) {
+            if ( 'active' === $args['export']['type']['groups'] ) {
                 $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-
+            else if ( 'basic' === $args['export']['type']['groups'] ) {
+                $args['rows'] = $this->query_basic();
+                $args['columns'] = array_keys( $args['rows'][0] );
+            }
 
             // update destination
             $postid = $args['export']['configuration'];
@@ -271,6 +274,7 @@ if (defined( 'ABSPATH' )) {
                     WHERE p.post_type = 'groups';
                 ", ARRAY_A);
             }
+
             return $results;
         }
 
@@ -292,60 +296,78 @@ if (defined( 'ABSPATH' )) {
         } // End __construct()
     }
 
-    DT_Metrics_Export_KML_Groups::instance();
+    DT_Metrics_Export_GEOJSON_Groups::instance();
 }
 
 
-
 /**
- * CREATE KML FILE
+ * CREATE JSON FILE
  */
 if ( !defined( 'ABSPATH' )) {
 
-    // phpcs:disable
+    // @codingStandardsIgnoreLine
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
 
-    if (isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] )) {
+    if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
 
-        header( 'Content-type: application/vnd.google-earth.kml+xml' );
-        header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
+        header( 'Content-type: application/json' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
+            echo json_encode( metrics_export_empty_geojson() );
             return;
         }
-        echo '<?xml version="1.0" encoding="UTF-8"?>';
-        echo '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">';
-        echo '<Document>';
 
-        // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
-            if ( empty( $row['lng'] ) ){
+        $features = [];
+        foreach ( $results['rows'] as $value ) {
+            if ( ! isset( $value['lng'] ) && empty( $value['lng'] ) ) {
                 continue;
             }
-            echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
-            echo '<description></description>';
-            echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
-            echo '</Point>';
-            echo '</Placemark>';
-        };
 
-        echo '</Document>';
-        echo '</kml>';
+            $properties = [];
+            foreach ( $results['columns'] as $column ){
+                if ( 'lng' === $column || 'lat' === $column ){
+                    continue;
+                }
+                if ( isset( $value[$column] ) ) {
+                    $properties[$column] = $value[$column];
+                } else {
+                    $properties[$column] = '';
+                }
+            }
 
+            $features[] = [
+                'type' => 'Feature',
+                'properties' => $properties,
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [
+                        (float) $value['lng'],
+                        (float) $value['lat'],
+                        1
+                    ],
+                ],
+            ];
+        }
+
+        $geojson = [
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ];
+
+        echo json_encode( $geojson );
         exit;
-    } else if (isset( $_GET['download'] )) {
+    }
+    else if ( isset( $_GET['download'] ) ) {
         global $wpdb;
 
         $token = sanitize_text_field( wp_unslash( $_GET['download'] ) );
 
         $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token ), ARRAY_A );
 
-        if (empty( $raw )) {
+        if ( empty( $raw ) ) {
             echo 'No link found';
             return;
         }
@@ -353,82 +375,119 @@ if ( !defined( 'ABSPATH' )) {
 
         delete_post_meta( $raw['post_id'], $raw['meta_key'] ); // delete after collection
 
-
-        header( 'Content-type: application/vnd.google-earth.kml+xml' );
-        header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
+        header( 'Content-type: application/json' );
 
         if (empty( $results )) {
+            echo json_encode( metrics_export_empty_geojson() );
             return;
         }
-        echo '<?xml version="1.0" encoding="UTF-8"?>';
-        echo '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">';
-        echo '<Document>';
 
-        // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
-            if ( empty( $row['lng'] ) ){
+        $features = [];
+        foreach ( $results['rows'] as $value ) {
+            if ( ! isset( $value['lng'] ) && empty( $value['lng'] ) ) {
                 continue;
             }
-            echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
-            echo '<description></description>';
-            echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
-            echo '</Point>';
-            echo '</Placemark>';
-        };
 
-        echo '</Document>';
-        echo '</kml>';
+            $properties = [];
+            foreach ( $results['columns'] as $column ){
+                if ( 'lng' === $column || 'lat' === $column ){
+                    continue;
+                }
+                if ( isset( $value[$column] ) ) {
+                    $properties[$column] = $value[$column];
+                } else {
+                    $properties[$column] = '';
+                }
+            }
 
+            $features[] = [
+                'type' => 'Feature',
+                'properties' => $properties,
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [
+                        (float) $value['lng'],
+                        (float) $value['lat'],
+                        1
+                    ],
+                ],
+            ];
+        }
+
+        $geojson = [
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ];
+
+        echo json_encode( $geojson );
         exit;
-    } else if (isset( $_GET['permanent'] )) {
+    }
+    else if ( isset( $_GET['permanent'] ) ) {
         global $wpdb;
 
         // test if key exists
         $token = sanitize_text_field( wp_unslash( $_GET['permanent'] ) );
         $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token ) );
-        if (empty( $raw )) {
+        if ( empty( $raw ) ) {
             echo 'No link found';
             return;
         }
 
         // refresh data
-        require_once( 'kml-format-groups.php' );
+        require_once( 'geojson-format-groups.php' );
         $raw = maybe_unserialize( $raw );
-        $results = DT_Metrics_Export_KML_Groups::instance()->update( $token, $raw );
+        $results = DT_Metrics_Export_GEOJSON_Groups::instance()->update( $token, $raw );
 
-        header( 'Content-type: application/vnd.google-earth.kml+xml' );
-        header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
+        header( 'Content-type: application/json' );
 
         if (empty( $results )) {
+            echo json_encode( metrics_export_empty_geojson() );
             return;
         }
-        echo '<?xml version="1.0" encoding="UTF-8"?>';
-        echo '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">';
-        echo '<Document>';
 
-        // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
-            if ( empty( $row['lng'] ) ){
+        $features = [];
+        foreach ( $results['rows'] as $value ) {
+            if ( ! isset( $value['lng'] ) && empty( $value['lng'] ) ) {
                 continue;
             }
-            echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
-            echo '<description></description>';
-            echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
-            echo '</Point>';
-            echo '</Placemark>';
-        };
 
-        echo '</Document>';
-        echo '</kml>';
+            $properties = [];
+            foreach ( $results['columns'] as $column ){
+                if ( 'lng' === $column || 'lat' === $column ){
+                    continue;
+                }
+                if ( isset( $value[$column] ) ) {
+                    $properties[$column] = $value[$column];
+                } else {
+                    $properties[$column] = '';
+                }
+            }
 
+            $features[] = [
+                'type' => 'Feature',
+                'properties' => $properties,
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [
+                        (float) $value['lng'],
+                        (float) $value['lat'],
+                        1
+                    ],
+                ],
+            ];
+        }
+
+        $geojson = [
+            'type' => 'FeatureCollection',
+            'features' => $features,
+        ];
+
+        echo json_encode( $geojson );
         exit;
-    } else {
+    }
+    else {
         echo 'parameters not set correctly';
         return;
     }
-    // phpcs:enable
 }
+

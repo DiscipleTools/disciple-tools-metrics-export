@@ -105,3 +105,24 @@ if ( ! function_exists( 'get_dt_metrics_export_base_format' ) ) {
         ];
     }
 }
+
+if ( ! function_exists( 'metrics_export_empty_geojson' ) ) {
+    function metrics_export_empty_geojson() {
+        return array(
+            'type' => 'FeatureCollection',
+            'features' => []
+        );
+    }
+}
+
+if ( ! function_exists( 'dt_get_site_id' ) ) {
+    function dt_get_site_id() {
+        $dt_site_id = get_option( 'dt_site_id' );
+        if ( empty( $dt_site_id ) ) {
+            $site_id = hash( 'SHA256', site_url() . time() );
+            add_option( 'dt_site_id', $site_id );
+            $dt_site_id = $site_id;
+        }
+        return $dt_site_id;
+    }
+}

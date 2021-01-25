@@ -19,29 +19,11 @@ if (defined( 'ABSPATH' )) {
     /**
      * Class DT_Metrics_Export_CSV
      */
-    class DT_Metrics_Export_CSV_Groups extends DT_Metrics_Export_Format_Base
+    class DT_Metrics_Export_CSV_Groups
     {
 
         public $token = 'csv_groups';
         public $label = 'CSV (Groups)';
-
-        private static $_instance = null;
-
-        public static function instance() {
-            if (is_null( self::$_instance )) {
-                self::$_instance = new self();
-            }
-            return self::$_instance;
-        }
-
-        /**
-         * DT_Metrics_Export_CSV constructor.
-         */
-        public function __construct() {
-            parent::__construct();
-            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
-            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
-        } // End __construct()
 
         public function format( $format ) {
             /* Build base template of a format*/
@@ -60,17 +42,17 @@ if (defined( 'ABSPATH' )) {
 
             $format[$this->token]['types'] = [
                 'groups' => [
-                    'groups_active' => [
-                        'key' => 'groups_active',
-                        'label' => 'All active groups. Fields: [name, status, member_count, leader_count, locations]'
+                    'active' => [
+                        'key' => 'active',
+                        'label' => 'All active groups. Fields: [name, status, type, member_count, leader_count, locations]'
                     ],
-                    'groups_basic' => [
-                        'key' => 'groups_basic',
-                        'label' => 'All groups. Fields: [name, status, member_count, leader_count, locations]'
+                    'basic' => [
+                        'key' => 'basic',
+                        'label' => 'All groups. Fields: [name, status, type, member_count, leader_count, locations]'
                     ],
-                    'groups_lnglat' => [
-                        'key' => 'groups_lnglat',
-                        'label' => 'All groups with a row for each location. This can have duplicates if the group has multiple locations. Fields: [name, status, lng, lat, location label]'
+                    'lnglat' => [
+                        'key' => 'lnglat',
+                        'label' => 'All groups with a row for each location. This can have duplicates if the group has multiple locations. Fields: [name, status, member_count, leader_count, group_type, lng, lat]'
                     ],
                 ],
             ];
@@ -84,7 +66,7 @@ if (defined( 'ABSPATH' )) {
         }
 
 
-        public function export( $response) {
+        public function create( $response) {
             if ( ! isset( $response['type']['groups'], $response['configuration'], $response['destination'] ) ){
                 return false;
             }
@@ -101,16 +83,16 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ( 'groups_basic' === $response['type']['groups'] ) {
-                 $args['rows'] = $this->query_groups_basic();
+            if ( 'basic' === $response['type']['groups'] ) {
+                 $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'groups_lnglat' === $response['type']['groups'] ) {
-                 $args['rows'] = $this->query_groups_lnglat();
+            else if ( 'active' === $response['type']['groups'] ) {
+                 $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'groups_active' === $response['type']['groups'] ) {
-                 $args['rows'] = $this->query_groups_active();
+            else if ( 'lnglat' === $response['type']['groups'] ) {
+                 $args['rows'] = $this->query_lnglat();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
 
@@ -195,16 +177,16 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ( 'groups_basic' === $args['export']['type']['groups'] ) {
-                $args['rows'] = $this->query_groups_basic();
+            if ( 'basic' === $args['export']['type']['groups'] ) {
+                $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'groups_lnglat' === $args['export']['type']['groups'] ) {
-                $args['rows'] = $this->query_groups_lnglat();
+            else if ( 'active' === $args['export']['type']['groups'] ) {
+                $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
-            else if ( 'groups_active' === $args['export']['type']['groups'] ) {
-                $args['rows'] = $this->query_groups_active();
+            else if ( 'lnglat' === $args['export']['type']['groups'] ) {
+                $args['rows'] = $this->query_lnglat();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
 
@@ -228,7 +210,7 @@ if (defined( 'ABSPATH' )) {
             return $args;
         }
 
-        public function query_groups_active() {
+        public function query_active() {
             global $wpdb;
             $results = $wpdb->get_results("
                     SELECT
@@ -253,7 +235,7 @@ if (defined( 'ABSPATH' )) {
             return $results;
         }
 
-        public function query_groups_basic() {
+        public function query_basic() {
             global $wpdb;
             $results = $wpdb->get_results("
                     SELECT
@@ -278,30 +260,62 @@ if (defined( 'ABSPATH' )) {
             return $results;
         }
 
-        public function query_groups_lnglat() {
+        public function query_lnglat() {
             global $wpdb;
-            $results = $wpdb->get_results("
+            if ( DT_Mapbox_API::get_key() ) {
+                $results = $wpdb->get_results("
                     SELECT
                     p.ID,
                     p.post_title as name,
-                    pm5.meta_value as status,
-                    pm4.meta_value as type,
-                    ( SELECT pm0.meta_value FROM $wpdb->postmeta as pm0 WHERE pm0.post_id = p.ID AND pm0.meta_key = 'group_status' LIMIT 1) as status,
-                    IF ( lg.longitude, lg.longitude, NULL) as lng,
-                    IF ( lg.latitude, lg.latitude, NULL) as lat,
-                    ( SELECT GROUP_CONCAT( ' ', (SELECT GROUP_CONCAT( $wpdb->dt_location_grid.name, ' | ', lg.name ) as name
-                    FROM $wpdb->dt_location_grid JOIN $wpdb->dt_location_grid as lg ON $wpdb->dt_location_grid.admin0_grid_id=lg.grid_id
-                    WHERE $wpdb->dt_location_grid.grid_id = pm3.meta_value ), ' ')
-                    FROM  $wpdb->postmeta as pm3
-                    WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
+                    pm.meta_value as status,
+                    pm1.meta_value as member_count,
+                    pm2.meta_value as leader_count,
+                    pm3.meta_value as group_type,
+                    IF ( lgm.lng, lgm.lng, NULL ) as lng,
+                    IF ( lgm.lng, lgm.lat, NULL) as lat
                     FROM $wpdb->posts as p
-                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'location_grid'
-                    LEFT JOIN $wpdb->dt_location_grid as lg ON pm.meta_value=lg.grid_id
-                    LEFT JOIN $wpdb->postmeta as pm4 ON pm4.post_id=p.ID AND pm4.meta_key = 'group_type'
-                    LEFT JOIN $wpdb->postmeta as pm5 ON pm5.post_id=p.ID AND pm5.meta_key = 'group_status'
-                    WHERE post_type = 'groups';
+                    JOIN $wpdb->postmeta as pmlgm ON p.ID=pmlgm.post_id AND pmlgm.meta_key = 'location_grid_meta'
+                    JOIN $wpdb->dt_location_grid_meta as lgm ON pmlgm.meta_value=lgm.grid_meta_id
+                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'group_status'
+                    LEFT JOIN $wpdb->postmeta as pm1 ON pm1.post_id=p.ID AND pm1.meta_key = 'member_count'
+                    LEFT JOIN $wpdb->postmeta as pm2 ON pm2.post_id=p.ID AND pm2.meta_key = 'leader_count'
+                    LEFT JOIN $wpdb->postmeta as pm3 ON pm3.post_id=p.ID AND pm3.meta_key = 'group_type'
+                    WHERE p.post_type = 'groups';
                 ", ARRAY_A);
+            } else {
+                $results = $wpdb->get_results("
+                    SELECT
+                    p.ID,
+                    p.post_title as name,
+                    pm.meta_value as status,
+                    pm1.meta_value as member_count,
+                    pm2.meta_value as leader_count,
+                    pm3.meta_value as group_type,
+                    IF ( lg.longitude, lg.longitude, NULL ) as lng,
+                    IF ( lg.latitude, lg.latitude, NULL) as lat
+                    FROM $wpdb->posts as p
+                    JOIN $wpdb->postmeta as pmlg ON p.ID=pmlg.post_id AND pmlg.meta_key = 'location_grid'
+                    JOIN $wpdb->dt_location_grid as lg ON pmlg.meta_value=lg.grid_id
+                    LEFT JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'group_status'
+                    LEFT JOIN $wpdb->postmeta as pm1 ON pm1.post_id=p.ID AND pm1.meta_key = 'member_count'
+                    LEFT JOIN $wpdb->postmeta as pm2 ON pm2.post_id=p.ID AND pm2.meta_key = 'leader_count'
+                    LEFT JOIN $wpdb->postmeta as pm3 ON pm3.post_id=p.ID AND pm3.meta_key = 'group_type'
+                    WHERE p.post_type = 'groups';
+                ", ARRAY_A);
+            }
             return $results;
+        }
+
+        private static $_instance = null;
+        public static function instance() {
+            if (is_null( self::$_instance )) {
+                self::$_instance = new self();
+            }
+            return self::$_instance;
+        }
+        public function __construct() {
+            add_filter( 'dt_metrics_export_format', [ $this, 'format' ], 10, 1 );
+            add_filter( 'dt_metrics_export_register_format_class', [ $this, 'format_class' ], 10, 1 );
         }
     }
 
@@ -380,7 +394,6 @@ if ( !defined( 'ABSPATH' )) {
         }
 
         // refresh data
-        require_once( 'format-base.php' );
         require_once( 'csv-format-groups.php' );
         $raw = maybe_unserialize( $raw );
         $results = DT_Metrics_Export_CSV_Groups::instance()->update( $token, $raw );

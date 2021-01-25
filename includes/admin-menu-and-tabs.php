@@ -89,12 +89,9 @@ class DT_Metrics_Export_Menu {
         <div class="wrap">
             <h2><?php esc_attr_e( 'Metrics Export', 'dt_metrics_export' ) ?></h2>
             <h2 class="nav-tab-wrapper">
-                <a href="<?php echo esc_attr( $link ) . 'active' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'active' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Current Links' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Create Links' ) ?></a>
-                <!-- <a href="<?php echo esc_attr( $link ) . 'cron' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cron' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Cron' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'webhooks' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'webhooks' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Webhooks' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'cloud' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'cloud' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Cloud Storage' ) ?></a>
-                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' ) ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( 'Tutorial' ) ?></a> -->
+                <a href="<?php echo esc_attr( $link ) . 'active' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'active' || !isset( $tab ) ) ? 'nav-tab-active' : '' ); ?>">Current Links</a>
+                <a href="<?php echo esc_attr( $link ) . 'location_export' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'location_export' ) ? 'nav-tab-active' : '' ); ?>">Create Links</a>
+                <a href="<?php echo esc_attr( $link ) . 'tutorial' ?>" class="nav-tab <?php echo esc_html( ( $tab == 'tutorial' ) ? 'nav-tab-active' : '' ); ?>">Help</a>
             </h2>
 
             <?php
@@ -105,18 +102,6 @@ class DT_Metrics_Export_Menu {
                     break;
                 case "location_export":
                     $object = new DT_Metrics_Export_Tab_Location_Export();
-                    $object->content();
-                    break;
-                case "webhooks":
-                    $object = new DT_Metrics_Export_Tab_Webhooks();
-                    $object->content();
-                    break;
-                case "cron":
-                    $object = new DT_Metrics_Export_Tab_Cron();
-                    $object->content();
-                    break;
-                case "cloud":
-                    $object = new DT_Metrics_Export_Tab_Cloud();
                     $object->content();
                     break;
                 case "tutorial":
@@ -507,9 +492,6 @@ class DT_Metrics_Export_Tab_Active {
     }
 }
 
-/**
- * Class DT_Metrics_Export_Tab_Location_Export
- */
 class DT_Metrics_Export_Tab_Location_Export {
     public function content() {
         $last_config = $this->process_post();
@@ -950,7 +932,10 @@ class DT_Metrics_Export_Tab_Location_Export {
 
     public function filter_post( $response ) : array {
 
-        // @todo add sanitization of post elements.
+        if ( function_exists( 'dt_recursive_sanitize_array' ) ) {
+            $response = dt_recursive_sanitize_array( $response );
+        }
+
 
         unset( $response['metrics-location-export'] );
         unset( $response['_wp_http_referer'] );
@@ -1026,7 +1011,7 @@ class DT_Metrics_Export_Tab_Location_Export {
         $formats = apply_filters( 'dt_metrics_export_register_format_class', [] );
 
         if ( isset( $response['format'] ) && ! empty( $response['format'] ) && isset( $formats[$response['format']] ) && class_exists( $formats[$response['format']] ) ) {
-            $result = $formats[$response['format']]::instance()->export( $response );
+            $result = $formats[$response['format']]::instance()->create( $response );
             dt_activity_insert(
                 [
                     'action' => 'export',
@@ -1045,237 +1030,6 @@ class DT_Metrics_Export_Tab_Location_Export {
     }
 }
 
-/**
- * Class DT_Metrics_Export_Tab_Webhooks
- */
-class DT_Metrics_Export_Tab_Webhooks {
-    public function content() {
-        ?>
-        <div class="wrap">
-            <div id="poststuff">
-                <div id="post-body" class="metabox-holder columns-2">
-                    <div id="post-body-content">
-                        <!-- Main Column -->
-
-                        <?php $this->main_column() ?>
-
-                        <!-- End Main Column -->
-                    </div><!-- end post-body-content -->
-                    <div id="postbox-container-1" class="postbox-container">
-                        <!-- Right Column -->
-
-                        <?php $this->right_column() ?>
-
-                        <!-- End Right Column -->
-                    </div><!-- postbox-container 1 -->
-                    <div id="postbox-container-2" class="postbox-container">
-                    </div><!-- postbox-container 2 -->
-                </div><!-- post-body meta box container -->
-            </div><!--poststuff end -->
-        </div><!-- wrap end -->
-        <?php
-    }
-
-    public function main_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <tr>
-                <th>Header</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
-    }
-
-    public function right_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <tr>
-                <th>Information</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
-    }
-}
-
-/**
- * Class DT_Metrics_Export_Tab_Tutorial
- */
-class DT_Metrics_Export_Tab_Cron {
-    public function content() {
-        ?>
-        <div class="wrap">
-            <div id="poststuff">
-                <div id="post-body" class="metabox-holder columns-2">
-                    <div id="post-body-content">
-                        <!-- Main Column -->
-
-                        <?php $this->main_column() ?>
-
-                        <!-- End Main Column -->
-                    </div><!-- end post-body-content -->
-                    <div id="postbox-container-1" class="postbox-container">
-                        <!-- Right Column -->
-
-                        <?php $this->right_column() ?>
-
-                        <!-- End Right Column -->
-                    </div><!-- postbox-container 1 -->
-                    <div id="postbox-container-2" class="postbox-container">
-                    </div><!-- postbox-container 2 -->
-                </div><!-- post-body meta box container -->
-            </div><!--poststuff end -->
-        </div><!-- wrap end -->
-        <?php
-    }
-
-    public function main_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <tr>
-                <th>Header</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
-    }
-
-    public function right_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <tr>
-                <th>Information</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
-    }
-}
-
-/**
- * Class DT_Metrics_Export_Tab_Tutorial
- */
-class DT_Metrics_Export_Tab_Cloud{
-    public function content() {
-        ?>
-        <div class="wrap">
-            <div id="poststuff">
-                <div id="post-body" class="metabox-holder columns-2">
-                    <div id="post-body-content">
-                        <!-- Main Column -->
-
-                        <?php $this->main_column() ?>
-
-                        <!-- End Main Column -->
-                    </div><!-- end post-body-content -->
-                    <div id="postbox-container-1" class="postbox-container">
-                        <!-- Right Column -->
-
-                        <?php $this->right_column() ?>
-
-                        <!-- End Right Column -->
-                    </div><!-- postbox-container 1 -->
-                    <div id="postbox-container-2" class="postbox-container">
-                    </div><!-- postbox-container 2 -->
-                </div><!-- post-body meta box container -->
-            </div><!--poststuff end -->
-        </div><!-- wrap end -->
-        <?php
-    }
-
-    public function main_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <tr>
-                <th>Header</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
-    }
-
-    public function right_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <tr>
-                <th>Information</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
-    }
-}
-
-/**
- * Class DT_Metrics_Export_Tab_Tutorial
- */
 class DT_Metrics_Export_Tab_Tutorial {
     public function content() {
         ?>
@@ -1309,20 +1063,101 @@ class DT_Metrics_Export_Tab_Tutorial {
         <!-- Box -->
         <table class="widefat striped">
             <thead>
-                <tr>
-                    <th>Header</th>
-                </tr>
+            <tr>
+                <th>Format Types</th>
+                <th></th>
+            </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>
-                        Content
-                    </td>
-                </tr>
+            <tr>
+                <td>
+                    CSV
+                </td>
+                <td>
+                    Comma-Separated Values (CSV) is a widely used format for transferring tabular data. You can import these files
+                    into almost every software, web service, or spreadsheet tool that support importing of any kind.
+                    <a href="https://en.wikipedia.org/wiki/CSV">Wikipedia</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    GEOJSON
+                </td>
+                <td>
+                    Geojson is an open standard for simple geographic features. These exports are geographic focused.
+                    <a href="https://en.wikipedia.org/wiki/GeoJSON">Wikipedia</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    JSON
+                </td>
+                <td>
+                    JSON (JavaScript Object Notation) is a data format heavily used in web applications to transfer and store data.
+                    This export is structured as ['timestamp', 'columns', 'rows', 'export', 'link', 'key']. All the data fields are listed
+                    in the 'columns' section, and all data is stored in the 'rows' section in key/value arrays.
+                    <a href="https://en.wikipedia.org/wiki/JSON">Wikipedia</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    KML
+                </td>
+                <td>
+                    Keyhole Markup Language (KML) is an XML data storage format primarily used for mapping and earth browsers. KML was
+                    developed by Google Earth. <a href="https://en.wikipedia.org/wiki/Keyhole_Markup_Language">Wikipedia</a>
+                </td>
+            </tr>
             </tbody>
         </table>
         <br>
-        <!-- End Box -->
+
+        <!-- Box -->
+        <table class="widefat striped">
+            <thead>
+            <tr>
+                <th>Time Frames</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    One-Time Download Link
+                </td>
+                <td>
+                    As it is written, a one-time download link is deleted immediately after downloading has begun. This is
+                    useful for distributing a link to sensitive data to a partner, but do not want the link to be available
+                    any longer than its recipients download. Note:Even if the download is interrupted or it fails to complete,
+                    the link is destroyed. You'll need another link.
+                    This
+                </td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap">
+                    Expiring 48 Hour Link and <br>Expiring 15 Day Link
+                </td>
+                <td>
+                    These two links are the same kind of link, just with different lengths of time. These links will automatically
+                    expire in either 2 days or 15 days from their creation. They can be used more than once.
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Permanent Link
+                </td>
+                <td>
+                    A permanent link, as it is titled, is one that will not expire or be deleted except by manual deletion
+                    from the "Current Links" tab of the plugin. The data inside these links are refreshed each time they are
+                    accessed. So they can be used by reporting or data display. Security Warning: The unique 64 digit key for the link
+                    makes the link unguessable for brute force attacks, but since this export does not require authentication,
+                    the link could be stolen and used if it was found in an email or bookmark.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+
         <?php
     }
 
@@ -1330,15 +1165,11 @@ class DT_Metrics_Export_Tab_Tutorial {
         ?>
         <!-- Box -->
         <table class="widefat striped">
-            <thead>
-                <tr>
-                    <th>Information</th>
-                </tr>
-            </thead>
             <tbody>
             <tr>
                 <td>
-                    Content
+                    <a href="https://github.com/DiscipleTools/disciple-tools-metrics-export/wiki">Documentation</a><br>
+                    <a href="https://www.youtube.com/watch?v=3FUMFARnPwY">Video Walk-through</a><br>
                 </td>
             </tr>
             </tbody>
@@ -1348,4 +1179,3 @@ class DT_Metrics_Export_Tab_Tutorial {
         <?php
     }
 }
-
