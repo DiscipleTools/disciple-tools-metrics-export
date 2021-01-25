@@ -380,6 +380,7 @@ if ( !defined( 'ABSPATH' )) {
 
         // load export header
         header( 'Content-Type: text/csv; charset=utf-8' );
+        header( 'Content-Disposition: attachment; filename=dt-csv-' . strtotime( $results['timestamp'] ) . '.csv' );
 
         // build csv
         $output = fopen( 'php://output', 'w' );
