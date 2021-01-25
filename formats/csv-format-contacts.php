@@ -310,7 +310,7 @@ if (defined( 'ABSPATH' )) {
 if ( !defined( 'ABSPATH' )) {
 
     // @codingStandardsIgnoreLine
-    require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
+    require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
 
     if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
 
@@ -374,9 +374,15 @@ if ( !defined( 'ABSPATH' )) {
         }
 
         // refresh data
+        require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php');
         require_once( 'csv-format-contacts.php' );
         $raw = maybe_unserialize( $raw );
-        $results = DT_Metrics_Export_CSV_Contacts::instance()->update( $token, $raw );
+        if ( ! class_exists( 'DT_Metrics_Export_CSV_Contacts') ) {
+            $results = $raw;
+        }
+        else {
+            $results = DT_Metrics_Export_CSV_Contacts::instance()->update( $token, $raw );
+        }
 
         // load export header
         header( 'Content-Type: text/csv; charset=utf-8' );
