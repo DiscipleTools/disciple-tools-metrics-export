@@ -399,7 +399,6 @@ if ( !defined( 'ABSPATH' )) {
         $results = DT_Metrics_Export_KML_Groups::instance()->update( $token, $raw );
 
         header( 'Content-type: application/vnd.google-earth.kml+xml' );
-        header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
         if (empty( $results )) {
             return;

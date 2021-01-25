@@ -370,7 +370,6 @@ if ( !defined( 'ABSPATH' )) {
         delete_post_meta( $raw['post_id'], $raw['meta_key'] ); // delete after collection
 
         header( 'Content-Type: text/csv; charset=utf-8' );
-        header( 'Content-Disposition: attachment; filename=dt-csv-' . strtotime( $results['timestamp'] ) . '.csv' );
 
         $output = fopen( 'php://output', 'w' );
 
@@ -400,7 +399,6 @@ if ( !defined( 'ABSPATH' )) {
 
         // load export header
         header( 'Content-Type: text/csv; charset=utf-8' );
-        header( 'Content-Disposition: attachment; filename=dt-csv-' . strtotime( $results['timestamp'] ) . '.csv' );
 
         // build csv
         $output = fopen( 'php://output', 'w' );
