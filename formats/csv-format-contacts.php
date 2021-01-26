@@ -374,10 +374,10 @@ if ( !defined( 'ABSPATH' )) {
         }
 
         // refresh data
-        require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php');
+        require_once( $_SERVER['DOCUMENT_ROOT'] . '/wp-load.php' ); // phpcs:ignore
         require_once( 'csv-format-contacts.php' );
         $raw = maybe_unserialize( $raw );
-        if ( ! class_exists( 'DT_Metrics_Export_CSV_Contacts') ) {
+        if ( ! class_exists( 'DT_Metrics_Export_CSV_Contacts' ) ) {
             $results = $raw;
         }
         else {
