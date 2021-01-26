@@ -2,8 +2,7 @@
 
 # Disciple Tools - Metrics Export
 
-Add exporting to Disciple Tools system to export telemetry data in a secure manner for visualization systems.
-
+Export CSV, JSON, KML, and GEOJSON file types of contacts and groups. Create distributable public links as either one-time download, expiring, or permanent link access. Extendable to facilitate your own downloads with a developer starter plugin.
 
 ## Purpose
 
@@ -12,17 +11,17 @@ The key to this plugin is that it is expandable to serve other kinds of exports 
 ## Usage
 #### Will Do
 
-- Adds compatible export for iShare system.
-- Adds specialized csv export with locations for churches and believers.
-- Adds saving of export configurations.
-- Adds adjustable level of location precision (admin0, admin1, admin2).
-- Creates distributable one time links to CSV exports.
-- Allows expansion for other custom exports.
+- Adds CSV exports for contacts and groups. Can export with longitude and latitude for import into mapping applications like Google Earth, Arc GIS, Google Maps, Google Data Studio.
+- Adds JSON exports for contacts and groups. When combined with a permanent link, it can be used in other applications to draw maps or other visiualizations of data.
+- Adds KML exports for contacts and groups. KML can be used in Google Earth and Google Earth Pro for mapping.
+- Adds GEOJSON exports for contacts and groups. GEOJSON is a open standard for mapping services and is well supported for importing to other systems.
+- Adds compatible export for iShare system and the Coalition of the Willing.
+- Is built for expandability by a custom plugin. [A starter plugin is include in this code base](https://github.com/DiscipleTools/disciple-tools-metrics-export/tree/master/plugin-extension-template) and [a guide is included in documentation for a developer](https://github.com/DiscipleTools/disciple-tools-metrics-export/wiki/Developer-Guide) to expand and add exports appropriate to your organizations usage. 
 
 #### Will Not Do
 
-- Allow export configuration
-- Item
+- Exports are preconfigured and cannot be modified by the user, only selected.
+- Connect to cloud storage services (yet!)
 
 ## Requirements
 
