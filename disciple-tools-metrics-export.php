@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Disciple Tools - Metrics Export
+ *Plugin Name: Disciple.Tools - Metrics Export
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
  * Description: Disciple Tools - Metrics Export plugin is an expandable data export tool with support for location levels.
  * Version:  1.6
