@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-metrics-export.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-metrics-export)
 
-![Metrics Export](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-banner.png)
+![Plugin Banner](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-banner.png)
 # Disciple.Tools - Metrics Export
 
 Export CSV, JSON, KML, and GEOJSON file types of contacts and groups. Create distributable public links as either one-time download, expiring, or permanent link access. Extendable to facilitate your own downloads with a developer starter plugin.
