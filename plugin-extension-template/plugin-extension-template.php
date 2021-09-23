@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Plugin Extension Template
  * Plugin URI: https://github.com/your-name/your-repo
- * Description: The Plugin Extension Template is a quick start plugin for adding another export format to the Disciple Tools - Metrics Export.
+ * Description: The Plugin Extension Template is a quick start plugin for adding another export format to the Disciple.Tools - Metrics Export.
  * Version:  0.1
  * Author URI: https://github.com/DiscipleTools
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export

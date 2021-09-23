@@ -2,7 +2,7 @@
 /**
  *Plugin Name: Disciple.Tools - Metrics Export
  * Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
- * Description: Disciple Tools - Metrics Export plugin is an expandable data export tool with support for location levels.
+ * Description: Disciple.Tools - Metrics Export plugin is an expandable data export tool with support for location levels.
  * Version:  1.6
  * Author URI: https://github.com/DiscipleTools
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-metrics-export
@@ -15,7 +15,7 @@
  * @license GPL-2.0 or later
  *          https://www.gnu.org/licenses/gpl-2.0.html
  *
- * @version 1.3 Disciple Tools version 1.0 compatibility and dt_metrics_export_loaded action added
+ * @version 1.3 Disciple.Tools version 1.0 compatibility and dt_metrics_export_loaded action added
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -200,9 +200,9 @@ function dt_metrics_export_hook_admin_notice() {
     global $dt_metrics_export_required_dt_theme_version;
     $wp_theme = wp_get_theme();
     $current_version = $wp_theme->version;
-    $message = "'Disciple Tools - Metrics Export' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or make sure it is latest version.";
+    $message = "'Disciple.Tools - Metrics Export' plugin requires 'Disciple.Tools' theme to work. Please activate 'Disciple.Tools' theme or make sure it is latest version.";
     if ( $wp_theme->get_template() === "disciple-tools-theme" ){
-        $message .= sprintf( esc_html( 'Current Disciple Tools version: %1$s, required version: %2$s' ), esc_html( $current_version ), esc_html( $dt_metrics_export_required_dt_theme_version ) );
+        $message .= sprintf( esc_html( 'Current Disciple.Tools version: %1$s, required version: %2$s' ), esc_html( $current_version ), esc_html( $dt_metrics_export_required_dt_theme_version ) );
     }
     // Check if it's been dismissed...
     if ( ! get_option( 'dismissed-dt-metrics-export', false ) ) { ?>

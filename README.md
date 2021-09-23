@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-metrics-export.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-metrics-export)
 
 ![Metrics Export](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-banner.png)
-# Disciple Tools - Metrics Export
+# Disciple.Tools - Metrics Export
 
 Export CSV, JSON, KML, and GEOJSON file types of contacts and groups. Create distributable public links as either one-time download, expiring, or permanent link access. Extendable to facilitate your own downloads with a developer starter plugin.
 
@@ -17,7 +17,7 @@ The key to this plugin is that it is expandable to serve other kinds of exports 
 - Adds KML exports for contacts and groups. KML can be used in Google Earth and Google Earth Pro for mapping.
 - Adds GEOJSON exports for contacts and groups. GEOJSON is a open standard for mapping services and is well supported for importing to other systems.
 - Adds compatible export for iShare system and the Coalition of the Willing.
-- Is built for expandability by a custom plugin. [A starter plugin is include in this code base](https://github.com/DiscipleTools/disciple-tools-metrics-export/tree/master/plugin-extension-template) and [a guide is included in documentation for a developer](https://github.com/DiscipleTools/disciple-tools-metrics-export/wiki/Developer-Guide) to expand and add exports appropriate to your organizations usage. 
+- Is built for expandability by a custom plugin. [A starter plugin is include in this code base](https://github.com/DiscipleTools/disciple-tools-metrics-export/tree/master/plugin-extension-template) and [a guide is included in documentation for a developer](https://github.com/DiscipleTools/disciple-tools-metrics-export/wiki/Developer-Guide) to expand and add exports appropriate to your organizations usage.
 
 #### Will Not Do
 
@@ -26,7 +26,7 @@ The key to this plugin is that it is expandable to serve other kinds of exports 
 
 ## Requirements
 
-- Disciple Tools Theme installed on a Wordpress Server.
+- Disciple.Tools Theme installed on a Wordpress Server.
 
 ## Installing
 
@@ -45,7 +45,7 @@ system for git. For a more details on contribution see the
 
 ## Screenshots
 
-This plugin enables a Disciple Tools system to export telemetry data in a secure manner to visualization systems. The key to this plugin is that it is expandable to serve other kinds of exports beyond the default export.
+This plugin enables a Disciple.Tools system to export telemetry data in a secure manner to visualization systems. The key to this plugin is that it is expandable to serve other kinds of exports beyond the default export.
 
 ![one time link](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-one-time-link.png)
 
