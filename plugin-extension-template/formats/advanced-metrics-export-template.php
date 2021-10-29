@@ -13,7 +13,7 @@
 /**
  * @todo 1. Rename DT_Advanced_Metrics_Export_Template (3 uses)
  */
-if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template' )) { // confirm wp is loaded
+if ( defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template' ) ) { // confirm wp is loaded
 
     class DT_Advanced_Metrics_Export_Template
     {
@@ -35,7 +35,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
          * @param $format
          * @return mixed
          */
-        public function format( $format) {
+        public function format( $format ) {
             /* Build base template of a format*/
             $format[$this->token] = get_dt_metrics_export_base_format();
 
@@ -81,7 +81,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
          * @param $response
          * @return false|int|mixed
          */
-        public function create( $response) {
+        public function create( $response ) {
             if ( !isset( $response['configuration'], $response['destination'] ) ) {
                 return false;
             }
@@ -114,7 +114,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
             }
 
             // kill if no results
-            if (empty( $args['rows'] )) {
+            if ( empty( $args['rows'] ) ) {
                 echo '<div class="notice notice-warning is-dismissible">
                      <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
                  </div>';
@@ -124,7 +124,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
             // destination
             $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
             $postid = $response['configuration'];
-            switch ($response['destination']) {
+            switch ( $response['destination'] ) {
                 case 'expiring48':
                     $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
@@ -190,7 +190,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
          * @param array $args
          * @return array|false
          */
-        public function update( $key, array $args) {
+        public function update( $key, array $args ) {
             if ( !isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'] ) ) {
                 return false;
             }
@@ -217,7 +217,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
 
             // update destination
             $postid = $args['export']['configuration'];
-            switch ($args['export']['destination']) {
+            switch ( $args['export']['destination'] ) {
                 case 'expiring48':
                     set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 48 );
                     break;
@@ -307,7 +307,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
          * @param $classes
          * @return mixed
          */
-        public function format_class( $classes) {
+        public function format_class( $classes ) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
@@ -319,7 +319,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
          */
         private static $_instance = null;
         public static function instance() {
-            if (is_null( self::$_instance )) {
+            if ( is_null( self::$_instance ) ) {
                 self::$_instance = new self();
             }
             return self::$_instance;
@@ -340,7 +340,7 @@ if (defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Template
  *
  * @note This function does not need modified for the simplest use of the export template.
  */
-if ( !defined( 'ABSPATH' )) {
+if ( !defined( 'ABSPATH' ) ) {
 
     // @codingStandardsIgnoreLine
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
@@ -348,11 +348,11 @@ if ( !defined( 'ABSPATH' )) {
     /**
      * Lookup from available transients for matching token given in the url
      */
-    if (isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] )) {
+    if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
             echo 'Link no longer available';
             return;
         }
@@ -364,21 +364,21 @@ if ( !defined( 'ABSPATH' )) {
 
         fputcsv( $output, $results['columns'] );
 
-        foreach ($results['rows'] as $row) {
+        foreach ( $results['rows'] as $row ) {
             fputcsv( $output, $row );
         }
 
         fpassthru( $output );
 
         // The download link deletes itself after being collected.
-    } else if (isset( $_GET['download'] )) {
+    } else if ( isset( $_GET['download'] ) ) {
         global $wpdb;
 
         $token = sanitize_text_field( wp_unslash( $_GET['download'] ) );
 
         $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token ), ARRAY_A );
 
-        if (empty( $raw )) {
+        if ( empty( $raw ) ) {
             echo 'No link found';
             return;
         }
@@ -393,7 +393,7 @@ if ( !defined( 'ABSPATH' )) {
 
         fputcsv( $output, $results['columns'] );
 
-        foreach ($results['rows'] as $row) {
+        foreach ( $results['rows'] as $row ) {
             fputcsv( $output, $row );
         }
 
@@ -406,13 +406,13 @@ if ( !defined( 'ABSPATH' )) {
      *
      * @todo 8. Update required_once file name to the name of this file.
      */
-    } else if (isset( $_GET['permanent'] )) {
+    } else if ( isset( $_GET['permanent'] ) ) {
         global $wpdb;
 
         // test if key exists
         $token = sanitize_text_field( wp_unslash( $_GET['permanent'] ) );
         $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token ) );
-        if (empty( $raw )) {
+        if ( empty( $raw ) ) {
             echo 'No link found';
             return;
         }
@@ -433,7 +433,7 @@ if ( !defined( 'ABSPATH' )) {
         // build csv
         $output = fopen( 'php://output', 'w' );
         fputcsv( $output, $results['columns'] );
-        foreach ($results['rows'] as $row) {
+        foreach ( $results['rows'] as $row ) {
             fputcsv( $output, $row );
         }
         fpassthru( $output );

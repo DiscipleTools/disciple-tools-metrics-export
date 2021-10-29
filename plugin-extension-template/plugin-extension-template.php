@@ -15,9 +15,9 @@ if ( is_admin() && isset( $_GET['page'] ) && 'dt_metrics_export' === sanitize_ke
 
     add_action('dt_metrics_export_loaded', function () { // load after the metrics export is loaded
         $format_files = scandir( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'formats/' );
-        if ( !empty( $format_files )) {
-            foreach ($format_files as $file) {
-                if (substr( $file, -4, '4' ) === '.php') {
+        if ( !empty( $format_files ) ) {
+            foreach ( $format_files as $file ) {
+                if ( substr( $file, -4, '4' ) === '.php' ) {
                     require_once( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'formats/' . $file );
                 }
             }

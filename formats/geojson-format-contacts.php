@@ -12,7 +12,7 @@
 /**
  * LOAD DATA TYPE FORMAT
  */
-if (defined( 'ABSPATH' )) {
+if ( defined( 'ABSPATH' ) ) {
     class DT_Metrics_Export_GEOJSON_Contacts
     {
         public $token = 'geojson_contacts';
@@ -76,7 +76,7 @@ if (defined( 'ABSPATH' )) {
             }
 
             // kill if no results
-            if (empty( $args['rows'] )) {
+            if ( empty( $args['rows'] ) ) {
                 echo '<div class="notice notice-warning is-dismissible">
                      <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
                  </div>';
@@ -259,14 +259,14 @@ if (defined( 'ABSPATH' )) {
             return $results;
         }
 
-        public function format_class( $classes) {
+        public function format_class( $classes ) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
 
         private static $_instance = null;
         public static function instance() {
-            if (is_null( self::$_instance )) {
+            if ( is_null( self::$_instance ) ) {
                 self::$_instance = new self();
             }
             return self::$_instance;
@@ -284,7 +284,7 @@ if (defined( 'ABSPATH' )) {
 /**
  * CREATE JSON FILE
  */
-if ( !defined( 'ABSPATH' )) {
+if ( !defined( 'ABSPATH' ) ) {
 
     // @codingStandardsIgnoreLine
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
@@ -358,7 +358,7 @@ if ( !defined( 'ABSPATH' )) {
 
         header( 'Content-type: application/json' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
             echo json_encode( metrics_export_empty_geojson() );
             return;
         }
@@ -421,7 +421,7 @@ if ( !defined( 'ABSPATH' )) {
 
         header( 'Content-type: application/json' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
             echo json_encode( metrics_export_empty_geojson() );
             return;
         }

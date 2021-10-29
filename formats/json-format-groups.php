@@ -2,7 +2,7 @@
 /**
  * LOAD DATA TYPE FORMAT
  */
-if (defined( 'ABSPATH' )) {
+if ( defined( 'ABSPATH' ) ) {
     /**
      * Class DT_Metrics_Export_JSON_Groups
      */
@@ -47,13 +47,13 @@ if (defined( 'ABSPATH' )) {
             return $format;
         }
 
-        public function format_class( $classes) {
+        public function format_class( $classes ) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
 
 
-        public function create( $response) {
+        public function create( $response ) {
             if ( ! isset( $response['type']['groups'], $response['configuration'], $response['destination'] ) ){
                 return false;
             }
@@ -84,7 +84,7 @@ if (defined( 'ABSPATH' )) {
             }
 
             // kill if no results
-            if (empty( $args['rows'] )) {
+            if ( empty( $args['rows'] ) ) {
                 echo '<div class="notice notice-warning is-dismissible">
                      <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
                  </div>';
@@ -295,7 +295,7 @@ if (defined( 'ABSPATH' )) {
 
         private static $_instance = null;
         public static function instance() {
-            if (is_null( self::$_instance )) {
+            if ( is_null( self::$_instance ) ) {
                 self::$_instance = new self();
             }
             return self::$_instance;
@@ -313,7 +313,7 @@ if (defined( 'ABSPATH' )) {
 /**
  * CREATE JSON FILE
  */
-if ( !defined( 'ABSPATH' )) {
+if ( !defined( 'ABSPATH' ) ) {
 
     // @codingStandardsIgnoreLine
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
@@ -325,7 +325,7 @@ if ( !defined( 'ABSPATH' )) {
 
         header( 'Content-type: application/json' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
             echo json_encode( [ 'status' => 'FAIL' ] );
             return;
         }
@@ -350,7 +350,7 @@ if ( !defined( 'ABSPATH' )) {
 
         header( 'Content-type: application/json' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
             echo json_encode( [ 'status' => 'FAIL' ] );
             return;
         }
@@ -376,7 +376,7 @@ if ( !defined( 'ABSPATH' )) {
 
         header( 'Content-type: application/json' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
             echo json_encode( [ 'status' => 'FAIL' ] );
             return;
         }

@@ -12,7 +12,7 @@
 /**
  * LOAD DATA TYPE FORMAT
  */
-if (defined( 'ABSPATH' )) {
+if ( defined( 'ABSPATH' ) ) {
     /**
      * Class DT_Metrics_Export_CSV_Contacts
      */
@@ -56,7 +56,7 @@ if (defined( 'ABSPATH' )) {
             return $format;
         }
 
-        public function format_class( $classes) {
+        public function format_class( $classes ) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
@@ -93,7 +93,7 @@ if (defined( 'ABSPATH' )) {
             }
 
             // kill if no results
-            if (empty( $args['rows'] )) {
+            if ( empty( $args['rows'] ) ) {
                 echo '<div class="notice notice-warning is-dismissible">
                      <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
                  </div>';
@@ -289,7 +289,7 @@ if (defined( 'ABSPATH' )) {
 
         private static $_instance = null;
         public static function instance() {
-            if (is_null( self::$_instance )) {
+            if ( is_null( self::$_instance ) ) {
                 self::$_instance = new self();
             }
             return self::$_instance;
@@ -307,7 +307,7 @@ if (defined( 'ABSPATH' )) {
 /**
  * CREATE CSV FILE
  */
-if ( !defined( 'ABSPATH' )) {
+if ( !defined( 'ABSPATH' ) ) {
 
     // @codingStandardsIgnoreLine
     require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
@@ -316,7 +316,7 @@ if ( !defined( 'ABSPATH' )) {
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
-        if (empty( $results )) {
+        if ( empty( $results ) ) {
             echo 'Link no longer available';
             return;
         }
@@ -328,7 +328,7 @@ if ( !defined( 'ABSPATH' )) {
 
         fputcsv( $output, $results['columns'] );
 
-        foreach ($results['rows'] as $row) {
+        foreach ( $results['rows'] as $row ) {
             fputcsv( $output, $row );
         }
 
@@ -356,7 +356,7 @@ if ( !defined( 'ABSPATH' )) {
 
         fputcsv( $output, $results['columns'] );
 
-        foreach ($results['rows'] as $row) {
+        foreach ( $results['rows'] as $row ) {
             fputcsv( $output, $row );
         }
 
@@ -391,7 +391,7 @@ if ( !defined( 'ABSPATH' )) {
         // build csv
         $output = fopen( 'php://output', 'w' );
         fputcsv( $output, $results['columns'] );
-        foreach ($results['rows'] as $row) {
+        foreach ( $results['rows'] as $row ) {
             fputcsv( $output, $row );
         }
         fpassthru( $output );

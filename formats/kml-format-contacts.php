@@ -3,7 +3,7 @@
 /**
  * LOAD DATA TYPE FORMAT
  */
-if (defined( 'ABSPATH' )) {
+if ( defined( 'ABSPATH' ) ) {
     /**
      * Class DT_Metrics_Export_KML_Contacts
      */
@@ -13,7 +13,7 @@ if (defined( 'ABSPATH' )) {
         public $token = 'kml_contacts';
         public $label = 'KML (Contacts)';
 
-        public function format( $format) {
+        public function format( $format ) {
             /* Build base template of a format*/
             $format[$this->token] = get_dt_metrics_export_base_format();
 
@@ -43,9 +43,9 @@ if (defined( 'ABSPATH' )) {
             return $format;
         }
 
-        public function create( $response) {
+        public function create( $response ) {
 
-            if ( !isset( $response['type']['contacts'], $response['configuration'], $response['destination'] )) {
+            if ( !isset( $response['type']['contacts'], $response['configuration'], $response['destination'] ) ) {
                 return false;
             }
 
@@ -61,16 +61,16 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ('basic' === $response['type']['contacts']) {
+            if ( 'basic' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
-            } else if ('active' === $response['type']['contacts']) {
+            } else if ( 'active' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
 
             // kill if no results
-            if (empty( $args['rows'] )) {
+            if ( empty( $args['rows'] ) ) {
                 echo '<div class="notice notice-warning is-dismissible">
                      <p>No results found for this configuration. Likely, there are no records for the countries you specified. Could not generate csv file.</p>
                  </div>';
@@ -80,7 +80,7 @@ if (defined( 'ABSPATH' )) {
             // destination
             $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
             $postid = $response['configuration'];
-            switch ($response['destination']) {
+            switch ( $response['destination'] ) {
                 case 'expiring48':
                     $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
@@ -137,11 +137,11 @@ if (defined( 'ABSPATH' )) {
             return $response['configuration'] ?? 0; // return int config id, so ui reloads on same config
         }
 
-        public function update( $key, array $args) {
-            if (empty( $key )) {
+        public function update( $key, array $args ) {
+            if ( empty( $key ) ) {
                 return false;
             }
-            if ( !isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['contacts'] )) {
+            if ( !isset( $args['timestamp'], $args['link'], $args['export'], $args['export']['configuration'], $args['export']['destination'], $args['export']['type']['contacts'] ) ) {
                 return false;
             }
 
@@ -150,17 +150,17 @@ if (defined( 'ABSPATH' )) {
             /**
              * Create results according to selected type
              */
-            if ('basic' === $args['export']['type']['contacts']) {
+            if ( 'basic' === $args['export']['type']['contacts'] ) {
                 $args['rows'] = $this->query_basic();
                 $args['columns'] = array_keys( $args['rows'][0] );
-            } else if ('active' === $args['export']['type']['contacts']) {
+            } else if ( 'active' === $args['export']['type']['contacts'] ) {
                 $args['rows'] = $this->query_active();
                 $args['columns'] = array_keys( $args['rows'][0] );
             }
 
             // update destination
             $postid = $args['export']['configuration'];
-            switch ($args['export']['destination']) {
+            switch ( $args['export']['destination'] ) {
                 case 'expiring48':
                     set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 48 );
                     break;
@@ -252,14 +252,14 @@ if (defined( 'ABSPATH' )) {
             return $results;
         }
 
-        public function format_class( $classes) {
+        public function format_class( $classes ) {
             $classes[$this->token] = __CLASS__;
             return $classes;
         }
 
         private static $_instance = null;
         public static function instance() {
-            if (is_null( self::$_instance )) {
+            if ( is_null( self::$_instance ) ) {
                 self::$_instance = new self();
             }
             return self::$_instance;
@@ -277,7 +277,7 @@ if (defined( 'ABSPATH' )) {
 /**
  * CREATE KML FILE
  */
-if ( !defined( 'ABSPATH' )) {
+if ( !defined( 'ABSPATH' ) ) {
 
     // phpcs:disable
     require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called

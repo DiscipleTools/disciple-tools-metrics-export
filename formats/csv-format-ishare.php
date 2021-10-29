@@ -82,7 +82,7 @@ if ( defined( 'ABSPATH' ) ) {
                     }
 
                     $intent_level = $level;
-                    switch ($intent_level) {
+                    switch ( $intent_level ) {
                         case 'admin0':
                             $preferences['spatial_intentLevel'] = 'adminLevel0';
                             $intent_level_int = 0;
@@ -289,7 +289,7 @@ if ( defined( 'ABSPATH' ) ) {
                  *  ONE ADMIN LEVEL SET FOR ALL LOCATIONS
                  */
                 $intent_level = $response['all_locations'];
-                switch ($intent_level) {
+                switch ( $intent_level ) {
                     case 'admin0':
                         $preferences['spatial_intentLevel'] = 'adminLevel0';
                         $intent_level_int = 0;
@@ -545,7 +545,7 @@ if ( defined( 'ABSPATH' ) ) {
 
         private static $_instance = null;
         public static function instance() {
-            if (is_null( self::$_instance )) {
+            if ( is_null( self::$_instance ) ) {
                 self::$_instance = new self();
             }
             return self::$_instance;
@@ -588,7 +588,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
     fputcsv( $output, $results['columns'] );
 
-    foreach ($results['rows'] as $row ) {
+    foreach ( $results['rows'] as $row ) {
         fputcsv( $output, $row );
     }
 

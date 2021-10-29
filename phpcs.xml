@@ -25,7 +25,6 @@
 
   <exclude-pattern>vendor/*</exclude-pattern>
   <exclude-pattern>includes/admin/libraries/plugin-update-checker/*</exclude-pattern>
-  <exclude-pattern>includes/libraries/*</exclude-pattern>
 
   <arg name="extensions" value="php,inc,lib"/>
   <arg value="n"/>
@@ -140,6 +139,7 @@
     <exclude name="WordPress.Arrays.CommaAfterArrayItem.NoSpaceAfterComma" />
     <exclude name="WordPress.Arrays.CommaAfterArrayItem.SpaceAfterComma" />
     <exclude name="WordPress.Arrays.CommaAfterArrayItem.SpaceBeforeComma" />
+    <exclude name="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound" />
     <exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
     <exclude name="WordPress.PHP.DisallowShortTernary.Found"/>
     <exclude name="WordPress.PHP.YodaConditions.NotYoda" />
@@ -150,9 +150,9 @@
     <!-- <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.ExtraSpaceBeforeCloseParenthesis" /> -->
     <!-- <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.ExtraSpaceBeforeOpenParenthesis" /> -->
     <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceAfterCloseParenthesis" />
-    <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceAfterOpenParenthesis" />
+    <!-- <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceAfterOpenParenthesis" />-->
     <!-- <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceAfterStructureOpen" /> -->
-    <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceBeforeCloseParenthesis" />
+    <!-- <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceBeforeCloseParenthesis" />-->
     <!-- <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceBeforeOpenParenthesis" /> -->
     <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceBetweenStructureColon" />
     <exclude name="WordPress.WhiteSpace.ControlStructureSpacing.OpenBraceNotSameLine" />
@@ -231,5 +231,3 @@
   </rule>
 
 </ruleset>
-
-

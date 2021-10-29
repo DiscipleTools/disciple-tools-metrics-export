@@ -94,7 +94,7 @@ class DT_Metrics_Export_Menu {
             </h2>
 
             <?php
-            switch ($tab) {
+            switch ( $tab ) {
                 case "active":
                     $object = new DT_Metrics_Export_Tab_Active();
                     $object->content();

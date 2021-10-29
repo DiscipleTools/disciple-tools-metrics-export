@@ -98,9 +98,9 @@ class DT_Metrics_Export {
 
             // load all files in formats folder
             $format_files = scandir( plugin_dir_path( __FILE__ ) . '/formats/' );
-            if ( !empty( $format_files )) {
-                foreach ($format_files as $file) {
-                    if (substr( $file, -4, '4' ) === '.php') {
+            if ( !empty( $format_files ) ) {
+                foreach ( $format_files as $file ) {
+                    if ( substr( $file, -4, '4' ) === '.php' ) {
                         require_once( plugin_dir_path( __FILE__ ) . '/formats/' . $file );
                     }
                 }
@@ -230,7 +230,7 @@ function dt_metrics_export_hook_admin_notice() {
 /**
  * AJAX handler to store the state of dismissible notices.
  */
-if ( !function_exists( "dt_hook_ajax_notice_handler" )){
+if ( !function_exists( "dt_hook_ajax_notice_handler" ) ){
     function dt_hook_ajax_notice_handler(){
         check_ajax_referer( 'wp_rest_dismiss', 'security' );
         if ( isset( $_POST["type"] ) ){
