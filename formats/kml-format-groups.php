@@ -63,11 +63,11 @@ if ( defined( 'ABSPATH' ) ) {
              */
             if ( 'basic' === $args['export']['type']['groups'] ) {
                 $args['rows'] = $this->query_basic();
-                $args['columns'] = array_keys( $args['rows'][0] );
+                $args['columns'] = array_keys( $args['rows'][0] ?? [] );
             }
             else if ( 'active' === $args['export']['type']['groups'] ) {
                 $args['rows'] = $this->query_active();
-                $args['columns'] = array_keys( $args['rows'][0] );
+                $args['columns'] = array_keys( $args['rows'][0] ?? [] );
             }
 
 

@@ -69,15 +69,15 @@ if ( defined( 'ABSPATH' ) ) {
              */
             if ( 'basic' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_basic();
-                $args['columns'] = array_keys( $args['rows'][0] );
+                $args['columns'] = array_keys( $args['rows'][0] ?? [] );
             }
             else if ( 'lnglat' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_lnglat();
-                $args['columns'] = array_keys( $args['rows'][0] );
+                $args['columns'] = array_keys( $args['rows'][0] ?? [] );
             }
             else if ( 'active' === $response['type']['contacts'] ) {
                 $args['rows'] = $this->query_active();
-                $args['columns'] = array_keys( $args['rows'][0] );
+                $args['columns'] = array_keys( $args['rows'][0] ?? [] );
             }
 
             // kill if no results
