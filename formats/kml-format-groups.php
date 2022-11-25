@@ -305,7 +305,7 @@ if ( !defined( 'ABSPATH' ) ) {
     $wordpress_root_path = preg_replace( '/wp-content(?!.*wp-content).*/', '', __DIR__ );
     require_once( $wordpress_root_path . 'wp-load.php' ); // loads the wp framework when called
 
-    if (isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] )) {
+    if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ){
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
@@ -313,7 +313,7 @@ if ( !defined( 'ABSPATH' ) ) {
         header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ){
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -321,15 +321,15 @@ if ( !defined( 'ABSPATH' ) ) {
         echo '<Document>';
 
         // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
+        foreach ( $results['rows'] as $row ){
             if ( empty( $row['lng'] ) ){
                 continue;
             }
             echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
+            echo '<name>' . esc_html( $row['name'] ) . '</name>';
             echo '<description></description>';
             echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
+            echo '<coordinates>' . esc_html( $row['lng'] ) . ' , ' . esc_html( $row['lat'] ) . '</coordinates>';
             echo '</Point>';
             echo '</Placemark>';
         };
@@ -338,14 +338,14 @@ if ( !defined( 'ABSPATH' ) ) {
         echo '</kml>';
 
         exit;
-    } else if (isset( $_GET['download'] )) {
+    } else if ( isset( $_GET['download'] ) ){
         global $wpdb;
 
         $token = sanitize_text_field( wp_unslash( $_GET['download'] ) );
 
         $raw = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = %s LIMIT 1", 'download_' . $token ), ARRAY_A );
 
-        if (empty( $raw )) {
+        if ( empty( $raw ) ){
             echo 'No link found';
             return;
         }
@@ -357,7 +357,7 @@ if ( !defined( 'ABSPATH' ) ) {
         header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ){
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -365,15 +365,15 @@ if ( !defined( 'ABSPATH' ) ) {
         echo '<Document>';
 
         // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
+        foreach ( $results['rows'] as $row ){
             if ( empty( $row['lng'] ) ){
                 continue;
             }
             echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
+            echo '<name>' . esc_html( $row['name'] ) . '</name>';
             echo '<description></description>';
             echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
+            echo '<coordinates>' . esc_html( $row['lng'] ) . ' , ' . esc_html( $row['lat'] ) . '</coordinates>';
             echo '</Point>';
             echo '</Placemark>';
         };
@@ -382,13 +382,13 @@ if ( !defined( 'ABSPATH' ) ) {
         echo '</kml>';
 
         exit;
-    } else if (isset( $_GET['permanent'] )) {
+    } else if ( isset( $_GET['permanent'] ) ){
         global $wpdb;
 
         // test if key exists
         $token = sanitize_text_field( wp_unslash( $_GET['permanent'] ) );
         $raw = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_' . $token ) );
-        if (empty( $raw )) {
+        if ( empty( $raw ) ){
             echo 'No link found';
             return;
         }
@@ -401,7 +401,7 @@ if ( !defined( 'ABSPATH' ) ) {
         header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
 
-        if (empty( $results )) {
+        if ( empty( $results ) ){
             return;
         }
         echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -409,15 +409,15 @@ if ( !defined( 'ABSPATH' ) ) {
         echo '<Document>';
 
         // Now iterate over all placemarks (rows)
-        foreach ($results['rows'] as $row ) {
+        foreach ( $results['rows'] as $row ){
             if ( empty( $row['lng'] ) ){
                 continue;
             }
             echo '<Placemark>';
-            echo '<name>'.$row['name'].'</name>';
+            echo '<name>' . esc_html( $row['name'] ) . '</name>';
             echo '<description></description>';
             echo '<Point>';
-            echo '<coordinates>'.$row['lng'].' , '.$row['lat'].'</coordinates>';
+            echo '<coordinates>' . esc_html( $row['lng'] ) . ' , ' . esc_html( $row['lat'] ) . '</coordinates>';
             echo '</Point>';
             echo '</Placemark>';
         };
@@ -430,5 +430,4 @@ if ( !defined( 'ABSPATH' ) ) {
         echo 'parameters not set correctly';
         return;
     }
-    // phpcs:enable
 }

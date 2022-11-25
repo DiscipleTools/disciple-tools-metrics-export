@@ -2,10 +2,10 @@
 
 set -e
 
-cd "$(dirname "${BASH_SOURCE[0]}")/../../"
+cd "$(dirname "${BASH_SOURCE[0]}")/../"
 
 if [ "$(php -r 'echo version_compare( phpversion(), "7.0", ">=" ) ? 1 : 0;')" != 1 ] ; then
-    vendor/bin/phpcs disciple-tools-metrics-export.php
+    vendor/bin/phpcs disciple-tools-plugin-starter-template.php
     exit
 fi
 

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/DiscipleTools/disciple-tools-metrics-export.svg?branch=master)](https://travis-ci.com/DiscipleTools/disciple-tools-metrics-export)
+![Build Status](https://github.com/DiscipleTools/disciple-tools-metrics-export/actions/workflows/ci.yml/badge.svg?branch=master)
 
 ![Plugin Banner](https://raw.githubusercontent.com/DiscipleTools/disciple-tools-metrics-export/master/documentation/metrics-export-banner.png)
 # Disciple.Tools - Metrics Export
