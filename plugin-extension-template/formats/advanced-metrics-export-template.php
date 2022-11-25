@@ -342,8 +342,8 @@ if ( defined( 'ABSPATH' ) && ! class_exists( 'DT_Advanced_Metrics_Export_Templat
  */
 if ( !defined( 'ABSPATH' ) ) {
 
-    // @codingStandardsIgnoreLine
-    require($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
+    $wordpress_root_path = preg_replace( '/wp-content(?!.*wp-content).*/', '', __DIR__ );
+    require_once( $wordpress_root_path . 'wp-load.php' ); // loads the wp framework when called
 
     /**
      * Lookup from available transients for matching token given in the url

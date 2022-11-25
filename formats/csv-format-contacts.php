@@ -309,8 +309,8 @@ if ( defined( 'ABSPATH' ) ) {
  */
 if ( !defined( 'ABSPATH' ) ) {
 
-    // @codingStandardsIgnoreLine
-    require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-load.php'); // loads the wp framework when called
+    $wordpress_root_path = preg_replace( '/wp-content(?!.*wp-content).*/', '', __DIR__ );
+    require_once( $wordpress_root_path . 'wp-load.php' ); // loads the wp framework when called
 
     if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
 
@@ -374,7 +374,8 @@ if ( !defined( 'ABSPATH' ) ) {
         }
 
         // refresh data
-        require_once( $_SERVER['DOCUMENT_ROOT'] . '/wp-load.php' ); // phpcs:ignore
+        $wordpress_root_path = preg_replace( '/wp-content(?!.*wp-content).*/', '', __DIR__ );
+        require_once( $wordpress_root_path . 'wp-load.php' );
         require_once( 'csv-format-contacts.php' );
         $raw = maybe_unserialize( $raw );
         if ( ! class_exists( 'DT_Metrics_Export_CSV_Contacts' ) ) {
