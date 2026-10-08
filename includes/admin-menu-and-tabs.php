@@ -49,7 +49,6 @@ class DT_Metrics_Export_Menu {
     public function __construct() {
 
         add_action( "admin_menu", array( $this, "register_menu" ) );
-
     } // End __construct()
 
 
@@ -116,7 +115,6 @@ class DT_Metrics_Export_Menu {
 
         <?php
     }
-
 }
 
 class DT_Metrics_Export_Tab_Active {
@@ -192,7 +190,6 @@ class DT_Metrics_Export_Tab_Active {
             $token = sanitize_text_field( wp_unslash( $_POST['delete_permanent'] ) );
             $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", 'permanent_'.$token ) );
         }
-
     }
 
     public function one_time_exports() {
@@ -992,7 +989,6 @@ class DT_Metrics_Export_Tab_Location_Export {
             dt_write_log( $id );
         }
         return $id;
-
     }
 
     public function delete( $response ) {

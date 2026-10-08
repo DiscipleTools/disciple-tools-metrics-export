@@ -471,4 +471,3 @@ if ( !defined( 'ABSPATH' ) ) {
         return;
     }
 }
-
