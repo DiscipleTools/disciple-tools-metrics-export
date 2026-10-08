@@ -490,4 +490,3 @@ if ( !defined( 'ABSPATH' ) ) {
         return;
     }
 }
-

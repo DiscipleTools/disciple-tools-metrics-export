@@ -594,6 +594,3 @@ if ( ! defined( 'ABSPATH' ) ) {
 
     fpassthru( $output );
 }
-
-
-
