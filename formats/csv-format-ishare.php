@@ -533,8 +533,8 @@ if ( defined( 'ABSPATH' ) ) {
             ];
 
             // build transient
-            $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
-            set_transient( 'metrics_exports_' . $one_time_key, $args, 60 . 60 . 48 );
+            $one_time_key = bin2hex( random_bytes( 32 ) );
+            set_transient( 'metrics_exports_' . $one_time_key, $args, 2 * DAY_IN_SECONDS );
 
             // admin notification with link
             echo '<div class="notice notice-warning is-dismissible">

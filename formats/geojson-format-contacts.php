@@ -84,13 +84,13 @@ if ( defined( 'ABSPATH' ) ) {
             }
 
             // destination
-            $one_time_key = hash( 'sha256', get_current_user_id() . time() . dt_get_site_id() . rand( 0, 999 ) );
+            $one_time_key = bin2hex( random_bytes( 32 ) );
             $postid = $response['configuration'];
             switch ( $response['destination'] ) {
                 case 'expiring48':
                     $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring48=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
-                    set_transient( 'metrics_exports_' . $one_time_key, $args, 60 . 60 . 48 );
+                    set_transient( 'metrics_exports_' . $one_time_key, $args, 2 * DAY_IN_SECONDS );
                     echo '<div class="notice notice-warning is-dismissible">
                              <p>
                                  Link expiring in 48 hours:<br>
@@ -103,7 +103,7 @@ if ( defined( 'ABSPATH' ) ) {
                 case 'expiring360':
                     $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?expiring360=' . esc_attr( $one_time_key );
                     $args['key'] = $one_time_key;
-                    set_transient( 'metrics_exports_' . $one_time_key, $args, 60 . 60 . 360 );
+                    set_transient( 'metrics_exports_' . $one_time_key, $args, 15 * DAY_IN_SECONDS );
                     echo '<div class="notice notice-warning is-dismissible">
                              <p>
                                  Link expiring in 15 days:<br>
@@ -169,10 +169,10 @@ if ( defined( 'ABSPATH' ) ) {
             $postid = $args['export']['configuration'];
             switch ( $args['export']['destination'] ) {
                 case 'expiring48':
-                    set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 48 );
+                    set_transient( 'metrics_exports_' . $key, $args, 2 * DAY_IN_SECONDS );
                     break;
                 case 'expiring360':
-                    set_transient( 'metrics_exports_' . $key, $args, 60 . 60 . 360 );
+                    set_transient( 'metrics_exports_' . $key, $args, 15 * DAY_IN_SECONDS );
                     break;
                 case 'download':
                     update_post_meta( $postid, 'download_' . $key, $args );
