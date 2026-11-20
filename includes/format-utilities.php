@@ -126,3 +126,22 @@ if ( ! function_exists( 'dt_get_site_id' ) ) {
         return $dt_site_id;
     }
 }
+
+if ( ! function_exists( 'dt_metrics_export_csv_safe_row' ) ) {
+    /**
+     * Prefixes cells that a spreadsheet would run as a formula with a single quote.
+     * A leading + or - followed only by digits and phone punctuation is left as is.
+     */
+    function dt_metrics_export_csv_safe_row( $row ) {
+        foreach ( (array) $row as $k => $cell ) {
+            if ( ! is_string( $cell ) || '' === $cell ) {
+                continue;
+            }
+            if ( in_array( $cell[0], [ '=', '@', "\t", "\r" ], true )
+                || ( in_array( $cell[0], [ '+', '-' ], true ) && ! preg_match( '/^[+-][0-9\s().,+-]*$/', $cell ) ) ) {
+                $row[ $k ] = "'" . $cell;
+            }
+        }
+        return $row;
+    }
+}

@@ -571,6 +571,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
    // @codingStandardsIgnoreLine
     require( $_SERVER[ 'DOCUMENT_ROOT' ] . '/wp-load.php' ); // loads the wp framework when called
+    require_once( dirname( __DIR__ ) . '/includes/format-utilities.php' );
 
     if ( ! isset( $_GET['csv'] ) ) {
         wp_die( 'No parameter found' );
@@ -596,7 +597,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     fputcsv( $output, $results['columns'] );
 
     foreach ( $results['rows'] as $row ) {
-        fputcsv( $output, $row );
+        fputcsv( $output, dt_metrics_export_csv_safe_row( $row ) );
     }
 
     fpassthru( $output );

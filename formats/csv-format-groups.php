@@ -331,6 +331,7 @@ if ( !defined( 'ABSPATH' ) ) {
 
     $wordpress_root_path = preg_replace( '/wp-content(?!.*wp-content).*/', '', __DIR__ );
     require_once( $wordpress_root_path . 'wp-load.php' ); // loads the wp framework when called
+    require_once( dirname( __DIR__ ) . '/includes/format-utilities.php' );
 
     if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
 
@@ -352,7 +353,7 @@ if ( !defined( 'ABSPATH' ) ) {
         fputcsv( $output, $results['columns'] );
 
         foreach ( $results['rows'] as $row ) {
-            fputcsv( $output, $row );
+            fputcsv( $output, dt_metrics_export_csv_safe_row( $row ) );
         }
 
         fpassthru( $output );
@@ -384,7 +385,7 @@ if ( !defined( 'ABSPATH' ) ) {
         fputcsv( $output, $results['columns'] );
 
         foreach ( $results['rows'] as $row ) {
-            fputcsv( $output, $row );
+            fputcsv( $output, dt_metrics_export_csv_safe_row( $row ) );
         }
 
         fpassthru( $output );
@@ -424,7 +425,7 @@ if ( !defined( 'ABSPATH' ) ) {
         $output = fopen( 'php://output', 'w' );
         fputcsv( $output, $results['columns'] );
         foreach ( $results['rows'] as $row ) {
-            fputcsv( $output, $row );
+            fputcsv( $output, dt_metrics_export_csv_safe_row( $row ) );
         }
         fpassthru( $output );
     }
