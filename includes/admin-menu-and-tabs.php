@@ -973,6 +973,9 @@ class DT_Metrics_Export_Tab_Location_Export {
 
         unset( $response['action'] );
         $configuration_id = $response['configuration'];
+        if ( 'dt_metrics_export' !== get_post_type( $configuration_id ) ) {
+            return 0;
+        }
         $response = array_intersect_key( $response, array_flip( [ 'label', 'format', 'type', 'all_locations', 'selected_locations', 'destination' ] ) );
 
         $args = [
@@ -997,7 +1000,7 @@ class DT_Metrics_Export_Tab_Location_Export {
     public function delete( $response ) {
         dt_write_log( 'action: delete' );
 
-        if ( isset( $response['configuration'] ) && ! empty( $response['configuration'] ) ) {
+        if ( isset( $response['configuration'] ) && 'dt_metrics_export' === get_post_type( $response['configuration'] ) ) {
             wp_delete_post( $response['configuration'] );
         }
         return 0;
@@ -1007,6 +1010,10 @@ class DT_Metrics_Export_Tab_Location_Export {
         dt_write_log( 'action: export' );
 
         $formats = apply_filters( 'dt_metrics_export_register_format_class', [] );
+
+        if ( 'dt_metrics_export' !== get_post_type( $response['configuration'] ?? 0 ) ) {
+            $response['configuration'] = 0;
+        }
 
         if ( isset( $response['format'] ) && ! empty( $response['format'] ) && isset( $formats[$response['format']] ) && class_exists( $formats[$response['format']] ) ) {
             $result = $formats[$response['format']]::instance()->create( $response );
