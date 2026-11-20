@@ -296,6 +296,11 @@ if ( !defined( 'ABSPATH' ) ) {
     header( 'X-Robots-Tag: noindex' );
     header( 'X-Content-Type-Options: nosniff' );
 
+    if ( ! class_exists( 'DT_Metrics_Export' ) ) {
+        echo 'No link found';
+        return;
+    }
+
     if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );

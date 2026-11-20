@@ -318,6 +318,11 @@ if ( !defined( 'ABSPATH' ) ) {
     nocache_headers();
     header( 'X-Robots-Tag: noindex' );
     header( 'X-Content-Type-Options: nosniff' );
+
+    if ( ! class_exists( 'DT_Metrics_Export' ) ) {
+        echo 'No link found';
+        return;
+    }
     require_once( dirname( __DIR__ ) . '/includes/format-utilities.php' );
 
     if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
