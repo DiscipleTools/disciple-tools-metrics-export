@@ -385,18 +385,18 @@ if ( !defined( 'ABSPATH' ) ) {
         }
 
         // refresh data
-        $wordpress_root_path = preg_replace( '/wp-content(?!.*wp-content).*/', '', __DIR__ );
-        require_once( $wordpress_root_path . 'wp-load.php' );
-        require_once( 'csv-format-contacts.php' );
+        require_once( dirname( __DIR__ ) . '/includes/format-utilities.php' );
+        if ( ! class_exists( 'DT_Metrics_Export_CSV_Contacts' ) ) {
+            include( __FILE__ );
+        }
         $raw = maybe_unserialize( $raw );
         if ( ( $raw['export']['format'] ?? '' ) !== 'csv_contacts' ) {
             echo 'No link found';
             return;
         }
-        if ( ! class_exists( 'DT_Metrics_Export_CSV_Contacts' ) ) {
+        if ( strtotime( current_time( 'mysql' ) ) - strtotime( $raw['timestamp'] ?? '' ) < 5 * MINUTE_IN_SECONDS ) {
             $results = $raw;
-        }
-        else {
+        } else {
             $results = DT_Metrics_Export_CSV_Contacts::instance()->update( $token, $raw );
         }
 

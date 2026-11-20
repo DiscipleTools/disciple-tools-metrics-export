@@ -377,13 +377,20 @@ if ( !defined( 'ABSPATH' ) ) {
         }
 
         // refresh data
-        require_once( 'json-format-groups.php' );
+        require_once( dirname( __DIR__ ) . '/includes/format-utilities.php' );
+        if ( ! class_exists( 'DT_Metrics_Export_JSON_Groups' ) ) {
+            include( __FILE__ );
+        }
         $raw = maybe_unserialize( $raw );
         if ( ( $raw['export']['format'] ?? '' ) !== 'json_groups' ) {
             echo 'No link found';
             return;
         }
-        $results = DT_Metrics_Export_JSON_Groups::instance()->update( $token, $raw );
+        if ( strtotime( current_time( 'mysql' ) ) - strtotime( $raw['timestamp'] ?? '' ) < 5 * MINUTE_IN_SECONDS ) {
+            $results = $raw;
+        } else {
+            $results = DT_Metrics_Export_JSON_Groups::instance()->update( $token, $raw );
+        }
 
         header( 'Content-type: application/json' );
 

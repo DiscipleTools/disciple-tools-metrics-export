@@ -1143,8 +1143,8 @@ class DT_Metrics_Export_Tab_Tutorial {
                 </td>
                 <td>
                     A permanent link, as it is titled, is one that will not expire or be deleted except by manual deletion
-                    from the "Current Links" tab of the plugin. The data inside these links are refreshed each time they are
-                    accessed. So they can be used by reporting or data display. Security Warning: The unique 64 digit key for the link
+                    from the "Current Links" tab of the plugin. The data inside these links are refreshed when they are
+                    accessed, at most once every 5 minutes. So they can be used by reporting or data display. Security Warning: The unique 64 digit key for the link
                     makes the link unguessable for brute force attacks, but since this export does not require authentication,
                     the link could be stolen and used if it was found in an email or bookmark.
                 </td>

@@ -401,13 +401,20 @@ if ( !defined( 'ABSPATH' ) ) {
         }
 
         // refresh data
-        require_once( 'csv-format-groups.php' );
+        require_once( dirname( __DIR__ ) . '/includes/format-utilities.php' );
+        if ( ! class_exists( 'DT_Metrics_Export_CSV_Groups' ) ) {
+            include( __FILE__ );
+        }
         $raw = maybe_unserialize( $raw );
         if ( ( $raw['export']['format'] ?? '' ) !== 'csv_groups' ) {
             echo 'No link found';
             return;
         }
-        $results = DT_Metrics_Export_CSV_Groups::instance()->update( $token, $raw );
+        if ( strtotime( current_time( 'mysql' ) ) - strtotime( $raw['timestamp'] ?? '' ) < 5 * MINUTE_IN_SECONDS ) {
+            $results = $raw;
+        } else {
+            $results = DT_Metrics_Export_CSV_Groups::instance()->update( $token, $raw );
+        }
 
         // load export header
         header( 'Content-Type: text/csv; charset=utf-8' );
