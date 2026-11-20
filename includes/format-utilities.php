@@ -14,7 +14,7 @@ if ( ! function_exists( 'get_dt_metrics_export_configurations' ) ) {
             'numberposts' => -1
         ] );
         foreach ( $config_posts as $key => $post ) {
-            $configurations[$post->ID] = dt_get_simple_postmeta( $post->ID );
+            $configurations[$post->ID] = array_intersect_key( dt_get_simple_postmeta( $post->ID ), array_flip( [ 'label', 'format', 'type', 'all_locations', 'selected_locations', 'destination' ] ) );
             $configurations[$post->ID]['id'] = $post->ID;
         }
         return $configurations;

@@ -660,16 +660,7 @@ class DT_Metrics_Export_Tab_Location_Export {
             window.export_configurations = [<?php echo json_encode( get_dt_metrics_export_configurations() ) ?>][0]
             window.export_formats = [<?php echo json_encode( get_dt_metrics_export_formats() ) ?>][0]
             window.countries = [<?php echo json_encode( Disciple_Tools_Mapping_Queries::get_countries() ) ?>][0]
-            window.last_config = <?php echo esc_attr( $last_config_id ?? 0 ) ?>
-
-            console.log( `window.export_configurations` )
-            console.log( window.export_configurations )
-            console.log( `window.export_formats` )
-            console.log( window.export_formats )
-            console.log( `window.countries` )
-            console.log( window.countries )
-            console.log( `window.last_config` )
-            console.log( window.last_config )
+            window.last_config = <?php echo absint( $last_config_id ?? 0 ) ?>
 
             jQuery(document).ready(function() {
                 load_all_configurations()
