@@ -315,6 +315,9 @@ if ( !defined( 'ABSPATH' ) ) {
 
     $wordpress_root_path = preg_replace( '/wp-content(?!.*wp-content).*/', '', __DIR__ );
     require_once( $wordpress_root_path . 'wp-load.php' ); // loads the wp framework when called
+    nocache_headers();
+    header( 'X-Robots-Tag: noindex' );
+    header( 'X-Content-Type-Options: nosniff' );
     require_once( dirname( __DIR__ ) . '/includes/format-utilities.php' );
 
     if ( isset( $_GET['expiring48'] ) || isset( $_GET['expiring360'] ) ) {
@@ -359,7 +362,12 @@ if ( !defined( 'ABSPATH' ) ) {
             return;
         }
 
-        delete_post_meta( $raw['post_id'], $raw['meta_key'] ); // delete after collection
+        // delete after collection
+        if ( 1 !== $wpdb->delete( $wpdb->postmeta, [ 'meta_id' => $raw['meta_id'] ] ) ) {
+            echo 'No link found';
+            return;
+        }
+        wp_cache_delete( $raw['post_id'], 'post_meta' );
 
         header( 'Content-Type: text/csv; charset=utf-8' );
         header( 'Content-Disposition: attachment; filename=dt-csv-' . strtotime( $results['timestamp'] ) . '.csv' );

@@ -571,6 +571,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
    // @codingStandardsIgnoreLine
     require( $_SERVER[ 'DOCUMENT_ROOT' ] . '/wp-load.php' ); // loads the wp framework when called
+    nocache_headers();
+    header( 'X-Robots-Tag: noindex' );
+    header( 'X-Content-Type-Options: nosniff' );
     require_once( dirname( __DIR__ ) . '/includes/format-utilities.php' );
 
     if ( ! isset( $_GET['csv'] ) ) {
