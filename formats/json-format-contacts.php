@@ -212,7 +212,8 @@ if ( defined( 'ABSPATH' ) ) {
                         WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
                         FROM $wpdb->posts as p
                         JOIN $wpdb->postmeta as pm ON p.ID=pm.post_id AND pm.meta_key = 'overall_status' AND pm.meta_value = 'active'
-                        WHERE p.post_type = 'contacts';
+                        WHERE p.post_type = 'contacts' AND p.post_status = 'publish'
+                        AND p.ID NOT IN ( SELECT pmt.post_id FROM $wpdb->postmeta as pmt WHERE pmt.meta_key = 'type' AND pmt.meta_value IN ( 'personal', 'placeholder' ) );
                 ", ARRAY_A);
             return $results;
         }
@@ -234,7 +235,8 @@ if ( defined( 'ABSPATH' ) ) {
                         FROM  $wpdb->postmeta as pm3
                         WHERE pm3.post_id=p.ID AND pm3.meta_key = 'location_grid' ) as location
                         FROM $wpdb->posts as p
-                        WHERE p.post_type = 'contacts';
+                        WHERE p.post_type = 'contacts' AND p.post_status = 'publish'
+                        AND p.ID NOT IN ( SELECT pmt.post_id FROM $wpdb->postmeta as pmt WHERE pmt.meta_key = 'type' AND pmt.meta_value IN ( 'personal', 'placeholder' ) );
                 ", ARRAY_A);
             return $results;
         }
@@ -254,7 +256,8 @@ if ( defined( 'ABSPATH' ) ) {
                     FROM $wpdb->posts as p
                     JOIN $wpdb->postmeta as pmlgm ON p.ID=pmlgm.post_id AND pmlgm.meta_key = 'location_grid_meta'
                     JOIN $wpdb->dt_location_grid_meta as lgm ON pmlgm.meta_value=lgm.grid_meta_id
-                    WHERE p.post_type = 'contacts';
+                    WHERE p.post_type = 'contacts' AND p.post_status = 'publish'
+                    AND p.ID NOT IN ( SELECT pmt.post_id FROM $wpdb->postmeta as pmt WHERE pmt.meta_key = 'type' AND pmt.meta_value IN ( 'personal', 'placeholder' ) );
                 ", ARRAY_A);
             } else {
                 $results = $wpdb->get_results("
@@ -269,7 +272,8 @@ if ( defined( 'ABSPATH' ) ) {
                     FROM $wpdb->posts as p
                     JOIN $wpdb->postmeta as pmlg ON p.ID=pmlg.post_id AND pmlg.meta_key = 'location_grid'
                     JOIN $wpdb->dt_location_grid as lg ON pmlg.meta_value=lg.grid_id
-                    WHERE p.post_type = 'contacts';
+                    WHERE p.post_type = 'contacts' AND p.post_status = 'publish'
+                    AND p.ID NOT IN ( SELECT pmt.post_id FROM $wpdb->postmeta as pmt WHERE pmt.meta_key = 'type' AND pmt.meta_value IN ( 'personal', 'placeholder' ) );
                 ", ARRAY_A);
             }
             return $results;
