@@ -59,7 +59,7 @@ if ( defined( 'ABSPATH' ) ) {
             $preferences['creator_organizationCode'] = dt_get_site_id();
             $preferences['creator_subOrganization'] = null;
             $preferences['creator_subOrganizationCode'] = null;
-            $preferences['rights_dataOwner'] = get_current_user();
+            $preferences['rights_dataOwner'] = null;
             $preferences['accessRights'] = 'private';
 
             /**
@@ -534,11 +534,13 @@ if ( defined( 'ABSPATH' ) ) {
 
             // build transient
             $one_time_key = bin2hex( random_bytes( 32 ) );
+            $args['key'] = $one_time_key;
+            $args['link'] = esc_url( plugin_dir_url( __FILE__ ) ) . esc_url( basename( __FILE__ ) ) . '?csv=' . esc_attr( $one_time_key );
             set_transient( 'metrics_exports_' . $one_time_key, $args, 2 * DAY_IN_SECONDS );
 
             // admin notification with link
             echo '<div class="notice notice-warning is-dismissible">
-                     <p>One time download link (expires in 48 hours):<br> <a href="'. esc_url( plugin_dir_url( __FILE__ ) ).'format-csv-ishare.php?csv='.esc_attr( $one_time_key ).'" target="_blank">'.esc_url( plugin_dir_url( __FILE__ ) ).'format-csv-ishare.php?csv='.esc_attr( $one_time_key ).'</a></p>
+                     <p>One time download link (expires in 48 hours):<br> <a href="' . esc_url( $args['link'] ) . '" target="_blank">' . esc_url( $args['link'] ) . '</a></p>
                  </div>';
 
             // return configuration selection from before export
@@ -584,7 +586,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         return;
     }
 
-    delete_transient( $token );
+    delete_transient( 'metrics_exports_' . $token );
 
     header( 'Content-Type: text/csv; charset=utf-8' );
     header( 'Content-Disposition: attachment; filename=ishare-'.$results['timestamp'].'.csv' );
