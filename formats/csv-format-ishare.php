@@ -109,6 +109,7 @@ if ( defined( 'ABSPATH' ) ) {
                             break;
                         case 'admin2':
                         default:
+                            $intent_level = 'admin2';
                             $preferences['spatial_intentLevel'] = 'adminLevel2';
                             $intent_level_int = 2;
                             break;
@@ -316,6 +317,7 @@ if ( defined( 'ABSPATH' ) ) {
                         break;
                     case 'admin2':
                     default:
+                        $intent_level = 'admin2';
                         $preferences['spatial_intentLevel'] = 'adminLevel2';
                         $intent_level_int = 2;
                         break;
