@@ -576,6 +576,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
     $token = sanitize_text_field( wp_unslash( $_GET['csv'] ) );
     $results = get_transient( 'metrics_exports_' . $token );
+    if ( ( $results['export']['format'] ?? '' ) !== 'csv_ishare' ) {
+        $results = false;
+    }
     if ( empty( $results ) ) {
         echo 'Link no longer available';
         return;

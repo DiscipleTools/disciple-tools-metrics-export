@@ -290,6 +290,9 @@ if ( !defined( 'ABSPATH' ) ){
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
+        if ( ( $results['export']['format'] ?? '' ) !== 'kml_contacts' ) {
+            $results = false;
+        }
 
         header( 'Content-type: application/vnd.google-earth.kml+xml' );
         header( 'Content-Disposition: attachment; filename=dt-kml-' . strtotime( $results['timestamp'] ) . '.kml' );
@@ -331,6 +334,10 @@ if ( !defined( 'ABSPATH' ) ){
             return;
         }
         $results = maybe_unserialize( $raw['meta_value'] );
+        if ( ( $results['export']['format'] ?? '' ) !== 'kml_contacts' ) {
+            echo 'No link found';
+            return;
+        }
 
         delete_post_meta( $raw['post_id'], $raw['meta_key'] ); // delete after collection
 
@@ -377,6 +384,10 @@ if ( !defined( 'ABSPATH' ) ){
         // refresh data
         require_once( 'kml-format-contacts.php' );
         $raw = maybe_unserialize( $raw );
+        if ( ( $raw['export']['format'] ?? '' ) !== 'kml_contacts' ) {
+            echo 'No link found';
+            return;
+        }
         $results = DT_Metrics_Export_KML_Contacts::instance()->update( $token, $raw );
 
         header( 'Content-type: application/vnd.google-earth.kml+xml' );

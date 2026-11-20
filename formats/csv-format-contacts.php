@@ -320,6 +320,9 @@ if ( !defined( 'ABSPATH' ) ) {
 
         $token = isset( $_GET['expiring48'] ) ? sanitize_text_field( wp_unslash( $_GET['expiring48'] ) ) : sanitize_text_field( wp_unslash( $_GET['expiring360'] ) );
         $results = get_transient( 'metrics_exports_' . $token );
+        if ( ( $results['export']['format'] ?? '' ) !== 'csv_contacts' ) {
+            $results = false;
+        }
         if ( empty( $results ) ) {
             echo 'Link no longer available';
             return;
@@ -350,6 +353,10 @@ if ( !defined( 'ABSPATH' ) ) {
             return;
         }
         $results = maybe_unserialize( $raw['meta_value'] );
+        if ( ( $results['export']['format'] ?? '' ) !== 'csv_contacts' ) {
+            echo 'No link found';
+            return;
+        }
 
         delete_post_meta( $raw['post_id'], $raw['meta_key'] ); // delete after collection
 
@@ -382,6 +389,10 @@ if ( !defined( 'ABSPATH' ) ) {
         require_once( $wordpress_root_path . 'wp-load.php' );
         require_once( 'csv-format-contacts.php' );
         $raw = maybe_unserialize( $raw );
+        if ( ( $raw['export']['format'] ?? '' ) !== 'csv_contacts' ) {
+            echo 'No link found';
+            return;
+        }
         if ( ! class_exists( 'DT_Metrics_Export_CSV_Contacts' ) ) {
             $results = $raw;
         }

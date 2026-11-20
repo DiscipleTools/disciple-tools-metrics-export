@@ -26,7 +26,7 @@ jobs:
       - name: Build project
         run: |
           mkdir disciple-tools-metrics-export
-          cp -r disciple-tools-metrics-export.php formats includes languages plugin-extension-template spinner.svg version-control.json LICENSE SECURITY.md disciple-tools-metrics-export/
+          cp -r disciple-tools-metrics-export.php formats includes languages spinner.svg version-control.json LICENSE SECURITY.md disciple-tools-metrics-export/
           zip -r disciple-tools-metrics-export.zip disciple-tools-metrics-export
       - name: Create Release
         env:
