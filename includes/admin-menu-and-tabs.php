@@ -255,8 +255,8 @@ class DT_Metrics_Export_Tab_Active {
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo esc_url( $value['link'] ?? '' ) ?>')">Copy Link</a> |
-                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo esc_attr( $value['key'] ) ?>').toggle()">Show link</a> |
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard(<?php echo esc_attr( wp_json_encode( esc_url( $value['link'] ?? '' ) ) ) ?>)">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery(<?php echo esc_attr( wp_json_encode( '#link-' . ( $value['key'] ?? '' ) ) ) ?>).toggle()">Show link</a> |
                                             <a href="<?php echo esc_url( $value['link'] ) ?>" target="_blank" class="download-reload">Download and delete this one-time link</a>
                                         </td>
                                     </tr>
@@ -356,8 +356,8 @@ class DT_Metrics_Export_Tab_Active {
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo esc_url( $value['link'] ) ?>')">Copy Link</a> |
-                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo esc_attr( $value['key'] ) ?>').toggle()">Show link</a> |
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard(<?php echo esc_attr( wp_json_encode( esc_url( $value['link'] ?? '' ) ) ) ?>)">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery(<?php echo esc_attr( wp_json_encode( '#link-' . ( $value['key'] ?? '' ) ) ) ?>).toggle()">Show link</a> |
                                             <a href="<?php echo esc_url( $value['link'] ) ?>">Download</a>
                                         </td>
                                     </tr>
@@ -453,8 +453,8 @@ class DT_Metrics_Export_Tab_Active {
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard('<?php echo esc_url( $value['link'] ??'' ) ?>')">Copy Link</a> |
-                                            <a href="javascript:void(0)" onclick="jQuery('#link-<?php echo esc_attr( $value['key'] ??'' ) ?>').toggle()">Show link</a> |
+                                            <a href="javascript:void(0)" class="copy-link" onclick="copyToClipboard(<?php echo esc_attr( wp_json_encode( esc_url( $value['link'] ?? '' ) ) ) ?>)">Copy Link</a> |
+                                            <a href="javascript:void(0)" onclick="jQuery(<?php echo esc_attr( wp_json_encode( '#link-' . ( $value['key'] ?? '' ) ) ) ?>).toggle()">Show link</a> |
                                             <a href="<?php echo esc_url( $value['link'] ??'' ) ?>">Download</a>
                                         </td>
                                     </tr>
@@ -944,6 +944,7 @@ class DT_Metrics_Export_Tab_Location_Export {
 
         unset( $response['action'] );
         unset( $response['configuration'] );
+        $response = array_intersect_key( $response, array_flip( [ 'label', 'format', 'type', 'all_locations', 'selected_locations', 'destination' ] ) );
 
         $args = [
             'post_type' => 'dt_metrics_export',
@@ -971,9 +972,11 @@ class DT_Metrics_Export_Tab_Location_Export {
         }
 
         unset( $response['action'] );
+        $configuration_id = $response['configuration'];
+        $response = array_intersect_key( $response, array_flip( [ 'label', 'format', 'type', 'all_locations', 'selected_locations', 'destination' ] ) );
 
         $args = [
-            'ID' => $response['configuration'],
+            'ID' => $configuration_id,
             'post_type' => 'dt_metrics_export',
             'post_title' => $response['label'], // label
             'post_content' => $response['label'], // label
